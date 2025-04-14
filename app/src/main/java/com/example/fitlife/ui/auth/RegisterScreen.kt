@@ -4,10 +4,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,13 +28,17 @@ import androidx.compose.ui.unit.sp
 import com.example.fitlife.R
 
 @Composable
-fun LoginScreen(
-    onLoginSuccess: () -> Unit,
-    onRegisterClick: () -> Unit
+fun RegisterScreen(
+    onRegisterSuccess: () -> Unit,
+    onNavigateToLogin: () -> Unit
 ) {
+    var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var rememberMe by remember { mutableStateOf(false) }
+    var confirmPassword by remember { mutableStateOf("") }
+    var agreeToTerms by remember { mutableStateOf(false) }
+    
+    val scrollState = rememberScrollState()
 
     Box(
         modifier = Modifier
@@ -40,14 +47,15 @@ fun LoginScreen(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // 顶部背景图和标题
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
+                    .height(220.dp)
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
@@ -91,15 +99,15 @@ fun LoginScreen(
                 }
             }
             
-            // 登录表单
+            // 注册表单
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(24.dp)
             ) {
-                // 欢迎文本
+                // 创建账户文本
                 Text(
-                    text = "Welcome Back",
+                    text = "Create Account",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF1F2937),
@@ -108,6 +116,32 @@ fun LoginScreen(
                         .padding(bottom = 24.dp),
                     textAlign = TextAlign.Start
                 )
+                
+                // 全名输入框
+                Column(modifier = Modifier.padding(bottom = 16.dp)) {
+                    Text(
+                        text = "Full Name",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF374151),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    
+                    OutlinedTextField(
+                        value = fullName,
+                        onValueChange = { fullName = it },
+                        placeholder = { Text("John Doe") },
+                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Person") },
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF3B82F6),
+                            unfocusedBorderColor = Color(0xFFD1D5DB)
+                        )
+                    )
+                }
                 
                 // 邮箱输入框
                 Column(modifier = Modifier.padding(bottom = 16.dp)) {
@@ -150,7 +184,6 @@ fun LoginScreen(
                         onValueChange = { password = it },
                         placeholder = { Text("••••••••") },
                         leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Password") },
-                        // 移除这里的trailingIcon
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier
                             .fillMaxWidth(),
@@ -163,63 +196,99 @@ fun LoginScreen(
                     )
                 }
                 
-                // 记住我选项和忘记密码放在同一行
+                // 确认密码输入框
+                Column(modifier = Modifier.padding(bottom = 16.dp)) {
+                    Text(
+                        text = "Confirm Password",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF374151),
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    
+                    OutlinedTextField(
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it },
+                        placeholder = { Text("••••••••") },
+                        leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Confirm Password") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        singleLine = true,
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF3B82F6),
+                            unfocusedBorderColor = Color(0xFFD1D5DB)
+                        )
+                    )
+                }
+                
+                // 同意条款选项
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 24.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween // 两端对齐
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // 左侧：记住我选项
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Checkbox(
-                            checked = rememberMe,
-                            onCheckedChange = { rememberMe = it },
-                            colors = CheckboxDefaults.colors(
-                                checkedColor = Color(0xFF2563EB)
-                            )
+                    Checkbox(
+                        checked = agreeToTerms,
+                        onCheckedChange = { agreeToTerms = it },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = Color(0xFF2563EB)
                         )
-                        
-                        Text(
-                            text = "Remember me",
-                            fontSize = 14.sp,
-                            color = Color(0xFF4B5563)
-                        )
-                    }
+                    )
                     
-                    // 右侧：忘记密码
                     Text(
-                        text = "Forgot password?",
-                        color = Color(0xFF2563EB),
+                        text = "I agree to the ",
                         fontSize = 14.sp,
+                        color = Color(0xFF4B5563)
+                    )
+                    
+                    Text(
+                        text = "Terms of Service",
+                        fontSize = 14.sp,
+                        color = Color(0xFF2563EB),
                         fontWeight = FontWeight.Medium,
-                        modifier = Modifier.clickable { /* 处理忘记密码 */ }
+                        modifier = Modifier.clickable { /* 处理条款点击 */ }
+                    )
+                    
+                    Text(
+                        text = " and ",
+                        fontSize = 14.sp,
+                        color = Color(0xFF4B5563)
+                    )
+                    
+                    Text(
+                        text = "Privacy Policy",
+                        fontSize = 14.sp,
+                        color = Color(0xFF2563EB),
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.clickable { /* 处理隐私政策点击 */ }
                     )
                 }
                 
-                // 登录按钮
+                // 注册按钮
                 Button(
-                    onClick = onLoginSuccess,
+                    onClick = onRegisterSuccess,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF2563EB)
-                    )
+                    ),
+                    enabled = fullName.isNotEmpty() && email.isNotEmpty() && 
+                             password.isNotEmpty() && confirmPassword.isNotEmpty() && 
+                             password == confirmPassword && agreeToTerms
                 ) {
                     Text(
-                        text = "Sign In",
+                        text = "Sign Up",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
                 
-                
-                // 注册链接
+                // 登录链接
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -227,17 +296,17 @@ fun LoginScreen(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Don't have an account? ",
+                        text = "Already have an account? ",
                         fontSize = 14.sp,
                         color = Color(0xFF6B7280)
                     )
                     
                     Text(
-                        text = "Sign up",
+                        text = "Sign in",
                         fontSize = 14.sp,
                         color = Color(0xFF2563EB),
                         fontWeight = FontWeight.Medium,
-                        modifier = Modifier.clickable { onRegisterClick() }
+                        modifier = Modifier.clickable { onNavigateToLogin() }
                     )
                 }
             }
