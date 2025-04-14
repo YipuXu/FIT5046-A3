@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitLife - 健身应用</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .page-container {
+            width: 360px;
+            height: 840px;
+            overflow: hidden;
+            position: relative;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin: 20px;
+            display: inline-block;
+        }
+        .pages-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .page-title {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-6">
+    <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">FitLife 健身应用 UI/UX 设计</h1>
+    
+    <!-- 登录/注册页面 -->
+    <div class="pages-row">
+        <div>
+            <div class="page-title">登录/注册页面</div>
+            <div class="page-container bg-white">
+                <div class="h-full flex flex-col">
+                    <!-- 背景图 -->
+                    <div class="relative h-1/2 bg-gradient-to-b from-blue-500 to-indigo-600 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" 
+                             class="w-full h-full object-cover opacity-40" alt="健身背景">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-center">
+                                <h1 class="text-4xl font-bold text-white mb-2">FitLife</h1>
+                                <p class="text-white text-sm">塑造更好的自己</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 登录表单 -->
+                    <div class="flex-1 p-6 flex flex-col justify-between">
+                        <div>
+                            <h2 class="text-2xl font-semibold text-gray-800 mb-6">欢迎回来</h2>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+                                    <input type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="your@email.com">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                                    <input type="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="••••••••">
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" class="h-4 w-4 text-blue-600 rounded border-gray-300">
+                                        <label class="ml-2 text-sm text-gray-600">记住我</label>
+                                    </div>
+                                    <a href="#" class="text-sm text-blue-600 hover:text-blue-800">忘记密码?</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4 mt-6">
+                            <button class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-200">登录</button>
+                            <div class="relative flex items-center">
+                                <div class="flex-grow border-t border-gray-300"></div>
+                                <span class="flex-shrink mx-4 text-gray-600 text-sm">或</span>
+                                <div class="flex-grow border-t border-gray-300"></div>
+                            </div>
+                            <button class="w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-50 transition duration-200 flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
+                                </svg>
+                                使用Google登录
+                            </button>
+                            <p class="text-center text-sm text-gray-600">
+                                还没有账号? <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">注册</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Home页面 -->
+        <div>
+            <div class="page-title">Home页面</div>
+            <div class="page-container bg-gray-50">
+                <div class="h-full flex flex-col">
+                    <!-- 顶部栏 -->
+                    <div class="px-6 pt-6 pb-4">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-800">你好, 小明</h1>
+                                <p class="text-gray-500 text-sm">今天是健身的好日子!</p>
+                            </div>
+                            <div class="h-10 w-10 rounded-full bg-gray-200 overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" alt="用户头像" class="h-full w-full object-cover">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 健身数据概览 -->
+                    <div class="px-6 mb-4">
+                        <div class="bg-white rounded-2xl p-4 shadow-sm">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="font-semibold text-gray-700">本周健身概览</h2>
+                                <span class="text-blue-600 text-sm">查看详情</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <div class="text-center">
+                                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-600 mb-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs text-gray-500">训练次数</p>
+                                    <p class="font-semibold">4/7</p>
+                                </div>
+                                <div class="text-center">
+                                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100 text-green-600 mb-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs text-gray-500">总时长</p>
+                                    <p class="font-semibold">3.5小时</p>
+                                </div>
+                                <div class="text-center">
+                                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 text-purple-600 mb-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs text-gray-500">消耗热量</p>
+                                    <p class="font-semibold">1,248 千卡</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 今日计划 -->
+                    <div class="px-6 mb-4">
+                        <h2 class="font-semibold text-gray-700 mb-3">今日计划</h2>
+                        <div class="bg-white rounded-2xl p-4 shadow-sm flex items-center">
+                            <div class="bg-blue-600 text-white rounded-xl p-3 mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium text-gray-800">上肢力量训练</h3>
+                                <p class="text-sm text-gray-500">今天 18:00-19:00</p>
+                            </div>
+                            <div class="bg-blue-100 text-blue-600 rounded-lg px-3 py-1 text-sm font-medium">
+                                开始
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 推荐课程 -->
+                    <div class="px-6 mb-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="font-semibold text-gray-700">推荐课程</h2>
+                            <span class="text-blue-600 text-sm">查看全部</span>
+                        </div>
+                        <div class="flex space-x-4 overflow-x-auto pb-2">
+                            <div class="flex-shrink-0 w-36 bg-white rounded-xl shadow-sm overflow-hidden">
+                                <div class="h-24 bg-gray-200">
+                                    <img src="https://images.unsplash.com/photo-1599058917765-a780eda07a3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" alt="瑜伽课程" class="h-full w-full object-cover">
+                                </div>
+                                <div class="p-3">
+                                    <h3 class="font-medium text-sm text-gray-800">初级瑜伽</h3>
+                                    <p class="text-xs text-gray-500">30分钟 · 简单</p>
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0 w-36 bg-white rounded-xl shadow-sm overflow-hidden">
+                                <div class="h-24 bg-gray-200">
+                                    <img src="https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" alt="HIIT课程" class="h-full w-full object-cover">
+                                </div>
+                                <div class="p-3">
+                                    <h3 class="font-medium text-sm text-gray-800">HIIT燃脂</h3>
+                                    <p class="text-xs text-gray-500">45分钟 · 中等</p>
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0 w-36 bg-white rounded-xl shadow-sm overflow-hidden">
+                                <div class="h-24 bg-gray-200">
+                                    <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" alt="力量训练" class="h-full w-full object-cover">
+                                </div>
+                                <div class="p-3">
+                                    <h3 class="font-medium text-sm text-gray-800">核心力量</h3>
+                                    <p class="text-xs text-gray-500">40分钟 · 困难</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 底部导航栏 -->
+                    <div class="mt-auto border-t border-gray-200">
+                        <div class="flex justify-around items-center py-3 px-6">
+                            <div class="flex flex-col items-center">
+                                <div class="text-blue-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-blue-600 font-medium mt-1">首页</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">日历</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">地图</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">我的</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 个人信息页面 -->
+        <div>
+            <div class="page-title">个人信息页面</div>
+            <div class="page-container bg-gray-50">
+                <div class="h-full flex flex-col">
+                    <!-- 顶部栏 -->
+                    <div class="px-6 pt-6 pb-4 flex justify-between items-center">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </div>
+                        <h1 class="text-xl font-bold text-gray-800">个人信息</h1>
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <!-- 用户资料 -->
+                    <div class="px-6 mb-6">
+                        <div class="bg-white rounded-2xl p-5 shadow-sm flex items-center">
+                            <div class="h-16 w-16 rounded-full bg-gray-200 overflow-hidden mr-4">
+                                <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=120&q=80" alt="用户头像" class="h-full w-full object-cover">
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-semibold text-gray-800">小明</h2>
+                                <p class="text-gray-500">xiaoming@example.com</p>
+                            </div>
+                            <div class="ml-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 个人数据 -->
+                    <div class="px-6 mb-6">
+                        <h2 class="font-semibold text-gray-700 mb-3">个人数据</h2>
+                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                            <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="bg-blue-100 text-blue-600 p-2 rounded-lg mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-800 font-medium">身高体重</p>
+                                        <p class="text-sm text-gray-500">178cm / 70kg</p>
+                                    </div>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                            <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="bg-green-100 text-green-600 p-2 rounded-lg mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-800 font-medium">健身目标</p>
+                                        <p class="text-sm text-gray-500">增肌减脂</p>
+                                    </div>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                            <div class="p-4 flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="bg-purple-100 text-purple-600 p-2 rounded-lg mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-800 font-medium">健身频率</p>
+                                        <p class="text-sm text-gray-500">每周4-5次</p>
+                                    </div>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 应用设置 -->
+                    <div class="px-6 mb-6">
+                        <h2 class="font-semibold text-gray-700 mb-3">应用设置</h2>
+                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                            <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="bg-gray-100 text-gray-600 p-2 rounded-lg mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-800 font-medium">通知设置</p>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-500 mr-2">开启</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="bg-gray-100 text-gray-600 p-2 rounded-lg mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-800 font-medium">隐私设置</p>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                            <div class="p-4 flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <div class="bg-gray-100 text-gray-600 p-2 rounded-lg mr-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-800 font-medium">帮助与反馈</p>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 底部按钮 -->
+                    <div class="px-6 mt-auto mb-6">
+                        <button class="w-full bg-red-500 text-white py-3 rounded-lg font-medium hover:bg-red-600 transition duration-200">
+                            退出登录
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User页面 - 用户详细信息和成就 -->
+        <div>
+            <div class="page-title">User页面</div>
+            <div class="page-container bg-gray-50">
+                <div class="h-full flex flex-col">
+                    <!-- 顶部栏 -->
+                    <div class="px-6 pt-6 pb-4 flex justify-between items-center">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </div>
+                        <h1 class="text-xl font-bold text-gray-800">我的主页</h1>
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <!-- 用户信息卡片 -->
+                    <div class="px-6 mb-6">
+                        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-5 shadow-sm text-white">
+                            <div class="flex items-center mb-4">
+                                <div class="h-20 w-20 rounded-full bg-white p-1 overflow-hidden mr-4">
+                                    <img src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=120&q=80" alt="用户头像" class="h-full w-full object-cover rounded-full">
+                                </div>
+                                <div>
+                                    <h2 class="text-xl font-bold">小明</h2>
+                                    <p class="text-blue-100">健身爱好者 · 初级</p>
+                                    <div class="flex items-center mt-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-300" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <span class="text-sm ml-1">4.8</span>
+                                    </div>
+                                </div>
+                                <button class="ml-auto bg-white text-blue-600 px-3 py-1 rounded-lg text-sm font-medium">
+                                    编辑
+                                </button>
+                            </div>
+                            <div class="flex justify-between text-center">
+                                <div>
+                                    <p class="text-2xl font-bold">42</p>
+                                    <p class="text-blue-100 text-xs">训练次数</p>
+                                </div>
+                                <div class="border-l border-blue-400">
+                                    <p class="text-2xl font-bold">12</p>
+                                    <p class="text-blue-100 text-xs">连续天数</p>
+                                </div>
+                                <div class="border-l border-blue-400">
+                                    <p class="text-2xl font-bold">8</p>
+                                    <p class="text-blue-100 text-xs">完成计划</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 成就徽章 -->
+                    <div class="px-6 mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="font-semibold text-gray-700">我的成就</h2>
+                            <span class="text-blue-600 text-sm">查看全部</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-3">
+                            <div class="bg-white rounded-xl p-3 flex flex-col items-center shadow-sm">
+                                <div class="bg-yellow-100 text-yellow-600 p-2 rounded-full mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                    </svg>
+                                </div>
+                                <p class="text-xs text-gray-800 text-center">连续7天</p>
+                            </div>
+                            <div class="bg-white rounded-xl p-3 flex flex-col items-center shadow-sm">
+                                <div class="bg-blue-100 text-blue-600 p-2 rounded-full mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                </div>
+                                <p class="text-xs text-gray-800 text-center">燃脂达人</p>
+                            </div>
+                            <div class="bg-white rounded-xl p-3 flex flex-col items-center shadow-sm">
+                                <div class="bg-purple-100 text-purple-600 p-2 rounded-full mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                </div>
+                                <p class="text-xs text-gray-800 text-center">完成挑战</p>
+                            </div>
+                            <div class="bg-white rounded-xl p-3 flex flex-col items-center shadow-sm">
+                                <div class="bg-gray-100 text-gray-500 p-2 rounded-full mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    </svg>
+                                </div>
+                                <p class="text-xs text-gray-400 text-center">更多成就</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 健身记录 -->
+                    <div class="px-6 mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="font-semibold text-gray-700">最近记录</h2>
+                            <span class="text-blue-600 text-sm">查看全部</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-white rounded-xl p-4 shadow-sm flex items-center">
+                                <div class="bg-blue-100 text-blue-600 p-2 rounded-lg mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="font-medium text-gray-800">上肢力量训练</h3>
+                                    <p class="text-sm text-gray-500">昨天 · 45分钟 · 320千卡</p>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 shadow-sm flex items-center">
+                                <div class="bg-green-100 text-green-600 p-2 rounded-lg mr-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="font-medium text-gray-800">HIIT训练</h3>
+                                    <p class="text-sm text-gray-500">3天前 · 30分钟 · 280千卡</p>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 底部导航栏 -->
+                    <div class="mt-auto border-t border-gray-200">
+                        <div class="flex justify-around items-center py-3 px-6">
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">首页</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">日历</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">地图</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-blue-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-blue-600 font-medium mt-1">我的</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 第二行页面 -->
+    <div class="pages-row">
+        <!-- 日历页面 -->
+        <div>
+            <div class="page-title">日历页面</div>
+            <div class="page-container bg-gray-50">
+                <div class="h-full flex flex-col">
+                    <!-- 顶部栏 -->
+                    <div class="px-6 pt-6 pb-4 flex justify-between items-center">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </div>
+                        <h1 class="text-xl font-bold text-gray-800">训练日历</h1>
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <!-- 月份选择器 -->
+                    <div class="px-6 mb-4">
+                        <div class="flex justify-between items-center">
+                            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <h2 class="text-lg font-semibold text-gray-800">2023年5月</h2>
+                            <button class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 日历网格 -->
+                    <div class="px-6 mb-6">
+                        <div class="grid grid-cols-7 gap-1 mb-2">
+                            <div class="text-center text-xs text-gray-500 font-medium">日</div>
+                            <div class="text-center text-xs text-gray-500 font-medium">一</div>
+                            <div class="text-center text-xs text-gray-500 font-medium">二</div>
+                            <div class="text-center text-xs text-gray-500 font-medium">三</div>
+                            <div class="text-center text-xs text-gray-500 font-medium">四</div>
+                            <div class="text-center text-xs text-gray-500 font-medium">五</div>
+                            <div class="text-center text-xs text-gray-500 font-medium">六</div>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1">
+                            <div class="h-10 flex items-center justify-center text-gray-400 text-sm">30</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">1</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">2</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm relative">
+                                3
+                                <div class="absolute bottom-1 w-1 h-1 bg-green-500 rounded-full"></div>
+                            </div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">4</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm relative">
+                                5
+                                <div class="absolute bottom-1 w-1 h-1 bg-blue-500 rounded-full"></div>
+                            </div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">6</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">7</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm relative">
+                                8
+                                <div class="absolute bottom-1 w-1 h-1 bg-purple-500 rounded-full"></div>
+                            </div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">9</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">10</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm relative">
+                                11
+                                <div class="absolute bottom-1 w-1 h-1 bg-green-500 rounded-full"></div>
+                            </div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">12</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">13</div>
+                            <div class="h-10 flex items-center justify-center bg-blue-600 text-white text-sm rounded-full">14</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">15</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">16</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">17</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">18</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">19</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">20</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm relative">
+                                21
+                                <div class="absolute bottom-1 w-1 h-1 bg-blue-500 rounded-full"></div>
+                            </div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">22</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">23</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">24</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">25</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">26</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">27</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm relative">
+                                28
+                                <div class="absolute bottom-1 w-1 h-1 bg-green-500 rounded-full"></div>
+                            </div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">29</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">30</div>
+                            <div class="h-10 flex items-center justify-center text-gray-800 text-sm">31</div>
+                            <div class="h-10 flex items-center justify-center text-gray-400 text-sm">1</div>
+                            <div class="h-10 flex items-center justify-center text-gray-400 text-sm">2</div>
+                            <div class="h-10 flex items-center justify-center text-gray-400 text-sm">3</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 训练计划列表 -->
+                    <div class="px-6 mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="font-semibold text-gray-700">本月训练计划</h2>
+                            <span class="text-blue-600 text-sm">添加计划</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-white rounded-xl p-4 shadow-sm">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h3 class="font-medium text-gray-800">上肢力量训练</h3>
+                                    <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">今天</span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    18:00-19:00
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 shadow-sm">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h3 class="font-medium text-gray-800">HIIT训练</h3>
+                                    <span class="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full">5月21日</span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    19:30-20:30
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 shadow-sm">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h3 class="font-medium text-gray-800">瑜伽课程</h3>
+                                    <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">5月28日</span>
+                                </div>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    09:00-10:00
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 底部导航栏 -->
+                    <div class="mt-auto border-t border-gray-200">
+                        <div class="flex justify-around items-center py-3 px-6">
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">首页</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-blue-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-blue-600 font-medium mt-1">日历</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">地图</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">我的</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 地图页面 -->
+        <div>
+            <div class="page-title">地图页面</div>
+            <div class="page-container bg-gray-50">
+                <div class="h-full flex flex-col">
+                    <!-- 顶部栏 -->
+                    <div class="px-6 pt-6 pb-4 flex justify-between items-center">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </div>
+                        <h1 class="text-xl font-bold text-gray-800">附近健身场所</h1>
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <!-- 地图区域 -->
+                    <div class="px-6 mb-4">
+                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden h-64 relative">
+                            <img src="https://images.unsplash.com/photo-1569336415962-a4bd9f69c07a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" 
+                                 class="w-full h-full object-cover" alt="地图">
+                            <div class="absolute inset-0 bg-black bg-opacity-10"></div>
+                            <!-- 地图标记 -->
+                            <div class="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                <div class="bg-blue-600 h-6 w-6 rounded-full flex items-center justify-center border-2 border-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="absolute top-2/3 left-1/4 transform -translate-x-1/2 -translate-y-1/2">
+                                <div class="bg-red-500 h-6 w-6 rounded-full flex items-center justify-center border-2 border-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="absolute top-1/2 right-1/4 transform -translate-x-1/2 -translate-y-1/2">
+                                <div class="bg-green-500 h-6 w-6 rounded-full flex items-center justify-center border-2 border-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 筛选选项 -->
+                    <div class="px-6 mb-4">
+                        <div class="flex space-x-2 overflow-x-auto pb-2">
+                            <div class="bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium flex-shrink-0">
+                                全部
+                            </div>
+                            <div class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium flex-shrink-0 border border-gray-200">
+                                健身房
+                            </div>
+                            <div class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium flex-shrink-0 border border-gray-200">
+                                瑜伽馆
+                            </div>
+                            <div class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium flex-shrink-0 border border-gray-200">
+                                游泳馆
+                            </div>
+                            <div class="bg-white text-gray-700 px-4 py-2 rounded-full text-sm font-medium flex-shrink-0 border border-gray-200">
+                                公园
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 场所列表 -->
+                    <div class="px-6 mb-6">
+                        <div class="space-y-3">
+                            <div class="bg-white rounded-xl p-4 shadow-sm flex">
+                                <div class="h-16 w-16 bg-gray-200 rounded-lg overflow-hidden mr-3">
+                                    <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" 
+                                         class="h-full w-full object-cover" alt="健身房">
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <h3 class="font-medium text-gray-800">超级健身中心</h3>
+                                        <div class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                            <span class="text-sm text-gray-600 ml-1">4.8</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-500 mt-1">距离您 0.8 公里</p>
+                                    <div class="flex items-center mt-2">
+                                        <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full mr-2">24小时</span>
+                                        <span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full">教练指导</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 shadow-sm flex">
+                                <div class="h-16 w-16 bg-gray-200 rounded-lg overflow-hidden mr-3">
+                                    <img src="https://images.unsplash.com/photo-1545205597-3d9d02c29597?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" 
+                                         class="h-full w-full object-cover" alt="瑜伽馆">
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <h3 class="font-medium text-gray-800">和平瑜伽馆</h3>
+                                        <div class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                            <span class="text-sm text-gray-600 ml-1">4.6</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-500 mt-1">距离您 1.2 公里</p>
+                                    <div class="flex items-center mt-2">
+                                        <span class="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full mr-2">初学者友好</span>
+                                        <span class="text-xs bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded-full">热瑜伽</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 shadow-sm flex">
+                                <div class="h-16 w-16 bg-gray-200 rounded-lg overflow-hidden mr-3">
+                                    <img src="https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" 
+                                         class="h-full w-full object-cover" alt="公园">
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <h3 class="font-medium text-gray-800">中央公园健身区</h3>
+                                        <div class="flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                            <span class="text-sm text-gray-600 ml-1">4.5</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-500 mt-1">距离您 0.5 公里</p>
+                                    <div class="flex items-center mt-2">
+                                        <span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full mr-2">免费</span>
+                                        <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">户外</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 底部导航栏 -->
+                    <div class="mt-auto border-t border-gray-200">
+                        <div class="flex justify-around items-center py-3 px-6">
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">首页</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">日历</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-blue-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-blue-600 font-medium mt-1">地图</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">我的</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 数据输入页面 -->
+        <div>
+            <div class="page-title">数据输入页面</div>
+            <div class="page-container bg-gray-50">
+                <div class="h-full flex flex-col">
+                    <!-- 顶部栏 -->
+                    <div class="px-6 pt-6 pb-4 flex justify-between items-center">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </div>
+                        <h1 class="text-xl font-bold text-gray-800">记录训练数据</h1>
+                        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <!-- 训练类型选择 -->
+                    <div class="px-6 mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">训练类型</label>
+                        <div class="relative">
+                            <select class="block w-full bg-white border border-gray-200 rounded-xl py-3 px-4 pr-8 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none">
+                                <option>力量训练</option>
+                                <option>有氧训练</option>
+                                <option>HIIT训练</option>
+                                <option>瑜伽</option>
+                                <option>拉伸</option>
+                                <option>其他</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 训练时长 -->
+                    <div class="px-6 mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">训练时长 (分钟)</label>
+                        <div class="flex items-center">
+                            <button class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                                </svg>
+                            </button>
+                            <div class="flex-1 mx-4">
+                                <div class="bg-white h-2 rounded-full">
+                                    <div class="bg-blue-600 h-2 rounded-full w-1/2"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-xs text-gray-500">0</span>
+                                    <span class="text-xs text-gray-500">30</span>
+                                    <span class="text-xs text-gray-500">60</span>
+                                    <span class="text-xs text-gray-500">90</span>
+                                    <span class="text-xs text-gray-500">120</span>
+                                </div>
+                            </div>
+                            <button class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 消耗卡路里 -->
+                    <div class="px-6 mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">消耗卡路里 (千卡)</label>
+                        <input type="number" class="block w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="输入消耗卡路里" value="320">
+                    </div>
+                    
+                    <!-- 训练感受 -->
+                    <div class="px-6 mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">训练感受</label>
+                        <div class="flex justify-between">
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500">轻松</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500">一般</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center mb-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-blue-600 font-medium">有挑战</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500">困难</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 备注 -->
+                    <div class="px-6 mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">备注</label>
+                        <textarea class="block w-full bg-white border border-gray-200 rounded-xl py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent h-20" placeholder="添加训练备注..."></textarea>
+                    </div>
+                    
+                    <!-- 保存按钮 -->
+                    <div class="px-6 mb-6">
+                        <button class="w-full bg-blue-600 text-white py-3 rounded-xl font-medium shadow-sm hover:bg-blue-700 transition duration-200">
+                            保存记录
+                        </button>
+                    </div>
+                    
+                    <!-- 底部导航栏 -->
+                    <div class="mt-auto border-t border-gray-200">
+                        <div class="flex justify-around items-center py-3 px-6">
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">首页</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">日历</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-gray-500 mt-1">地图</span>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="text-blue-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                                <span class="text-xs text-blue-600 font-medium mt-1">我的</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
