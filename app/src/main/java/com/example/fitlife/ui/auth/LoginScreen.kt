@@ -173,7 +173,8 @@ fun LoginScreen(
                 ) {
                     // 左侧：记住我选项
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.offset(x = (-13).dp) // 通过负偏移量去除 Checkbox 左侧的默认空白
                     ) {
                         Checkbox(
                             checked = rememberMe,
