@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import com.example.fitlife.ui.auth.LoginScreen
 import com.example.fitlife.ui.auth.RegisterScreen
 import com.example.fitlife.ui.map.MapScreen
+import com.example.fitlife.ui.profile.ProfileEditScreen
 import com.example.fitlife.ui.profile.ProfileScreen
 import com.example.fitlife.ui.theme.FitLifeTheme
 
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
             FitLifeTheme {
                 // 使用状态来控制是否已登录和当前页面
                 val isLoggedIn = remember { mutableStateOf(false) }
-                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile
+                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit
                 
                 when {
                     isLoggedIn.value -> {
@@ -39,7 +40,18 @@ class MainActivity : ComponentActivity() {
                                 ProfileScreen(
                                     onBackClick = { currentScreen.value = "map" },
                                     onViewAllAchievements = { /* 暂时为空 */ },
-                                    onViewAllHistory = { /* 暂时为空 */ }
+                                    onViewAllHistory = { /* 暂时为空 */ },
+                                    onEditProfileClick = { currentScreen.value = "profileEdit" }
+                                )
+                            }
+                            "profileEdit" -> {
+                                // 显示个人信息编辑页面
+                                ProfileEditScreen(
+                                    onBackClick = { currentScreen.value = "profile" },
+                                    onLogout = { 
+                                        isLoggedIn.value = false
+                                        currentScreen.value = "login"
+                                    }
                                 )
                             }
                             else -> {

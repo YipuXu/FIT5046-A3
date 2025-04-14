@@ -1,5 +1,6 @@
 package com.example.fitlife.ui.profile
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -36,7 +37,8 @@ import androidx.compose.ui.text.style.TextOverflow
 fun ProfileScreen(
     onBackClick: () -> Unit = {},
     onViewAllAchievements: () -> Unit = {},
-    onViewAllHistory: () -> Unit = {}
+    onViewAllHistory: () -> Unit = {},
+    onEditProfileClick: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -48,10 +50,10 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             // Top bar
-            TopBar(onBackClick = onBackClick)
+            TopBar(onBackClick = onBackClick, onMenuClick = onEditProfileClick)
 
             // User info card
-            UserInfoCard()
+            UserInfoCard(onEditClick = {})
 
             // Achievements section
             AchievementsSection(onViewAll = onViewAllAchievements)
@@ -76,7 +78,7 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun TopBar(onBackClick: () -> Unit) {
+private fun TopBar(onBackClick: () -> Unit, onMenuClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -108,6 +110,7 @@ private fun TopBar(onBackClick: () -> Unit) {
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 16.dp),
+            textAlign = TextAlign.Center,
             color = Color(0xFF1F2937)
         )
 
@@ -117,7 +120,7 @@ private fun TopBar(onBackClick: () -> Unit) {
                 .size(32.dp)
                 .clip(CircleShape)
                 .background(Color(0xFFF3F4F6))
-                .clickable { /* Open menu */ },
+                .clickable { onMenuClick() },
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -131,7 +134,7 @@ private fun TopBar(onBackClick: () -> Unit) {
 }
 
 @Composable
-private fun UserInfoCard() {
+private fun UserInfoCard(onEditClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -201,22 +204,22 @@ private fun UserInfoCard() {
                     }
                 }
 
-                // Edit button
-                Button(
-                    onClick = { /* Edit profile */ },
+                // Edit button (now optional/subtle)
+                OutlinedButton(
+                    onClick = onEditClick,
                     modifier = Modifier
                         .height(32.dp)
                         .width(48.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color(0xFF3B82F6)
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.White
                     ),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
                 ) {
                     Text(
                         text = "Edit",
-                        fontSize = 14.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
