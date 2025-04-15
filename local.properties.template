@@ -1,0 +1,23 @@
+## This file must *NOT* be checked into Version Control Systems,
+# as it contains information specific to your local configuration.
+#
+# Location of the SDK. This is only used by Gradle.
+# For customization when using a Version Control System, please read the
+# header note.
+#
+# 使用说明：
+# 1. 将此文件复制并重命名为 local.properties
+# 2. 修改下面的 sdk.dir 路径为您本地的 Android SDK 路径
+# 3. 请勿将修改后的 local.properties 文件提交到 Git 仓库
+
+# Windows 路径示例：
+# sdk.dir=C\:\\Users\\YourUsername\\AppData\\Local\\Android\\Sdk
+
+# Mac 路径示例：
+# sdk.dir=/Users/YourUsername/Library/Android/sdk
+
+# Linux 路径示例：
+# sdk.dir=/home/YourUsername/Android/Sdk
+
+# 请替换以下行中的路径为您的 Android SDK 路径
+sdk.dir=YOUR_SDK_PATH_HERE 
