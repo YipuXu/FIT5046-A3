@@ -14,3 +14,8 @@
 .cxx
 local.properties
 /.gradle/
+
+# 忽略本地配置文件，但保留模板
+# Ignore local config files, but keep templates
+local.properties
+!local.properties.template

@@ -11,10 +11,10 @@
 # 3. 请勿将修改后的 local.properties 文件提交到 Git 仓库
 
 # Windows 路径示例：
-# sdk.dir=C\:\\Users\\YourUsername\\AppData\\Local\\Android\\Sdk
+# sdk.dir=C\:\\Users\\Simon\\AppData\\Local\\Android\\Sdk
 
 # Mac 路径示例：
-# sdk.dir=/Users/YourUsername/Library/Android/sdk
+# sdk.dir=/Users/zz/Library/Android/sdk
 
 # Linux 路径示例：
 # sdk.dir=/home/YourUsername/Android/Sdk
