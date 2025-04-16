@@ -130,7 +130,7 @@ fun RegisterScreen(
                     OutlinedTextField(
                         value = fullName,
                         onValueChange = { fullName = it },
-                        placeholder = { Text("John Doe") },
+                        placeholder = { Text("Your Full Name") },
                         leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Person") },
                         modifier = Modifier
                             .fillMaxWidth(),
@@ -228,8 +228,13 @@ fun RegisterScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 24.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween // 两端对齐
                 ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.offset(x = (-12).dp) // 通过负偏移量去除 Checkbox 左侧的默认空白
+                    ) {
                     Checkbox(
                         checked = agreeToTerms,
                         onCheckedChange = { agreeToTerms = it },
@@ -238,33 +243,39 @@ fun RegisterScreen(
                         )
                     )
                     
-                    Text(
-                        text = "I agree to the ",
-                        fontSize = 14.sp,
-                        color = Color(0xFF4B5563)
-                    )
-                    
-                    Text(
-                        text = "Terms of Service",
-                        fontSize = 14.sp,
-                        color = Color(0xFF2563EB),
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.clickable { /* 处理条款点击 */ }
-                    )
-                    
-                    Text(
-                        text = " and ",
-                        fontSize = 14.sp,
-                        color = Color(0xFF4B5563)
-                    )
-                    
-                    Text(
-                        text = "Privacy Policy",
-                        fontSize = 14.sp,
-                        color = Color(0xFF2563EB),
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.clickable { /* 处理隐私政策点击 */ }
-                    )
+                    // 将文本放在一个可以换行的Column中
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "I agree to the ",
+                                fontSize = 14.sp,
+                                color = Color(0xFF4B5563)
+                            )
+                            
+                            Text(
+                                text = "Terms of Service",
+                                fontSize = 14.sp,
+                                color = Color(0xFF2563EB),
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.clickable { /* 处理条款点击 */ }
+                            )
+                            
+                            Text(
+                                text = " , ",
+                                fontSize = 14.sp,
+                                color = Color(0xFF4B5563)
+                            )
+                            
+                            Text(
+                                text = "Privacy Policy",
+                                fontSize = 14.sp,
+                                color = Color(0xFF2563EB),
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.clickable { /* 处理隐私政策点击 */ }
+                            )
+                        }
+                    }
+                }
                 }
                 
                 // 注册按钮

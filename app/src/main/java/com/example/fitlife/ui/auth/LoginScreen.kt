@@ -24,6 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fitlife.R
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material3.Divider
+import androidx.compose.material3.OutlinedButton
+
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
@@ -174,7 +178,7 @@ fun LoginScreen(
                     // 左侧：记住我选项
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.offset(x = (-13).dp) // 通过负偏移量去除 Checkbox 左侧的默认空白
+                        modifier = Modifier.offset(x = (-12).dp) // 通过负偏移量去除 Checkbox 左侧的默认空白
                     ) {
                         Checkbox(
                             checked = rememberMe,
@@ -219,6 +223,56 @@ fun LoginScreen(
                     )
                 }
                 
+                // 添加分隔线和"或"文本
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Divider(
+                        modifier = Modifier.weight(1f),
+                        color = Color(0xFFD1D5DB)
+                    )
+                    Text(
+                        text = "OR",
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        fontSize = 14.sp,
+                        color = Color(0xFF6B7280)
+                    )
+                    Divider(
+                        modifier = Modifier.weight(1f),
+                        color = Color(0xFFD1D5DB)
+                    )
+                }
+                
+                // 谷歌登录按钮
+                OutlinedButton(
+                    onClick = { /* 处理谷歌登录 */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, Color(0xFFD1D5DB)),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color.White,
+                        contentColor = Color(0xFF374151)
+                    )
+                ) {
+                    // 谷歌图标
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_google),
+                        contentDescription = "Google",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Sign in with Google",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
                 
                 // 注册链接
                 Row(
