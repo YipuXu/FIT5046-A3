@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -14,6 +16,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,14 +35,35 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
+import androidx.compose.foundation.layout.FlowRow
+import com.example.fitlife.utils.ResourceUtils
 
 @Composable
 fun ProfileScreen(
     onBackClick: () -> Unit = {},
-    onViewAllAchievements: () -> Unit = {},
     onViewAllHistory: () -> Unit = {},
-    onEditProfileClick: () -> Unit = {}
+    onEditProfileClick: (List<String>) -> Unit = { _ -> },
+    onSettingsClick: () -> Unit = {},
+    // Add user data retrieval function parameter, in actual application should get from ViewModel
+    getUserData: () -> Map<String, Any> = {
+        // Return mock user data, including fitness tags
+        mapOf(
+            "username" to "Xiao Ming",
+            "level" to "Fitness Enthusiast · Beginner",
+            "rating" to 3,
+            "workoutDays" to 42,
+            "streakDays" to 12,
+            "plansDone" to 8,
+            "fitnessTags" to listOf("Strength Training", "Cardio", "HIIT")
+        )
+    },
+    selectedFitnessTags: List<String> = listOf("Strength Training", "Cardio"),
+    onFitnessTagsUpdated: (List<String>) -> Unit = {}
 ) {
+    // Use passed selectedFitnessTags, not from userData
+    val userData = getUserData()
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -50,13 +74,17 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             // Top bar
-            TopBar(onBackClick = onBackClick, onMenuClick = onEditProfileClick)
+            TopBar(onBackClick = onBackClick, onMenuClick = onSettingsClick)
 
             // User info card
-            UserInfoCard(onEditClick = {})
-
-            // Achievements section
-            AchievementsSection(onViewAll = onViewAllAchievements)
+            UserInfoCard(
+                onEditClick = { onEditProfileClick(selectedFitnessTags) },
+                fitnessTags = selectedFitnessTags,
+                username = userData["username"] as? String ?: "",
+                workoutDays = userData["workoutDays"] as? Int ?: 0,
+                streakDays = userData["streakDays"] as? Int ?: 0,
+                plansDone = userData["plansDone"] as? Int ?: 0
+            )
 
             // Recent history section
             RecentHistorySection(onViewAll = onViewAllHistory)
@@ -114,7 +142,7 @@ private fun TopBar(onBackClick: () -> Unit, onMenuClick: () -> Unit) {
             color = Color(0xFF1F2937)
         )
 
-        // Menu button
+        // Settings button
         Box(
             modifier = Modifier
                 .size(32.dp)
@@ -124,8 +152,8 @@ private fun TopBar(onBackClick: () -> Unit, onMenuClick: () -> Unit) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = "Menu",
+                imageVector = Icons.Default.Settings,
+                contentDescription = "Settings",
                 modifier = Modifier.size(20.dp),
                 tint = Color(0xFF6B7280)
             )
@@ -134,7 +162,14 @@ private fun TopBar(onBackClick: () -> Unit, onMenuClick: () -> Unit) {
 }
 
 @Composable
-private fun UserInfoCard(onEditClick: () -> Unit) {
+private fun UserInfoCard(
+    onEditClick: () -> Unit,
+    fitnessTags: List<String>,
+    username: String = "Xiao Ming",
+    workoutDays: Int = 42,
+    streakDays: Int = 12,
+    plansDone: Int = 8
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -164,67 +199,64 @@ private fun UserInfoCard(onEditClick: () -> Unit) {
                         .clip(CircleShape)
                 )
 
-                // Username and level
+                // Username and edit button in one row
                 Column(
                     modifier = Modifier
                         .weight(1f)
                         .padding(start = 16.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
-                    Text(
-                        text = "Xiao Ming",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Text(
-                        text = "Fitness Enthusiast · Beginner",
-                        color = Color.White.copy(alpha = 0.8f),
-                        fontSize = 14.sp
-                    )
-                    
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(top = 4.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = Color.Yellow,
-                            modifier = Modifier.size(16.dp)
+                        Text(
+                            text = username,
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
                         )
 
-                        Text(
-                            text = "4.8",
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(start = 4.dp)
-                        )
+                        // Smaller edit button
+                        OutlinedButton(
+                            onClick = onEditClick,
+                            modifier = Modifier
+                                .height(28.dp)
+                                .width(32.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color.White
+                            ),
+                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
+                            shape = RoundedCornerShape(6.dp),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp)
+                        ) {
+                            Text(
+                                text = "Edit",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Normal
+                            )
+                        }
+                    }
+
+                    // Fitness tags below username and edit button
+                    if (fitnessTags.isNotEmpty()) {
+                        LazyRow(
+                            modifier = Modifier.padding(top = 4.dp),
+                            horizontalArrangement = Arrangement.Start,
+                            contentPadding = PaddingValues(end = 8.dp)
+                        ) {
+                            items(fitnessTags) { tag ->
+                                FitnessTag(
+                                    text = tag,
+                                    modifier = Modifier.padding(end = 8.dp)
+                                )
+                            }
+                        }
                     }
                 }
-
-                // Edit button (now optional/subtle)
-                OutlinedButton(
-                    onClick = onEditClick,
-                    modifier = Modifier
-                        .height(32.dp)
-                        .width(48.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color.White
-                    ),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
-                ) {
-                    Text(
-                        text = "Edit",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
             }
-
+            
             // Statistics
             Row(
                 modifier = Modifier
@@ -233,7 +265,7 @@ private fun UserInfoCard(onEditClick: () -> Unit) {
             ) {
                 // Training days
                 StatItem(
-                    count = "42", 
+                    count = workoutDays.toString(), 
                     label = "Workout Days",
                     modifier = Modifier.weight(1f),
                     alignment = Alignment.CenterHorizontally
@@ -249,7 +281,7 @@ private fun UserInfoCard(onEditClick: () -> Unit) {
                 
                 // Consecutive days
                 StatItem(
-                    count = "12", 
+                    count = streakDays.toString(), 
                     label = "Streak Days",
                     modifier = Modifier.weight(1f),
                     alignment = Alignment.CenterHorizontally
@@ -265,13 +297,34 @@ private fun UserInfoCard(onEditClick: () -> Unit) {
                 
                 // Completed plans
                 StatItem(
-                    count = "8", 
+                    count = plansDone.toString(), 
                     label = "Plans Done",
                     modifier = Modifier.weight(1f),
                     alignment = Alignment.CenterHorizontally
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun FitnessTag(
+    text: String,
+    isMore: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = if (isMore) Color.White.copy(alpha = 0.2f) else Color.White.copy(alpha = 0.3f)
+    ) {
+        Text(
+            text = text,
+            fontSize = 10.sp,
+            color = Color.White,
+            fontWeight = if (isMore) FontWeight.Medium else FontWeight.Normal,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+        )
     }
 }
 
@@ -298,196 +351,6 @@ private fun StatItem(
             color = Color.White.copy(alpha = 0.8f),
             fontSize = 12.sp,
             modifier = Modifier.padding(top = 4.dp)
-        )
-    }
-}
-
-@Composable
-private fun AchievementsSection(onViewAll: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        // Title and view all
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "My Achievements",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Text(
-                text = "View All",
-                fontSize = 14.sp,
-                color = Color(0xFF3B82F6),
-                modifier = Modifier.clickable { onViewAll() }
-            )
-        }
-
-        // Achievement icons list - each item as a separate card
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Card(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp)
-                    .height(110.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 0.dp
-                )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    AchievementItem(
-                        icon = R.drawable.ic_achievement,
-                        label = "Streak",
-                        iconTint = Color(0xFFFFB800),
-                        backgroundColor = Color(0xFFFFF8E1)
-                    )
-                }
-            }
-
-            Card(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 4.dp)
-                    .height(110.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 0.dp
-                )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    AchievementItem(
-                        icon = R.drawable.ic_bolt,
-                        label = "Burner",
-                        iconTint = Color(0xFF3B82F6),
-                        backgroundColor = Color(0xFFE6F0FF)
-                    )
-                }
-            }
-
-            Card(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 4.dp)
-                    .height(110.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 0.dp
-                )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    AchievementItem(
-                        icon = R.drawable.ic_heart,
-                        label = "Goal",
-                        iconTint = Color(0xFF9061F9),
-                        backgroundColor = Color(0xFFF3E8FF)
-                    )
-                }
-            }
-
-            Card(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 8.dp)
-                    .height(110.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 0.dp
-                )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    AchievementItem(
-                        icon = R.drawable.ic_plus,
-                        label = "More",
-                        iconTint = Color(0xFF9CA3AF),
-                        backgroundColor = Color(0xFFF3F4F6)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AchievementItem(
-    icon: Int, 
-    label: String,
-    iconTint: Color,
-    backgroundColor: Color
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(backgroundColor),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(id = icon),
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = Color(0xFF4B5563),
-            modifier = Modifier.padding(top = 8.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
         )
     }
 }

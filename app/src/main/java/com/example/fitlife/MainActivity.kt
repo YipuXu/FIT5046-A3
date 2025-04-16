@@ -1,6 +1,7 @@
 package com.example.fitlife
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -11,6 +12,7 @@ import com.example.fitlife.ui.auth.RegisterScreen
 import com.example.fitlife.ui.map.MapScreen
 import com.example.fitlife.ui.profile.ProfileEditScreen
 import com.example.fitlife.ui.profile.ProfileScreen
+import com.example.fitlife.ui.profile.SettingsScreen
 import com.example.fitlife.ui.theme.FitLifeTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,49 +21,77 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FitLifeTheme {
-                // 使用状态来控制是否已登录和当前页面
+                // Use state to control login status and current page
                 val isLoggedIn = remember { mutableStateOf(false) }
-                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit
+                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit, settings
+                
+                // Add a state to store selected fitness tags
+                val selectedFitnessTags = remember { mutableStateOf(listOf("Strength Training", "Cardio")) }
                 
                 when {
                     isLoggedIn.value -> {
                         when (currentScreen.value) {
                             "map" -> {
-                                // 显示地图页面
+                                // Display map page
                                 MapScreen(
                                     onNavigateBack = { isLoggedIn.value = false },
-                                    onNavigateToHome = { /* 暂时为空 */ },
-                                    onNavigateToCalendar = { /* 暂时为空 */ },
+                                    onNavigateToHome = { /* Empty for now */ },
+                                    onNavigateToCalendar = { /* Empty for now */ },
                                     onNavigateToProfile = { currentScreen.value = "profile" }
                                 )
                             }
                             "profile" -> {
-                                // 显示个人资料页面
+                                // Display profile page
                                 ProfileScreen(
                                     onBackClick = { currentScreen.value = "map" },
-                                    onViewAllAchievements = { /* 暂时为空 */ },
-                                    onViewAllHistory = { /* 暂时为空 */ },
-                                    onEditProfileClick = { currentScreen.value = "profileEdit" }
+                                    onViewAllHistory = { /* Empty for now */ },
+                                    onEditProfileClick = { tags -> 
+                                        Log.d("MainActivity", "Navigate to edit page, tags: ${selectedFitnessTags.value.joinToString()}")
+                                        currentScreen.value = "profileEdit" 
+                                    },
+                                    onSettingsClick = { currentScreen.value = "settings" },
+                                    selectedFitnessTags = selectedFitnessTags.value,
+                                    onFitnessTagsUpdated = { tags ->
+                                        Log.d("MainActivity", "Update tags: ${tags.joinToString()}")
+                                        selectedFitnessTags.value = tags
+                                    }
                                 )
                             }
                             "profileEdit" -> {
-                                // 显示个人信息编辑页面
+                                // Display profile edit page
                                 ProfileEditScreen(
+                                    onBackClick = { 
+                                        Log.d("MainActivity", "Return from edit page, tags: ${selectedFitnessTags.value.joinToString()}")
+                                        currentScreen.value = "profile" 
+                                    },
+                                    // Pass current selected tags to ProfileEditScreen
+                                    initialFitnessTags = selectedFitnessTags.value,
+                                    // Update state when tags are updated
+                                    onFitnessTagsSelected = { tags ->
+                                        Log.d("MainActivity", "Tag selection updated: ${tags.joinToString()}")
+                                        selectedFitnessTags.value = tags
+                                    }
+                                )
+                            }
+                            "settings" -> {
+                                // Display settings page
+                                SettingsScreen(
                                     onBackClick = { currentScreen.value = "profile" },
                                     onLogout = { 
                                         isLoggedIn.value = false
                                         currentScreen.value = "login"
-                                    }
+                                    },
+                                    onProfileClick = { currentScreen.value = "profileEdit" }
                                 )
                             }
                             else -> {
-                                // 默认显示地图页面
+                                // Default to map page
                                 currentScreen.value = "map"
                             }
                         }
                     }
                     currentScreen.value == "login" -> {
-                        // 未登录，显示登录页面
+                        // Not logged in, display login page
                         LoginScreen(
                             onLoginSuccess = {
                                 isLoggedIn.value = true
@@ -71,7 +101,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     currentScreen.value == "register" -> {
-                        // 显示注册页面
+                        // Display register page
                         RegisterScreen(
                             onRegisterSuccess = {
                                 isLoggedIn.value = true
