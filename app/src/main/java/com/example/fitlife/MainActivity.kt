@@ -15,6 +15,8 @@ import com.example.fitlife.ui.profile.ProfileEditScreen
 import com.example.fitlife.ui.profile.ProfileScreen
 import com.example.fitlife.ui.profile.SettingsScreen
 import com.example.fitlife.ui.theme.FitLifeTheme
+import com.example.fitlife.ui.help.HelpFeedbackScreen
+import com.example.fitlife.ui.profile.ChangePasswordScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,7 +26,7 @@ class MainActivity : ComponentActivity() {
             FitLifeTheme {
                 // Use state to control login status and current page
                 val isLoggedIn = remember { mutableStateOf(false) }
-                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit, settings
+                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit, settings, about, helpFeedback, changePassword
                 
                 // Add a state to store selected fitness tags
                 val selectedFitnessTags = remember { mutableStateOf(listOf("Strength Training", "Cardio")) }
@@ -83,13 +85,30 @@ class MainActivity : ComponentActivity() {
                                         currentScreen.value = "login"
                                     },
                                     onProfileClick = { currentScreen.value = "profileEdit" },
-                                    onAboutUsClick = { currentScreen.value = "about" }
+                                    onAboutUsClick = { currentScreen.value = "about" },
+                                    onHelpFeedbackClick = { currentScreen.value = "helpFeedback" },
+                                    onChangePasswordClick = { currentScreen.value = "changePassword" }
                                 )
                             }
                             "about" -> {
                                 // Display about us page
                                 AboutUsScreen(
                                     onBackClick = { currentScreen.value = "settings" }
+                                )
+                            }
+                            "helpFeedback" -> {
+                                HelpFeedbackScreen(
+                                    onBackClick = { currentScreen.value = "settings" }
+                                )
+                            }
+                            "changePassword" -> {
+                                ChangePasswordScreen(
+                                    onBackClick = { currentScreen.value = "settings" },
+                                    onChangePassword = { current, new ->
+                                        // TODO: Implement actual password change logic
+                                        println("Changing password from $current to $new")
+                                        currentScreen.value = "settings" // Navigate back after attempting change
+                                    }
                                 )
                             }
                             else -> {

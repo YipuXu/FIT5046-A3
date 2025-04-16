@@ -482,7 +482,7 @@ private fun AICoachSection(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_bolt),
+                        painter = painterResource(id = R.drawable.ic_ai_coach),
                         contentDescription = null,
                         tint = Color(0xFF3B82F6),
                         modifier = Modifier.size(24.dp)
@@ -502,7 +502,7 @@ private fun AICoachSection(
                         color = Color(0xFF1F2937)
                     )
                     Text(
-                        text = "Get personalized workout advice and guidance",
+                        text = "Get personalized workout advice",
                         fontSize = 14.sp,
                         color = Color(0xFF6B7280),
                         modifier = Modifier.padding(top = 4.dp)

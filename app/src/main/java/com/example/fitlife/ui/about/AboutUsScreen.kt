@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.example.fitlife.R
 
 @Composable
@@ -34,14 +35,22 @@ fun AboutUsScreen(
             .background(Color(0xFFF9FAFB))
             .windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
+        // Fixed top bar
+        TopBar(
+            onBackClick = onBackClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .zIndex(1f) // Ensure top bar stays above scrolling content
+                .background(Color(0xFFF9FAFB))
+        )
+
+        // Scrollable content
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(top = 64.dp) // Add padding for top bar
                 .verticalScroll(rememberScrollState())
         ) {
-            // Top bar
-            TopBar(onBackClick = onBackClick)
-
             // App Logo
             Box(
                 modifier = Modifier
@@ -170,47 +179,56 @@ fun AboutUsScreen(
 }
 
 @Composable
-private fun TopBar(onBackClick: () -> Unit) {
-    Row(
-        modifier = Modifier
+private fun TopBar(
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .background(Color(0xFFF9FAFB))
     ) {
-        // Back button
-        Box(
+        Row(
             modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFF3F4F6))
-                .clickable { onBackClick() },
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back",
-                modifier = Modifier.size(20.dp),
-                tint = Color(0xFF6B7280)
+            // Back button
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFF3F4F6))
+                    .clickable { onBackClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    modifier = Modifier.size(20.dp),
+                    tint = Color(0xFF6B7280)
+                )
+            }
+
+            // Title
+            Text(
+                text = "About Us",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp),
+                textAlign = TextAlign.Center,
+                color = Color(0xFF1F2937)
+            )
+            
+            // Placeholder for symmetry
+            Spacer(
+                modifier = Modifier
+                    .size(32.dp)
             )
         }
-
-        // Title
-        Text(
-            text = "About Us",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp),
-            textAlign = TextAlign.Center,
-            color = Color(0xFF1F2937)
-        )
-        
-        // Placeholder for symmetry
-        Spacer(
-            modifier = Modifier
-                .size(32.dp)
-        )
     }
 }
 

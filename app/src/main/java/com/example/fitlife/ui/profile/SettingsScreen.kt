@@ -34,10 +34,10 @@ fun SettingsScreen(
     onBackClick: () -> Unit = {},
     onLogout: () -> Unit = {},
     onProfileClick: () -> Unit = {},
-    onAboutUsClick: () -> Unit = {}
+    onAboutUsClick: () -> Unit = {},
+    onHelpFeedbackClick: () -> Unit = {},
+    onChangePasswordClick: () -> Unit = {}
 ) {
-    var showPasswordDialog by remember { mutableStateOf(false) }
-    
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -75,7 +75,8 @@ fun SettingsScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp),
+                        .padding(vertical = 6.dp)
+                        .clickable { onChangePasswordClick() },
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = Color.White
@@ -87,7 +88,6 @@ fun SettingsScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { showPasswordDialog = true }
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -127,7 +127,8 @@ fun SettingsScreen(
                 // Help and feedback
                 SettingsItem(
                     icon = ResourceUtils.getResourceId("ic_help", R.drawable.profile_photo),
-                    title = "Help & Feedback"
+                    title = "Help & Feedback",
+                    onClick = onHelpFeedbackClick
                 )
                 
                 // About us
@@ -165,17 +166,6 @@ fun SettingsScreen(
                 }
             }
         }
-    }
-    
-    // Password Change Dialog
-    if (showPasswordDialog) {
-        PasswordChangeDialog(
-            onDismiss = { showPasswordDialog = false },
-            onConfirm = { _, _ -> 
-                // Mock function for password change UI
-                showPasswordDialog = false 
-            }
-        )
     }
 }
 
@@ -282,121 +272,6 @@ private fun SettingsItem(
                 contentDescription = "Open",
                 tint = Color(0xFF9CA3AF)
             )
-        }
-    }
-}
-
-@Composable
-private fun PasswordChangeDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (String, String) -> Unit
-) {
-    var currentPassword by remember { mutableStateOf("") }
-    var newPassword by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var passwordError by remember { mutableStateOf("") }
-    
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White
-            )
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
-            ) {
-                Text(
-                    text = "Change Password",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1F2937)
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Current password
-                OutlinedTextField(
-                    value = currentPassword,
-                    onValueChange = { currentPassword = it },
-                    label = { Text("Current Password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // New password
-                OutlinedTextField(
-                    value = newPassword,
-                    onValueChange = { 
-                        newPassword = it
-                        // Reset error when typing
-                        if (passwordError.isNotEmpty()) passwordError = ""
-                    },
-                    label = { Text("New Password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // Confirm password
-                OutlinedTextField(
-                    value = confirmPassword,
-                    onValueChange = { 
-                        confirmPassword = it 
-                        // Reset error when typing
-                        if (passwordError.isNotEmpty()) passwordError = ""
-                    },
-                    label = { Text("Confirm New Password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    isError = passwordError.isNotEmpty(),
-                    supportingText = {
-                        if (passwordError.isNotEmpty()) {
-                            Text(
-                                text = passwordError,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
-                )
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(
-                        onClick = onDismiss
-                    ) {
-                        Text("Cancel")
-                    }
-                    
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
-                    Button(
-                        onClick = {
-                            if (newPassword.length < 6) {
-                                passwordError = "Password must be at least 6 characters"
-                            } else if (newPassword != confirmPassword) {
-                                passwordError = "Passwords don't match"
-                            } else {
-                                onConfirm(currentPassword, newPassword)
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF3B82F6)
-                        )
-                    ) {
-                        Text("Change Password")
-                    }
-                }
-            }
         }
     }
 } 
