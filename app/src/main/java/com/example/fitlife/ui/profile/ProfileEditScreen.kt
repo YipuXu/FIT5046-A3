@@ -338,7 +338,7 @@ private fun TopBar(onBackClick: () -> Unit) {
 
         // Title
         Text(
-            text = "Profile",
+            text = "My Profile",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier

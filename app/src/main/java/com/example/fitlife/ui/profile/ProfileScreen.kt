@@ -123,7 +123,7 @@ private fun ProfileContent(
 
             // 标题
             Text(
-                text = "My Profile",
+                text = "Profile",
                 fontSize = 18.sp, 
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
