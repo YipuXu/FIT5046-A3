@@ -105,10 +105,8 @@ fun MapScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // 顶部栏
-            TopAppBar(
-                onNavigateBack = onNavigateBack
-            )
+            // 恢复搜索栏和标题，但不使用返回按钮
+            SearchBarWithTitle()
             
             // 地图视图
             MapView()
@@ -120,13 +118,13 @@ fun MapScreen(
                 onFilterSelected = { selectedFilter = it }
             )
             
-            // 场所列表 - 修改这部分
+            // 场所列表
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)  // 保持这个设置
+                    .weight(1f)
                     .padding(horizontal = 16.dp),
-                contentPadding = PaddingValues(bottom = 80.dp)  // 添加底部内边距
+                contentPadding = PaddingValues(bottom = 80.dp)
             ) {
                 items(filteredPlaces) { place ->
                     PlaceItem(place = place)
@@ -147,9 +145,7 @@ fun MapScreen(
 }
 
 @Composable
-fun TopAppBar(
-    onNavigateBack: () -> Unit
-) {
+fun SearchBarWithTitle() {
     var searchText by remember { mutableStateOf("") }
     
     Column(
@@ -157,42 +153,18 @@ fun TopAppBar(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
-        // 返回按钮和标题
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // 返回按钮
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFF3F4F6))
-                    .clickable { onNavigateBack() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    modifier = Modifier.size(20.dp),
-                    tint = Color(0xFF6B7280)
-                )
-            }
-            
-            // 标题
-            Text(
-                text = "Nearby Fitness Places",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 16.dp),
-                color = Color(0xFF1F2937)
-            )
-        }
+        // 标题
+        Text(
+            text = "Nearby Fitness Places",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            color = Color(0xFF1F2937)
+        )
         
-        // 优化搜索栏样式
-        // 优化后的搜索栏
+        // 搜索栏
         OutlinedTextField(
             value = searchText,
             onValueChange = { searchText = it },
@@ -213,7 +185,6 @@ fun TopAppBar(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 12.dp)
                 .height(52.dp),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
