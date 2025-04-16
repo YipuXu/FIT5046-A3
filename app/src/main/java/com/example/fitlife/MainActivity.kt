@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.example.fitlife.ui.about.AboutUsScreen
 import com.example.fitlife.ui.auth.LoginScreen
 import com.example.fitlife.ui.auth.RegisterScreen
 import com.example.fitlife.ui.map.MapScreen
@@ -81,7 +82,14 @@ class MainActivity : ComponentActivity() {
                                         isLoggedIn.value = false
                                         currentScreen.value = "login"
                                     },
-                                    onProfileClick = { currentScreen.value = "profileEdit" }
+                                    onProfileClick = { currentScreen.value = "profileEdit" },
+                                    onAboutUsClick = { currentScreen.value = "about" }
+                                )
+                            }
+                            "about" -> {
+                                // Display about us page
+                                AboutUsScreen(
+                                    onBackClick = { currentScreen.value = "settings" }
                                 )
                             }
                             else -> {
