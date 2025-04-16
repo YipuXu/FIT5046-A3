@@ -57,7 +57,8 @@ fun AICoachScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToCalendar: () -> Unit,
     onNavigateToMap: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    currentRoute: String
 ) {
     var messageText by remember { mutableStateOf("") }
     
@@ -200,13 +201,6 @@ fun AICoachScreen(
             onNavigateToProfile = onNavigateToProfile,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
-//            BottomNavBar(
-//                currentRoute = "profile",
-//                onNavigateToHome = { /* Navigate to home */ },
-//                onNavigateToCalendar = { /* Navigate to calendar */ },
-//                onNavigateToMap = onNavigateToMap,
-//                onNavigateToProfile = { /* Already on profile page */ }
-//            )
     }
 }
 
@@ -240,29 +234,17 @@ fun TopAppBar(
         // 标题
         Text(
             text = "AI Coach",
-            fontSize = 20.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 16.dp),
+            textAlign = TextAlign.Center,
             color = Color(0xFF1F2937)
         )
         
-        // 更多选项
-      //  Box(
-      //      modifier = Modifier
-      //          .size(32.dp)
-      //          .clip(CircleShape)
-      //          .background(Color(0xFFF3F4F6)),
-      //      contentAlignment = Alignment.Center
-      //  ) {
-      //      Icon(
-      //          imageVector = Icons.Default.MoreVert,
-      //          contentDescription = "More options",
-      //          modifier = Modifier.size(20.dp),
-      //          tint = Color(0xFF6B7280)
-      //      )
-      //  }
+        // Placeholder for symmetry (ensures title centers correctly)
+        Spacer(modifier = Modifier.size(32.dp))
     }
 }
 
@@ -270,7 +252,7 @@ fun TopAppBar(
 fun AICoachHeader() {
     Box(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp)
     ) {
         Box(
             modifier = Modifier

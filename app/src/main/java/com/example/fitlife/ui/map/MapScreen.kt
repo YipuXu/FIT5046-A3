@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fitlife.R
@@ -51,6 +53,7 @@ fun MapScreen(
     onNavigateBack: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToCalendar: () -> Unit,
+    onNavigateToMap: () -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
     val places = remember {
@@ -105,10 +108,8 @@ fun MapScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // 顶部栏
-            TopAppBar(
-                onNavigateBack = onNavigateBack
-            )
+            // 恢复搜索栏和标题，但不使用返回按钮
+            SearchBarWithTitle()
             
             // 地图视图
             MapView()
@@ -120,13 +121,13 @@ fun MapScreen(
                 onFilterSelected = { selectedFilter = it }
             )
             
-            // 场所列表 - 修改这部分
+            // 场所列表
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)  // 保持这个设置
+                    .weight(1f)
                     .padding(horizontal = 16.dp),
-                contentPadding = PaddingValues(bottom = 80.dp)  // 添加底部内边距
+                contentPadding = PaddingValues(bottom = 80.dp)
             ) {
                 items(filteredPlaces) { place ->
                     PlaceItem(place = place)
@@ -139,7 +140,7 @@ fun MapScreen(
             currentRoute = "map",
             onNavigateToHome = onNavigateToHome,
             onNavigateToCalendar = onNavigateToCalendar,
-            onNavigateToMap = {},
+            onNavigateToMap = onNavigateToMap,
             onNavigateToProfile = onNavigateToProfile,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
@@ -147,9 +148,7 @@ fun MapScreen(
 }
 
 @Composable
-fun TopAppBar(
-    onNavigateBack: () -> Unit
-) {
+fun SearchBarWithTitle() {
     var searchText by remember { mutableStateOf("") }
     
     Column(
@@ -157,42 +156,42 @@ fun TopAppBar(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
-        // 返回按钮和标题
+        // 标题和菜单按钮行
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 返回按钮
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFF3F4F6))
-                    .clickable { onNavigateBack() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    modifier = Modifier.size(20.dp),
-                    tint = Color(0xFF6B7280)
-                )
-            }
-            
+            // 左侧留白，保持对称
+            Spacer(modifier = Modifier.width(32.dp))
+
             // 标题
             Text(
                 text = "Nearby Fitness Places",
-                fontSize = 18.sp,
+                fontSize = 18.sp, 
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 16.dp),
+                    .weight(1f), // 占据中间空间
+                textAlign = TextAlign.Center, // 文本居中
                 color = Color(0xFF1F2937)
             )
+
+            // 菜单图标按钮
+            IconButton(
+                onClick = { /* TODO: Add menu action */ },
+                modifier = Modifier.size(32.dp) // 保持尺寸对称
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Menu",
+                    tint = Color(0xFF6B7280)
+                )
+            }
         }
         
-        // 优化搜索栏样式
-        // 优化后的搜索栏
+        // 在标题行和搜索栏之间添加间距
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // 搜索栏
         OutlinedTextField(
             value = searchText,
             onValueChange = { searchText = it },
@@ -213,7 +212,6 @@ fun TopAppBar(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 12.dp)
                 .height(52.dp),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(

@@ -41,11 +41,12 @@ import com.example.fitlife.utils.ResourceUtils
 
 @Composable
 fun ProfileScreen(
-    onBackClick: () -> Unit = {},
-    onViewAllHistory: () -> Unit = {},
-    onEditProfileClick: (List<String>) -> Unit = { _ -> },
-    onSettingsClick: () -> Unit = {},
-    onAICoachClick: () -> Unit = {},
+    onBackClick: () -> Unit,
+    onViewAllHistory: () -> Unit,
+    onEditProfileClick: (List<String>) -> Unit,
+    onSettingsClick: () -> Unit,
+    onAICoachClick: () -> Unit,
+    onNavigateToMap: () -> Unit,
     getUserData: () -> Map<String, Any> = {
         mapOf(
             "username" to "Xiao Ming",
@@ -57,8 +58,8 @@ fun ProfileScreen(
             "fitnessTags" to listOf("Strength Training", "Cardio", "HIIT")
         )
     },
-    selectedFitnessTags: List<String> = listOf("Strength Training", "Cardio"),
-    onFitnessTagsUpdated: (List<String>) -> Unit = {}
+    selectedFitnessTags: List<String>,
+    onFitnessTagsUpdated: (List<String>) -> Unit
 ) {
     val userData = getUserData()
     
@@ -69,103 +70,109 @@ fun ProfileScreen(
             .windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 80.dp) // Add padding for bottom navigation
+            modifier = Modifier.fillMaxSize()
         ) {
-            // Top bar
-            TopBar(onBackClick = onBackClick, onMenuClick = onSettingsClick)
-
-            // User info card
-            UserInfoCard(
-                onEditClick = { onEditProfileClick(selectedFitnessTags) },
-                fitnessTags = selectedFitnessTags,
-                username = userData["username"] as? String ?: "",
-                workoutDays = userData["workoutDays"] as? Int ?: 0,
-                streakDays = userData["streakDays"] as? Int ?: 0,
-                plansDone = userData["plansDone"] as? Int ?: 0,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 0.dp)
-            )
-
-            // Recent history section
-            RecentHistorySection(onViewAll = onViewAllHistory)
-
-            // AI Coach section
-            AICoachSection(onStartChat = onAICoachClick)
-
-            // Spacer
-            Spacer(modifier = Modifier.weight(1f))
-        }
-
-        // Bottom navigation bar
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-        ) {
-            BottomNavBar(
-                currentRoute = "profile",
-                onNavigateToHome = { /* Navigate to home */ },
-                onNavigateToCalendar = { /* Navigate to calendar */ },
-                onNavigateToMap = { onBackClick() },
-                onNavigateToProfile = { /* Already on profile page */ }
+            // 个人资料内容
+            ProfileContent(
+                onViewAllHistory = onViewAllHistory,
+                onEditProfileClick = onEditProfileClick,
+                onSettingsClick = onSettingsClick,
+                onAICoachClick = onAICoachClick,
+                selectedFitnessTags = selectedFitnessTags,
+                onFitnessTagsUpdated = onFitnessTagsUpdated,
+                userData = userData
             )
         }
+        
+        // 底部导航
+        BottomNavBar(
+            currentRoute = "profile",
+            onNavigateToHome = { /* Empty for now */ },
+            onNavigateToCalendar = { /* Empty for now */ },
+            onNavigateToMap = onNavigateToMap,
+            onNavigateToProfile = {},
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
 @Composable
-private fun TopBar(onBackClick: () -> Unit, onMenuClick: () -> Unit) {
-    Row(
+private fun ProfileContent(
+    onViewAllHistory: () -> Unit,
+    onEditProfileClick: (List<String>) -> Unit,
+    onSettingsClick: () -> Unit,
+    onAICoachClick: () -> Unit,
+    selectedFitnessTags: List<String>,
+    onFitnessTagsUpdated: (List<String>) -> Unit,
+    userData: Map<String, Any>
+) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(bottom = 80.dp) // 为底部导航栏留出空间
     ) {
-        // Back button
-        Box(
+        // 顶部栏 (标题和设置按钮)
+        Row(
             modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFF3F4F6))
-                .clickable { onBackClick() },
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back",
-                modifier = Modifier.size(20.dp),
-                tint = Color(0xFF6B7280)
-            )
-        }
+            // 添加左侧Spacer以平衡右侧设置按钮
+            Spacer(modifier = Modifier.width(32.dp))
 
-        // Title
-        Text(
-            text = "My Profile",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp),
-            textAlign = TextAlign.Center,
-            color = Color(0xFF1F2937)
+            // 标题
+            Text(
+                text = "My Profile",
+                fontSize = 18.sp, 
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .weight(1f), // 占据中间可用空间
+                textAlign = TextAlign.Center, // 文本在其空间内居中
+                color = Color(0xFF1F2937)
+            )
+
+            // 设置按钮
+            Box(
+                modifier = Modifier
+                    .size(32.dp) // 保持尺寸与左侧Spacer一致
+                    .clip(CircleShape)
+                    .background(Color(0xFFF3F4F6))
+                    .clickable { onSettingsClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Settings",
+                    modifier = Modifier.size(20.dp),
+                    tint = Color(0xFF6B7280)
+                )
+            }
+        }
+        
+        // 用户信息卡片
+        UserInfoCard(
+            onEditClick = { onEditProfileClick(selectedFitnessTags) },
+            fitnessTags = selectedFitnessTags,
+            username = userData["username"] as? String ?: "",
+            workoutDays = userData["workoutDays"] as? Int ?: 0,
+            streakDays = userData["streakDays"] as? Int ?: 0,
+            plansDone = userData["plansDone"] as? Int ?: 0,
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        // Settings button
-        Box(
+        // 最近记录部分
+        RecentHistorySection(onViewAll = onViewAllHistory)
+
+        // AI教练部分
+        AICoachSection(onStartChat = onAICoachClick)
+
+        // 占位符 - 修复weight()调用问题
+        Spacer(
             modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFF3F4F6))
-                .clickable { onMenuClick() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Settings,
-                contentDescription = "Settings",
-                modifier = Modifier.size(20.dp),
-                tint = Color(0xFF6B7280)
-            )
-        }
+                .fillMaxWidth()
+                .weight(1f, fill = true)
+        )
     }
 }
 

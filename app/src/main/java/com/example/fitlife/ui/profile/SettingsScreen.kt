@@ -36,7 +36,9 @@ fun SettingsScreen(
     onProfileClick: () -> Unit = {},
     onAboutUsClick: () -> Unit = {},
     onHelpFeedbackClick: () -> Unit = {},
-    onChangePasswordClick: () -> Unit = {}
+    onChangePasswordClick: () -> Unit = {},
+    onPrivacyPolicyClick: () -> Unit = {},
+    onTermsOfServiceClick: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -65,10 +67,18 @@ fun SettingsScreen(
                     onClick = onProfileClick
                 )
                 
-                // Privacy settings
+                // Privacy Policy
                 SettingsItem(
                     icon = ResourceUtils.getResourceId("ic_privacy", R.drawable.profile_photo),
-                    title = "隐私与条例"
+                    title = "Privacy Policy",
+                    onClick = onPrivacyPolicyClick
+                )
+                
+                // Terms of Service
+                SettingsItem(
+                    icon = ResourceUtils.getResourceId("ic_privacy", R.drawable.profile_photo),
+                    title = "Terms of Service",
+                    onClick = onTermsOfServiceClick
                 )
                 
                 // Change password
@@ -95,13 +105,13 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFFFECEC)),
+                                .background(Color(0xFFF3F4F6)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Lock,
                                 contentDescription = null,
-                                tint = Color(0xFFEF4444),
+                                tint = Color(0xFF6B7280),
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -174,7 +184,7 @@ private fun TopBar(onBackClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Back button

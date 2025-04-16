@@ -18,6 +18,8 @@ import com.example.fitlife.ui.theme.FitLifeTheme
 import com.example.fitlife.ui.help.HelpFeedbackScreen
 import com.example.fitlife.ui.profile.ChangePasswordScreen
 import com.example.fitlife.ui.coach.AICoachScreen
+import com.example.fitlife.ui.policy.PrivacyPolicyScreen
+import com.example.fitlife.ui.policy.TermsOfServiceScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,7 +29,7 @@ class MainActivity : ComponentActivity() {
             FitLifeTheme {
                 // Use state to control login status and current page
                 val isLoggedIn = remember { mutableStateOf(false) }
-                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit, settings, about, helpFeedback, changePassword, aiCoach
+                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit, settings, about, helpFeedback, changePassword, aiCoach, privacyPolicy, termsOfService
                 
                 // Add a state to store selected fitness tags
                 val selectedFitnessTags = remember { mutableStateOf(listOf("Strength Training", "Cardio")) }
@@ -38,16 +40,17 @@ class MainActivity : ComponentActivity() {
                             "map" -> {
                                 // Display map page
                                 MapScreen(
-                                    onNavigateBack = { isLoggedIn.value = false },
-                                    onNavigateToHome = { /* Empty for now */ },
-                                    onNavigateToCalendar = { /* Empty for now */ },
+                                    onNavigateBack = { /* 移除返回按钮功能 */ },
+                                    onNavigateToHome = { currentScreen.value = "home" },
+                                    onNavigateToCalendar = { currentScreen.value = "calendar" },
+                                    onNavigateToMap = { currentScreen.value = "map" },
                                     onNavigateToProfile = { currentScreen.value = "profile" }
                                 )
                             }
                             "profile" -> {
                                 // Display profile page
                                 ProfileScreen(
-                                    onBackClick = { currentScreen.value = "map" },
+                                    onBackClick = { /* 移除返回按钮功能 */ },
                                     onViewAllHistory = { /* Empty for now */ },
                                     onEditProfileClick = { tags -> 
                                         Log.d("MainActivity", "Navigate to edit page, tags: ${selectedFitnessTags.value.joinToString()}")
@@ -55,6 +58,7 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onSettingsClick = { currentScreen.value = "settings" },
                                     onAICoachClick = { currentScreen.value = "aiCoach" },
+                                    onNavigateToMap = { currentScreen.value = "map" },
                                     selectedFitnessTags = selectedFitnessTags.value,
                                     onFitnessTagsUpdated = { tags ->
                                         Log.d("MainActivity", "Update tags: ${tags.joinToString()}")
@@ -69,13 +73,15 @@ class MainActivity : ComponentActivity() {
                                         Log.d("MainActivity", "Return from edit page, tags: ${selectedFitnessTags.value.joinToString()}")
                                         currentScreen.value = "profile" 
                                     },
-                                    // Pass current selected tags to ProfileEditScreen
                                     initialFitnessTags = selectedFitnessTags.value,
-                                    // Update state when tags are updated
                                     onFitnessTagsSelected = { tags ->
                                         Log.d("MainActivity", "Tag selection updated: ${tags.joinToString()}")
                                         selectedFitnessTags.value = tags
-                                    }
+                                    },
+                                    onNavigateToHome = { currentScreen.value = "home" },
+                                    onNavigateToCalendar = { currentScreen.value = "calendar" },
+                                    onNavigateToMap = { currentScreen.value = "map" },
+                                    onNavigateToProfile = { currentScreen.value = "profile" }
                                 )
                             }
                             "settings" -> {
@@ -89,7 +95,9 @@ class MainActivity : ComponentActivity() {
                                     onProfileClick = { currentScreen.value = "profileEdit" },
                                     onAboutUsClick = { currentScreen.value = "about" },
                                     onHelpFeedbackClick = { currentScreen.value = "helpFeedback" },
-                                    onChangePasswordClick = { currentScreen.value = "changePassword" }
+                                    onChangePasswordClick = { currentScreen.value = "changePassword" },
+                                    onPrivacyPolicyClick = { currentScreen.value = "privacyPolicy" },
+                                    onTermsOfServiceClick = { currentScreen.value = "termsOfService" }
                                 )
                             }
                             "about" -> {
@@ -119,7 +127,18 @@ class MainActivity : ComponentActivity() {
                                     onNavigateToHome = { /* TODO: Navigate */ },
                                     onNavigateToCalendar = { /* TODO: Navigate */ },
                                     onNavigateToMap = { currentScreen.value = "map" },
-                                    onNavigateToProfile = { currentScreen.value = "profile" }
+                                    onNavigateToProfile = { currentScreen.value = "profile" },
+                                    currentRoute = currentScreen.value // Pass current route
+                                )
+                            }
+                            "privacyPolicy" -> {
+                                PrivacyPolicyScreen(
+                                    onBackClick = { currentScreen.value = "settings" }
+                                )
+                            }
+                            "termsOfService" -> {
+                                TermsOfServiceScreen(
+                                    onBackClick = { currentScreen.value = "settings" }
                                 )
                             }
                             else -> {
@@ -145,7 +164,9 @@ class MainActivity : ComponentActivity() {
                                 isLoggedIn.value = true
                                 currentScreen.value = "map"
                             },
-                            onNavigateToLogin = { currentScreen.value = "login" }
+                            onNavigateToLogin = { currentScreen.value = "login" },
+                            onNavigateToTerms = { currentScreen.value = "termsOfService" },
+                            onNavigateToPrivacy = { currentScreen.value = "privacyPolicy" }
                         )
                     }
                 }

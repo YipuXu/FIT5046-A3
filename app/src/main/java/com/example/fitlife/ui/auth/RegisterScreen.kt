@@ -30,7 +30,9 @@ import com.example.fitlife.R
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
-    onNavigateToLogin: () -> Unit
+    onNavigateToLogin: () -> Unit,
+    onNavigateToTerms: () -> Unit,
+    onNavigateToPrivacy: () -> Unit
 ) {
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -257,7 +259,7 @@ fun RegisterScreen(
                                 fontSize = 14.sp,
                                 color = Color(0xFF2563EB),
                                 fontWeight = FontWeight.Medium,
-                                modifier = Modifier.clickable { /* 处理条款点击 */ }
+                                modifier = Modifier.clickable { onNavigateToTerms() }
                             )
                             
                             Text(
@@ -271,7 +273,7 @@ fun RegisterScreen(
                                 fontSize = 14.sp,
                                 color = Color(0xFF2563EB),
                                 fontWeight = FontWeight.Medium,
-                                modifier = Modifier.clickable { /* 处理隐私政策点击 */ }
+                                modifier = Modifier.clickable { onNavigateToPrivacy() }
                             )
                         }
                     }

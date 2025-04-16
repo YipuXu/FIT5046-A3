@@ -55,30 +55,32 @@ fun BottomNavBar(
                 icon = Icons.Default.Home,
                 label = "Home",
                 selected = currentRoute == "home",
-                onClick = onNavigateToHome
+                onClick = onNavigateToHome,
+                selectedColor = Color(0xFF3B82F6)
             )
             
             BottomNavItem(
-                // Use DateRange instead of CalendarToday
                 icon = Icons.Default.DateRange,
                 label = "Calendar",
                 selected = currentRoute == "calendar",
-                onClick = onNavigateToCalendar
+                onClick = onNavigateToCalendar,
+                selectedColor = Color(0xFF3B82F6)
             )
             
             BottomNavItem(
-                // Use Place instead of Map
                 icon = Icons.Default.Place,
                 label = "Map",
                 selected = currentRoute == "map",
-                onClick = onNavigateToMap
+                onClick = onNavigateToMap,
+                selectedColor = Color(0xFF3B82F6)
             )
             
             BottomNavItem(
                 icon = Icons.Default.Person,
                 label = "Profile",
                 selected = currentRoute == "profile",
-                onClick = onNavigateToProfile
+                onClick = onNavigateToProfile,
+                selectedColor = Color(0xFF3B82F6)
             )
         }
     }
@@ -89,7 +91,8 @@ fun RowScope.BottomNavItem(
     icon: ImageVector,
     label: String,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    selectedColor: Color = Color(0xFF3B82F6)
 ) {
     NavigationBarItem(
         icon = { Icon(icon, contentDescription = label) },
@@ -97,9 +100,11 @@ fun RowScope.BottomNavItem(
         selected = selected,
         onClick = onClick,
         colors = NavigationBarItemDefaults.colors(
-            selectedIconColor = Color.Blue,
-            selectedTextColor = Color.Blue,
-            indicatorColor = Color.White
+            selectedIconColor = selectedColor,
+            selectedTextColor = selectedColor,
+            indicatorColor = Color.White,
+            unselectedIconColor = Color(0xFF6B7280),
+            unselectedTextColor = Color(0xFF6B7280)
         )
     )
 }
