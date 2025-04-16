@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,7 +39,8 @@ fun SettingsScreen(
     onHelpFeedbackClick: () -> Unit = {},
     onChangePasswordClick: () -> Unit = {},
     onPrivacyPolicyClick: () -> Unit = {},
-    onTermsOfServiceClick: () -> Unit = {}
+    onTermsOfServiceClick: () -> Unit = {},
+    onAccessibilityClick: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -133,6 +135,13 @@ fun SettingsScreen(
                         )
                     }
                 }
+                
+                // Accessibility - New Item
+                SettingsItemWithIconVector(
+                    icon = Icons.Filled.Settings,
+                    title = "Accessibility",
+                    onClick = onAccessibilityClick
+                )
                 
                 // Help and feedback
                 SettingsItem(
@@ -279,7 +288,69 @@ private fun SettingsItem(
             // Arrow right
             Icon(
                 imageVector = Icons.Default.KeyboardArrowRight,
-                contentDescription = "Open",
+                contentDescription = "打开",
+                tint = Color(0xFF9CA3AF)
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsItemWithIconVector(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    onClick: () -> Unit = {}
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 0.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icon from ImageVector
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFFF3F4F6)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = Color(0xFF6B7280),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            // Text
+            Text(
+                text = title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF1F2937),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 12.dp)
+            )
+
+            // Arrow right
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowRight,
+                contentDescription = "打开",
                 tint = Color(0xFF9CA3AF)
             )
         }
