@@ -33,7 +33,8 @@ import com.example.fitlife.utils.ResourceUtils
 fun SettingsScreen(
     onBackClick: () -> Unit = {},
     onLogout: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    onAboutUsClick: () -> Unit = {}
 ) {
     var showPasswordDialog by remember { mutableStateOf(false) }
     
@@ -132,7 +133,8 @@ fun SettingsScreen(
                 // About us
                 SettingsItem(
                     icon = ResourceUtils.getResourceId("ic_help", R.drawable.profile_photo),
-                    title = "About Us"
+                    title = "About Us",
+                    onClick = onAboutUsClick
                 )
                 
                 Spacer(modifier = Modifier.height(80.dp))

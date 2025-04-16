@@ -418,23 +418,6 @@ private fun UserProfileCard(
                         fontSize = 14.sp,
                         color = Color(0xFF6B7280)
                     )
-                    
-                    // Privacy indicator
-                    Box(
-                        modifier = Modifier
-                            .padding(start = 4.dp)
-                            .size(16.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFF3F4F6)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = "Visibility settings",
-                            tint = Color(0xFF9CA3AF),
-                            modifier = Modifier.size(10.dp)
-                        )
-                    }
                 }
             }
             

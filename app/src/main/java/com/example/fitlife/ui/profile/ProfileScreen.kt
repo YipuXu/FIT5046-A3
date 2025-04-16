@@ -61,7 +61,6 @@ fun ProfileScreen(
     selectedFitnessTags: List<String> = listOf("Strength Training", "Cardio"),
     onFitnessTagsUpdated: (List<String>) -> Unit = {}
 ) {
-    // Use passed selectedFitnessTags, not from userData
     val userData = getUserData()
     
     Box(
@@ -71,7 +70,9 @@ fun ProfileScreen(
             .windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 80.dp) // Add padding for bottom navigation
         ) {
             // Top bar
             TopBar(onBackClick = onBackClick, onMenuClick = onSettingsClick)
@@ -83,25 +84,33 @@ fun ProfileScreen(
                 username = userData["username"] as? String ?: "",
                 workoutDays = userData["workoutDays"] as? Int ?: 0,
                 streakDays = userData["streakDays"] as? Int ?: 0,
-                plansDone = userData["plansDone"] as? Int ?: 0
+                plansDone = userData["plansDone"] as? Int ?: 0,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 0.dp)
             )
 
             // Recent history section
             RecentHistorySection(onViewAll = onViewAllHistory)
+
+            // AI Coach section
+            AICoachSection()
 
             // Spacer
             Spacer(modifier = Modifier.weight(1f))
         }
 
         // Bottom navigation bar
-        BottomNavBar(
-            currentRoute = "profile",
-            onNavigateToHome = { /* Navigate to home */ },
-            onNavigateToCalendar = { /* Navigate to calendar */ },
-            onNavigateToMap = { onBackClick() },
-            onNavigateToProfile = { /* Already on profile page */ },
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+        ) {
+            BottomNavBar(
+                currentRoute = "profile",
+                onNavigateToHome = { /* Navigate to home */ },
+                onNavigateToCalendar = { /* Navigate to calendar */ },
+                onNavigateToMap = { onBackClick() },
+                onNavigateToProfile = { /* Already on profile page */ }
+            )
+        }
     }
 }
 
@@ -168,12 +177,11 @@ private fun UserInfoCard(
     username: String = "Xiao Ming",
     workoutDays: Int = 42,
     streakDays: Int = 12,
-    plansDone: Int = 8
+    plansDone: Int = 8,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF3B82F6)
@@ -360,7 +368,7 @@ private fun RecentHistorySection(onViewAll: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(top = 12.dp, start = 16.dp, end = 16.dp, bottom = 8.dp)
     ) {
         // Title and view all
         Row(
@@ -409,7 +417,8 @@ private fun RecentHistorySection(onViewAll: () -> Unit) {
 
         Card(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Color.White
@@ -426,6 +435,87 @@ private fun RecentHistorySection(onViewAll: () -> Unit) {
                 iconTint = Color(0xFF10B981),
                 background = Color.White
             )
+        }
+    }
+}
+
+@Composable
+private fun AICoachSection(
+    onStartChat: () -> Unit = {}
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+    ) {
+        Text(
+            text = "AI Fitness Coach",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onStartChat() },
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 0.dp
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // AI Coach Icon
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFE6F0FF)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_bolt),
+                        contentDescription = null,
+                        tint = Color(0xFF3B82F6),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                // Text content
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 12.dp)
+                ) {
+                    Text(
+                        text = "Your Personal AI Coach",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF1F2937)
+                    )
+                    Text(
+                        text = "Get personalized workout advice and guidance",
+                        fontSize = 14.sp,
+                        color = Color(0xFF6B7280),
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+
+                // Arrow icon
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowRight,
+                    contentDescription = "Start chat",
+                    tint = Color(0xFF9CA3AF)
+                )
+            }
         }
     }
 }
