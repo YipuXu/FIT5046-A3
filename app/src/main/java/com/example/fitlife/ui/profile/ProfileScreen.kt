@@ -46,6 +46,7 @@ fun ProfileScreen(
     onEditProfileClick: (List<String>) -> Unit,
     onSettingsClick: () -> Unit,
     onAICoachClick: () -> Unit,
+    onNavigateToMap: () -> Unit,
     getUserData: () -> Map<String, Any> = {
         mapOf(
             "username" to "Xiao Ming",
@@ -88,7 +89,7 @@ fun ProfileScreen(
             currentRoute = "profile",
             onNavigateToHome = { /* Empty for now */ },
             onNavigateToCalendar = { /* Empty for now */ },
-            onNavigateToMap = { /* Empty for now */ },
+            onNavigateToMap = onNavigateToMap,
             onNavigateToProfile = {},
             modifier = Modifier.align(Alignment.BottomCenter)
         )
@@ -110,29 +111,31 @@ private fun ProfileContent(
             .fillMaxWidth()
             .padding(bottom = 80.dp) // 为底部导航栏留出空间
     ) {
-        // 顶部栏
+        // 顶部栏 (标题和设置按钮)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // 添加左侧Spacer以平衡右侧设置按钮
+            Spacer(modifier = Modifier.width(32.dp))
+
             // 标题
             Text(
                 text = "My Profile",
-                fontSize = 18.sp,
+                fontSize = 18.sp, 
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 16.dp),
-                textAlign = TextAlign.Center,
+                    .weight(1f), // 占据中间可用空间
+                textAlign = TextAlign.Center, // 文本在其空间内居中
                 color = Color(0xFF1F2937)
             )
 
             // 设置按钮
             Box(
                 modifier = Modifier
-                    .size(32.dp)
+                    .size(32.dp) // 保持尺寸与左侧Spacer一致
                     .clip(CircleShape)
                     .background(Color(0xFFF3F4F6))
                     .clickable { onSettingsClick() },

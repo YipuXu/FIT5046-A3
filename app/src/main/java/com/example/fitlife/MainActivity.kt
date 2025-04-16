@@ -41,8 +41,9 @@ class MainActivity : ComponentActivity() {
                                 // Display map page
                                 MapScreen(
                                     onNavigateBack = { /* 移除返回按钮功能 */ },
-                                    onNavigateToHome = { /* Empty for now */ },
-                                    onNavigateToCalendar = { /* Empty for now */ },
+                                    onNavigateToHome = { currentScreen.value = "home" },
+                                    onNavigateToCalendar = { currentScreen.value = "calendar" },
+                                    onNavigateToMap = { currentScreen.value = "map" },
                                     onNavigateToProfile = { currentScreen.value = "profile" }
                                 )
                             }
@@ -57,6 +58,7 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onSettingsClick = { currentScreen.value = "settings" },
                                     onAICoachClick = { currentScreen.value = "aiCoach" },
+                                    onNavigateToMap = { currentScreen.value = "map" },
                                     selectedFitnessTags = selectedFitnessTags.value,
                                     onFitnessTagsUpdated = { tags ->
                                         Log.d("MainActivity", "Update tags: ${tags.joinToString()}")
@@ -71,13 +73,15 @@ class MainActivity : ComponentActivity() {
                                         Log.d("MainActivity", "Return from edit page, tags: ${selectedFitnessTags.value.joinToString()}")
                                         currentScreen.value = "profile" 
                                     },
-                                    // Pass current selected tags to ProfileEditScreen
                                     initialFitnessTags = selectedFitnessTags.value,
-                                    // Update state when tags are updated
                                     onFitnessTagsSelected = { tags ->
                                         Log.d("MainActivity", "Tag selection updated: ${tags.joinToString()}")
                                         selectedFitnessTags.value = tags
-                                    }
+                                    },
+                                    onNavigateToHome = { currentScreen.value = "home" },
+                                    onNavigateToCalendar = { currentScreen.value = "calendar" },
+                                    onNavigateToMap = { currentScreen.value = "map" },
+                                    onNavigateToProfile = { currentScreen.value = "profile" }
                                 )
                             }
                             "settings" -> {
@@ -123,7 +127,8 @@ class MainActivity : ComponentActivity() {
                                     onNavigateToHome = { /* TODO: Navigate */ },
                                     onNavigateToCalendar = { /* TODO: Navigate */ },
                                     onNavigateToMap = { currentScreen.value = "map" },
-                                    onNavigateToProfile = { currentScreen.value = "profile" }
+                                    onNavigateToProfile = { currentScreen.value = "profile" },
+                                    currentRoute = currentScreen.value // Pass current route
                                 )
                             }
                             "privacyPolicy" -> {

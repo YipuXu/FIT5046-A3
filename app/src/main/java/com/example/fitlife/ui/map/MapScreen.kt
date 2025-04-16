@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fitlife.R
@@ -51,6 +53,7 @@ fun MapScreen(
     onNavigateBack: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToCalendar: () -> Unit,
+    onNavigateToMap: () -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
     val places = remember {
@@ -137,7 +140,7 @@ fun MapScreen(
             currentRoute = "map",
             onNavigateToHome = onNavigateToHome,
             onNavigateToCalendar = onNavigateToCalendar,
-            onNavigateToMap = {},
+            onNavigateToMap = onNavigateToMap,
             onNavigateToProfile = onNavigateToProfile,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
@@ -153,16 +156,40 @@ fun SearchBarWithTitle() {
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
-        // 标题
-        Text(
-            text = "Nearby Fitness Places",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 12.dp),
-            color = Color(0xFF1F2937)
-        )
+        // 标题和菜单按钮行
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 左侧留白，保持对称
+            Spacer(modifier = Modifier.width(32.dp))
+
+            // 标题
+            Text(
+                text = "Nearby Fitness Places",
+                fontSize = 18.sp, 
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .weight(1f), // 占据中间空间
+                textAlign = TextAlign.Center, // 文本居中
+                color = Color(0xFF1F2937)
+            )
+
+            // 菜单图标按钮
+            IconButton(
+                onClick = { /* TODO: Add menu action */ },
+                modifier = Modifier.size(32.dp) // 保持尺寸对称
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Menu",
+                    tint = Color(0xFF6B7280)
+                )
+            }
+        }
+        
+        // 在标题行和搜索栏之间添加间距
+        Spacer(modifier = Modifier.height(16.dp))
         
         // 搜索栏
         OutlinedTextField(

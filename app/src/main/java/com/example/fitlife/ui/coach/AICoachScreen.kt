@@ -27,6 +27,11 @@ import androidx.compose.ui.unit.sp
 import com.example.fitlife.R
 import com.example.fitlife.ui.components.BottomNavBar
 import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import com.example.fitlife.ui.components.BottomNavBar
+
 
 data class Message(
     val content: String,
@@ -45,59 +50,61 @@ data class AIFeature(
     val iconColor: Color
 )
 
+
 @Composable
 fun AICoachScreen(
     onNavigateBack: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToCalendar: () -> Unit,
     onNavigateToMap: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    currentRoute: String
 ) {
     var messageText by remember { mutableStateOf("") }
     
     val messages = remember {
         mutableStateListOf(
             Message(
-                content = "您好！我是您的AI健身教练，请问有什么可以帮您的？",
+                content = "Hello! I'm your AI fitness coach. How can I help you today?",
                 isFromUser = false,
                 isCentered = true
             ),
             Message(
-                content = "我想增肌减脂，有什么建议？",
+                content = "I want to build muscle and lose fat. Any suggestions?",
                 isFromUser = true
             ),
             Message(
-                content = "增肌减脂需要合理安排饮食和训练。建议：",
+                content = "Building muscle while losing fat requires a balanced approach to diet and training. Recommendations:",
                 isFromUser = false,
                 details = listOf(
-                    "控制热量摄入，保持适度赤字",
-                    "增加蛋白质摄入（每公斤体重1.6-2.2g）",
-                    "每周进行3-4次力量训练",
-                    "适量有氧运动（每周2-3次，每次20-30分钟）"
+                    "Control calorie intake, maintain a moderate deficit",
+                    "Increase protein intake (1.6-2.2g per kg of body weight)",
+                    "Perform strength training 3-4 times per week",
+                    "Include moderate cardio (2-3 times weekly, 20-30 minutes each session)"
                 )
             ),
             Message(
-                content = "是的，请帮我制定一个详细的计划",
+                content = "Yes, please help me create a detailed plan",
                 isFromUser = true
             ),
             Message(
-                content = "好的，根据您的需求，我为您制定了一个7天的增肌减脂计划：",
+                content = "Based on your needs, I've created a 7-day muscle building and fat loss plan:",
                 isFromUser = false,
                 sections = mapOf(
-                    "饮食建议：" to listOf(
-                        "每日热量：基础代谢率减去300-500卡路里",
-                        "蛋白质：每公斤体重2g",
-                        "碳水化合物：总热量的40-50%",
-                        "脂肪：总热量的20-30%"
+                    "Dietary Recommendations:" to listOf(
+                        "Daily calories: BMR minus 300-500 calories",
+                        "Protein: 2g per kg of body weight",
+                        "Carbohydrates: 40-50% of total calories",
+                        "Fat: 20-30% of total calories"
                     ),
-                    "训练计划：" to listOf(
-                        "周一：上肢力量训练",
-                        "周二：20分钟HIIT",
-                        "周三：下肢力量训练",
-                        "周四：休息",
-                        "周五：全身力量训练",
-                        "周六：30分钟中强度有氧",
-                        "周日：休息与恢复"
+                    "Training Schedule:" to listOf(
+                        "Monday: Upper body strength training",
+                        "Tuesday: 20 minutes HIIT",
+                        "Wednesday: Lower body strength training",
+                        "Thursday: Rest",
+                        "Friday: Full body strength training",
+                        "Saturday: 30 minutes moderate cardio",
+                        "Sunday: Rest and recovery"
                     )
                 )
             )
@@ -106,36 +113,36 @@ fun AICoachScreen(
     
     val quickQuestions = remember {
         listOf(
-            QuickQuestion("如何开始健身？"),
-            QuickQuestion("推荐的蛋白质来源"),
-            QuickQuestion("制定减脂计划"),
-            QuickQuestion("增肌训练动作")
+            QuickQuestion("How to start fitness training?"),
+            QuickQuestion("Recommended protein sources"),
+            QuickQuestion("Create a fat loss plan"),
+            QuickQuestion("Muscle building exercises")
         )
     }
     
     val features = remember {
         listOf(
             AIFeature(
-                R.drawable.ic_fitness,  // Changed from ic_plan
-                "个性化健身计划",
+                R.drawable.ic_fitness,
+                "Personalized Fitness Plan",
                 Color(0xFFEBF5FF),
                 Color(0xFF3B82F6)
             ),
             AIFeature(
-                R.drawable.ic_restaurant,  // Changed from ic_food
-                "饮食配比建议",
+                R.drawable.ic_restaurant,
+                "Nutrition Recommendations",
                 Color(0xFFECFDF5),
                 Color(0xFF10B981)
             ),
             AIFeature(
                 R.drawable.ic_calendar,
-                "训练进度跟踪",
+                "Training Progress Tracking",
                 Color(0xFFF5F3FF),
                 Color(0xFF8B5CF6)
             ),
             AIFeature(
-                R.drawable.ic_help,  // Changed from ic_question
-                "健身问题解答",
+                R.drawable.ic_help,
+                "Fitness Q&A",
                 Color(0xFFFEF3C7),
                 Color(0xFFD97706)
             )
@@ -146,9 +153,12 @@ fun AICoachScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF9FAFB))
+            .windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 80.dp)
         ) {
             // 顶部栏
             TopAppBar(
@@ -158,18 +168,11 @@ fun AICoachScreen(
             // AI教练头像和介绍
             AICoachHeader()
             
-            // 功能卡片区域
-            FeaturesGrid(features)
-            
-            // 聊天界面
-            ChatSection(messages)
-            
-            Spacer(modifier = Modifier.weight(1f))
-            
-            // 输入框
-            MessageInput(
-                value = messageText,
-                onValueChange = { messageText = it },
+            // 聊天界面（包含输入框）
+            ChatSection(
+                messages = messages,
+                messageText = messageText,
+                onMessageTextChange = { messageText = it },
                 onSendClick = {
                     if (messageText.isNotEmpty()) {
                         messages.add(Message(messageText, true))
@@ -177,6 +180,8 @@ fun AICoachScreen(
                     }
                 }
             )
+            
+            Spacer(modifier = Modifier.weight(1f))
             
             // 快捷问题
             QuickQuestionsRow(
@@ -189,7 +194,7 @@ fun AICoachScreen(
         
         // 底部导航
         BottomNavBar(
-            currentRoute = "coach",
+            currentRoute = "profile",
             onNavigateToHome = onNavigateToHome,
             onNavigateToCalendar = onNavigateToCalendar,
             onNavigateToMap = onNavigateToMap,
@@ -220,7 +225,7 @@ fun TopAppBar(
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
-                contentDescription = "返回",
+                contentDescription = "Back",
                 modifier = Modifier.size(20.dp),
                 tint = Color(0xFF6B7280)
             )
@@ -228,30 +233,18 @@ fun TopAppBar(
         
         // 标题
         Text(
-            text = "AI教练",
-            fontSize = 20.sp,
+            text = "AI Coach",
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 16.dp),
+            textAlign = TextAlign.Center,
             color = Color(0xFF1F2937)
         )
         
-        // 更多选项
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFF3F4F6)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = "更多选项",
-                modifier = Modifier.size(20.dp),
-                tint = Color(0xFF6B7280)
-            )
-        }
+        // Placeholder for symmetry (ensures title centers correctly)
+        Spacer(modifier = Modifier.size(32.dp))
     }
 }
 
@@ -259,7 +252,7 @@ fun TopAppBar(
 fun AICoachHeader() {
     Box(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp)
     ) {
         Box(
             modifier = Modifier
@@ -295,8 +288,8 @@ fun AICoachHeader() {
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_person),  // Changed from ic_ai
-                            contentDescription = "AI头像",
+                            painter = painterResource(id = R.drawable.ic_person),
+                            contentDescription = "AI Avatar",
                             modifier = Modifier.size(40.dp),
                             tint = Color(0xFF3B82F6)
                         )
@@ -316,7 +309,7 @@ fun AICoachHeader() {
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "您的专属健身顾问，随时为您提供专业指导",
+                        text = "Your personal fitness advisor, providing professional guidance anytime",
                         color = Color(0xFFBFDBFE),
                         fontSize = 14.sp
                     )
@@ -326,47 +319,47 @@ fun AICoachHeader() {
     }
 }
 
-@Composable
-fun FeaturesGrid(features: List<AIFeature>) {
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Text(
-            text = "我能帮您做什么",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF374151),
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            features.take(2).forEach { feature ->
-                FeatureCard(
-                    feature = feature,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            features.drop(2).forEach { feature ->
-                FeatureCard(
-                    feature = feature,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-    }
-}
+//@Composable
+//fun FeaturesGrid(features: List<AIFeature>) {
+//    Column(
+//        modifier = Modifier
+//            .padding(horizontal = 16.dp, vertical = 8.dp)
+//    ) {
+//        Text(
+//            text = "我能帮您做什么",
+//            fontSize = 16.sp,
+//            fontWeight = FontWeight.SemiBold,
+//            color = Color(0xFF374151),
+//            modifier = Modifier.padding(bottom = 12.dp)
+//        )
+//
+//        Row(
+//            modifier = Modifier.fillMaxWidth(),
+//            horizontalArrangement = Arrangement.spacedBy(8.dp)
+//        ) {
+//            features.take(2).forEach { feature ->
+//                FeatureCard(
+//                    feature = feature,
+//                    modifier = Modifier.weight(1f)
+//                )
+//            }
+//        }
+//
+//        Spacer(modifier = Modifier.height(8.dp))
+//
+//        Row(
+//            modifier = Modifier.fillMaxWidth(),
+//            horizontalArrangement = Arrangement.spacedBy(8.dp)
+//        ) {
+//            features.drop(2).forEach { feature ->
+//                FeatureCard(
+//                    feature = feature,
+//                    modifier = Modifier.weight(1f)
+//                )
+//            }
+//        }
+//    }
+//}
 
 @Composable
 fun FeatureCard(
@@ -420,13 +413,18 @@ fun FeatureCard(
 }
 
 @Composable
-fun ChatSection(messages: List<Message>) {
+fun ChatSection(
+    messages: List<Message>,
+    messageText: String,
+    onMessageTextChange: (String) -> Unit,
+    onSendClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .padding(horizontal = 16.dp)
     ) {
         Text(
-            text = "与AI教练对话",
+            text = "Chat with AI Coach",
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color(0xFF374151),
@@ -436,8 +434,8 @@ fun ChatSection(messages: List<Message>) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(320.dp),
-            shape = RoundedCornerShape(16.dp),
+                .height(480.dp),
+            shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Color.White
             ),
@@ -445,14 +443,71 @@ fun ChatSection(messages: List<Message>) {
                 defaultElevation = 2.dp
             )
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            Column(
+                modifier = Modifier.fillMaxSize()
             ) {
-                items(messages) { message ->
-                    MessageItem(message = message)
+                // 聊天消息列表
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(bottom = 2.dp)
+                ) {
+                    items(messages) { message ->
+                        MessageItem(message = message)
+                    }
+                }
+                
+                // 输入框
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = messageText,
+                        onValueChange = onMessageTextChange,
+                        placeholder = {
+                            Text(
+                                text = "Type your question...",
+                                fontSize = 14.sp,
+                                color = Color(0xFF9CA3AF)
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(28.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFF3B82F6),
+                            unfocusedBorderColor = Color(0xFFE5E7EB),
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            cursorColor = Color(0xFF3B82F6),
+                            focusedTextColor = Color(0xFF1F2937),
+                            unfocusedTextColor = Color(0xFF1F2937)
+                        ),
+                        trailingIcon = {
+                            IconButton(
+                                onClick = onSendClick,
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF3B82F6))
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_send_arrow),
+                                    contentDescription = "Send",
+                                    tint = Color.White,
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                )
+                            }
+                        },
+                        maxLines = 1
+                    )
                 }
             }
         }
@@ -596,7 +651,7 @@ fun MessageInput(
             onValueChange = onValueChange,
             placeholder = {
                 Text(
-                    text = "输入您的问题...",
+                    text = "Type your question...",
                     fontSize = 14.sp,
                     color = Color(0xFF9CA3AF)
                 )
@@ -604,7 +659,7 @@ fun MessageInput(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            shape = RoundedCornerShape(28.dp),
+            shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF3B82F6),
                 unfocusedBorderColor = Color(0xFFE5E7EB),
@@ -623,10 +678,11 @@ fun MessageInput(
                         .background(Color(0xFF3B82F6))
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_send_arrow),  // Changed from ic_send
-                        contentDescription = "发送",
+                        painter = painterResource(id = R.drawable.ic_send_arrow),
+                        contentDescription = "Send",
                         tint = Color.White,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier
+                            .size(20.dp)
                     )
                 }
             },

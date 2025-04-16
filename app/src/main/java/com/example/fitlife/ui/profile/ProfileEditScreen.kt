@@ -59,12 +59,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.FlowRow
 import com.example.fitlife.utils.ResourceUtils
+import com.example.fitlife.ui.components.BottomNavBar // 添加导入
 
 @Composable
 fun ProfileEditScreen(
     onBackClick: () -> Unit = {},
     initialFitnessTags: List<String> = listOf("Strength Training", "Cardio"),
-    onFitnessTagsSelected: (List<String>) -> Unit = {}
+    onFitnessTagsSelected: (List<String>) -> Unit = {},
+    // 添加导航回调
+    onNavigateToHome: () -> Unit,
+    onNavigateToCalendar: () -> Unit,
+    onNavigateToMap: () -> Unit,
+    onNavigateToProfile: () -> Unit
 ) {
     val density = LocalDensity.current
     var showProfilePhotoDialog by remember { mutableStateOf(false) }
@@ -124,7 +130,9 @@ fun ProfileEditScreen(
             .windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 56.dp) // 为底部导航栏留出空间
         ) {
             // Top bar
             TopBar(onBackClick = onBackClick)
@@ -133,7 +141,7 @@ fun ProfileEditScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .weight(1f) // 允许内容滚动
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp)
             ) {
@@ -190,7 +198,7 @@ fun ProfileEditScreen(
                 DataItemCard(
                     icon = ResourceUtils.getResourceId("ic_tag", R.drawable.profile_photo),
                     title = "Fitness Tags",
-                    value = selectedFitnessTags.joinToString(", "),
+                    value = selectedFitnessTags.joinToString(", ").ifEmpty { "Not set" }, // Handle empty tags
                     iconTint = Color(0xFFFF6B00),
                     iconBackground = Color(0xFFFFEEE0),
                     showDropdownIcon = false,
@@ -198,9 +206,19 @@ fun ProfileEditScreen(
                 )
                 
                 // Add bottom spacing
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(16.dp)) // Bottom padding for scrollable content
             }
         }
+
+        // 底部导航栏放在Box的底部，覆盖在Column之上
+        BottomNavBar(
+            currentRoute = "profile", // 编辑页高亮Profile图标
+            onNavigateToHome = onNavigateToHome,
+            onNavigateToCalendar = onNavigateToCalendar,
+            onNavigateToMap = onNavigateToMap,
+            onNavigateToProfile = onNavigateToProfile, // 点击Profile图标返回ProfileScreen
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
     
     // Profile Photo Dialog
