@@ -20,6 +20,7 @@ import com.example.fitlife.ui.profile.ChangePasswordScreen
 import com.example.fitlife.ui.coach.AICoachScreen
 import com.example.fitlife.ui.policy.PrivacyPolicyScreen
 import com.example.fitlife.ui.policy.TermsOfServiceScreen
+import com.example.fitlife.ui.profile.AccessibilityScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,7 +30,7 @@ class MainActivity : ComponentActivity() {
             FitLifeTheme {
                 // Use state to control login status and current page
                 val isLoggedIn = remember { mutableStateOf(false) }
-                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit, settings, about, helpFeedback, changePassword, aiCoach, privacyPolicy, termsOfService
+                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit, settings, about, helpFeedback, changePassword, aiCoach, privacyPolicy, termsOfService, accessibility
                 
                 // Add a state to store selected fitness tags
                 val selectedFitnessTags = remember { mutableStateOf(listOf("Strength Training", "Cardio")) }
@@ -97,7 +98,8 @@ class MainActivity : ComponentActivity() {
                                     onHelpFeedbackClick = { currentScreen.value = "helpFeedback" },
                                     onChangePasswordClick = { currentScreen.value = "changePassword" },
                                     onPrivacyPolicyClick = { currentScreen.value = "privacyPolicy" },
-                                    onTermsOfServiceClick = { currentScreen.value = "termsOfService" }
+                                    onTermsOfServiceClick = { currentScreen.value = "termsOfService" },
+                                    onAccessibilityClick = { currentScreen.value = "accessibility" }
                                 )
                             }
                             "about" -> {
@@ -138,6 +140,11 @@ class MainActivity : ComponentActivity() {
                             }
                             "termsOfService" -> {
                                 TermsOfServiceScreen(
+                                    onBackClick = { currentScreen.value = "settings" }
+                                )
+                            }
+                            "accessibility" -> {
+                                AccessibilityScreen(
                                     onBackClick = { currentScreen.value = "settings" }
                                 )
                             }
