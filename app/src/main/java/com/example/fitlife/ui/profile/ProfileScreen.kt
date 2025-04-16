@@ -45,9 +45,8 @@ fun ProfileScreen(
     onViewAllHistory: () -> Unit = {},
     onEditProfileClick: (List<String>) -> Unit = { _ -> },
     onSettingsClick: () -> Unit = {},
-    // Add user data retrieval function parameter, in actual application should get from ViewModel
+    onAICoachClick: () -> Unit = {},
     getUserData: () -> Map<String, Any> = {
-        // Return mock user data, including fitness tags
         mapOf(
             "username" to "Xiao Ming",
             "level" to "Fitness Enthusiast · Beginner",
@@ -92,7 +91,7 @@ fun ProfileScreen(
             RecentHistorySection(onViewAll = onViewAllHistory)
 
             // AI Coach section
-            AICoachSection()
+            AICoachSection(onStartChat = onAICoachClick)
 
             // Spacer
             Spacer(modifier = Modifier.weight(1f))

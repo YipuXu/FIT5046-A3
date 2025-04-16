@@ -17,6 +17,7 @@ import com.example.fitlife.ui.profile.SettingsScreen
 import com.example.fitlife.ui.theme.FitLifeTheme
 import com.example.fitlife.ui.help.HelpFeedbackScreen
 import com.example.fitlife.ui.profile.ChangePasswordScreen
+import com.example.fitlife.ui.coach.AICoachScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,7 +27,7 @@ class MainActivity : ComponentActivity() {
             FitLifeTheme {
                 // Use state to control login status and current page
                 val isLoggedIn = remember { mutableStateOf(false) }
-                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit, settings, about, helpFeedback, changePassword
+                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit, settings, about, helpFeedback, changePassword, aiCoach
                 
                 // Add a state to store selected fitness tags
                 val selectedFitnessTags = remember { mutableStateOf(listOf("Strength Training", "Cardio")) }
@@ -53,6 +54,7 @@ class MainActivity : ComponentActivity() {
                                         currentScreen.value = "profileEdit" 
                                     },
                                     onSettingsClick = { currentScreen.value = "settings" },
+                                    onAICoachClick = { currentScreen.value = "aiCoach" },
                                     selectedFitnessTags = selectedFitnessTags.value,
                                     onFitnessTagsUpdated = { tags ->
                                         Log.d("MainActivity", "Update tags: ${tags.joinToString()}")
@@ -109,6 +111,15 @@ class MainActivity : ComponentActivity() {
                                         println("Changing password from $current to $new")
                                         currentScreen.value = "settings" // Navigate back after attempting change
                                     }
+                                )
+                            }
+                            "aiCoach" -> {
+                                AICoachScreen(
+                                    onNavigateBack = { currentScreen.value = "profile" },
+                                    onNavigateToHome = { /* TODO: Navigate */ },
+                                    onNavigateToCalendar = { /* TODO: Navigate */ },
+                                    onNavigateToMap = { currentScreen.value = "map" },
+                                    onNavigateToProfile = { currentScreen.value = "profile" }
                                 )
                             }
                             else -> {
