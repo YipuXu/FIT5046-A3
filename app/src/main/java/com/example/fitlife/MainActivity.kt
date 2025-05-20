@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
                             "map" -> {
                                 // Display map page
                                 MapScreen(
-                                    onNavigateBack = { /* 移除返回按钮功能 */ },
+                                    onNavigateBack = { /* 移除,返回按钮功能 */ },
                                     onNavigateToHome = { currentScreen.value = "home" },
                                     onNavigateToCalendar = { currentScreen.value = "calendar" },
                                     onNavigateToMap = { currentScreen.value = "map" },
