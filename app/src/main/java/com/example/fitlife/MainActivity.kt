@@ -21,6 +21,9 @@ import com.example.fitlife.ui.coach.AICoachScreen
 import com.example.fitlife.ui.policy.PrivacyPolicyScreen
 import com.example.fitlife.ui.policy.TermsOfServiceScreen
 import com.example.fitlife.ui.profile.AccessibilityScreen
+import com.example.fitlife.ui.train.RecordTrainingScreen
+
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,10 +55,10 @@ class MainActivity : ComponentActivity() {
                                 // Display profile page
                                 ProfileScreen(
                                     onBackClick = { /* 移除返回按钮功能 */ },
-                                    onViewAllHistory = { /* Empty for now */ },
+                                    onViewAllHistory = { currentScreen.value = "record" },
                                     onEditProfileClick = { tags -> 
                                         Log.d("MainActivity", "Navigate to edit page, tags: ${selectedFitnessTags.value.joinToString()}")
-                                        currentScreen.value = "profileEdit" 
+                                        currentScreen.value = "profileEdit"
                                     },
                                     onSettingsClick = { currentScreen.value = "settings" },
                                     onAICoachClick = { currentScreen.value = "aiCoach" },
@@ -123,6 +126,15 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
                             }
+                            "record" -> {
+                                RecordTrainingScreen(
+                                    currentRoute = "record",
+                                    onNavigateToHome = { currentScreen.value = "map" },
+                                    onNavigateToCalendar = { /* 可扩展 */ },
+                                    onNavigateToMap = { currentScreen.value = "map" },
+                                    onNavigateToProfile = { currentScreen.value = "profile" }
+                                )
+                            }
                             "aiCoach" -> {
                                 AICoachScreen(
                                     onNavigateBack = { currentScreen.value = "profile" },
@@ -152,6 +164,7 @@ class MainActivity : ComponentActivity() {
                                 // Default to map page
                                 currentScreen.value = "map"
                             }
+
                         }
                     }
                     currentScreen.value == "login" -> {
