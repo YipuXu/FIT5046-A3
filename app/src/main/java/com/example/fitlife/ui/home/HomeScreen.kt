@@ -63,6 +63,7 @@ fun HomeScreen(
             WelcomeSection()
 //            WeeklySummaryCard()
 //            TodayPlanCard()
+            MusicPlayerScreen()
             ExerciseRecommendation()
 //            MusicPlayerSection()
         }
