@@ -18,6 +18,7 @@ import com.example.fitlife.ui.theme.FitLifeTheme
 import com.example.fitlife.ui.help.HelpFeedbackScreen
 import com.example.fitlife.ui.profile.ChangePasswordScreen
 import com.example.fitlife.ui.coach.AICoachScreen
+import com.example.fitlife.ui.home.HomeScreen
 import com.example.fitlife.ui.policy.PrivacyPolicyScreen
 import com.example.fitlife.ui.policy.TermsOfServiceScreen
 import com.example.fitlife.ui.profile.AccessibilityScreen
@@ -38,6 +39,15 @@ class MainActivity : ComponentActivity() {
                 when {
                     isLoggedIn.value -> {
                         when (currentScreen.value) {
+                            "home" -> {
+                                HomeScreen(
+                                    currentRoute = currentScreen.value,
+                                    onNavigateToHome = { currentScreen.value = "home" },
+                                    onNavigateToCalendar = { currentScreen.value = "calendar" },
+                                    onNavigateToMap = { currentScreen.value = "map" },
+                                    onNavigateToProfile = { currentScreen.value = "profile" }
+                                )
+                            }
                             "map" -> {
                                 // Display map page
                                 MapScreen(
