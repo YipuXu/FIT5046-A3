@@ -63,7 +63,7 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.gson)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation (libs.coil.kt.coil.compose)
+    implementation ("io.coil-kt:coil-compose:2.4.0")
 
 
     testImplementation(libs.junit)

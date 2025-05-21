@@ -12,9 +12,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.fitlife.model.Exercise
 
-/**
- * 改版：只展示文字信息，不加载图片
- */
 @Composable
 fun ExerciseCard(
     exercise: Exercise,
@@ -22,7 +19,6 @@ fun ExerciseCard(
 ) {
     Card(
         modifier = modifier
-            .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 12.dp),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp)
