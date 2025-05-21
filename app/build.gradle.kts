@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -60,6 +62,9 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.gson)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation (libs.coil.kt.coil.compose)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
