@@ -1,6 +1,7 @@
 package com.example.fitlife.ui.auth
 
 import android.app.Activity
+import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -42,26 +43,54 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Divider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
     onRegisterClick: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    
+    // 读取保存的邮箱
+    val sharedPreferences = remember { context.getSharedPreferences("fitlife_prefs", Context.MODE_PRIVATE) }
+    val savedEmail = remember { sharedPreferences.getString("saved_email", "") ?: "" }
+    
+    var email by remember { mutableStateOf(savedEmail) }
     var password by remember { mutableStateOf("") }
-    var rememberMe by remember { mutableStateOf(false) }
+    var rememberMe by remember { mutableStateOf(savedEmail.isNotEmpty()) } // 如果有保存的邮箱，默认勾选"记住我"
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     
+    // 显示提示信息
+    var showRememberMeInfo by remember { mutableStateOf(false) }
+    
+    // 当邮箱变化时，如果邮箱和保存的不同，取消"记住我"
+    LaunchedEffect(email) {
+        if (email != savedEmail && rememberMe) {
+            rememberMe = false
+        }
+    }
+    
+    // 启动效果：如果检测到自动填充邮箱，显示简短的提示消息
+    LaunchedEffect(Unit) {
+        showRememberMeInfo = savedEmail.isNotEmpty()
+        if (showRememberMeInfo) {
+            kotlinx.coroutines.delay(2000) // 显示提示信息2秒
+            showRememberMeInfo = false
+        }
+    }
+    
     val coroutineScope = rememberCoroutineScope()
     val auth: FirebaseAuth = Firebase.auth
-    val context = LocalContext.current
     val scrollState = rememberScrollState()
 
     // Google Sign-In
@@ -93,11 +122,23 @@ fun LoginScreen(
             }
         } else {
              Log.w("LoginScreen", "Google sign in cancelled or failed. Result code: ${result.resultCode}")
-            // Optional: Show a message if the user cancelled or if there was an issue not covered by ApiException
+            
             if (result.resultCode != Activity.RESULT_CANCELED) {
                  errorMessage = "Google sign in failed. Please try again."
             }
             isLoading = false
+        }
+    }
+
+    // 保存邮箱函数
+    fun saveEmail(email: String, remember: Boolean) {
+        sharedPreferences.edit().apply {
+            if (remember) {
+                putString("saved_email", email)
+            } else {
+                remove("saved_email")
+            }
+            apply()
         }
     }
 
@@ -247,7 +288,7 @@ fun LoginScreen(
                     )
                 }
                 
-                // 记住我选项和忘记密码放在同一行
+                // 记住我选项和忘记密码
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -324,6 +365,9 @@ fun LoginScreen(
                             errorMessage = "Please enter both email and password"
                             return@Button
                         }
+                        
+                        // 保存邮箱（如果勾选了"记住我"）
+                        saveEmail(email, rememberMe)
                         
                         isLoading = true
                         errorMessage = null

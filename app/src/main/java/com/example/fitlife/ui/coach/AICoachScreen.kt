@@ -316,7 +316,7 @@ fun AICoachHeader() {
 //            .padding(horizontal = 16.dp, vertical = 8.dp)
 //    ) {
 //        Text(
-//            text = "我能帮您做什么",
+//            text = "Can I help you?",
 //            fontSize = 16.sp,
 //            fontWeight = FontWeight.SemiBold,
 //            color = Color(0xFF374151),
