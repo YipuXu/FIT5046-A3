@@ -24,13 +24,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.fitlife.MyApplication
 import com.example.fitlife.data.model.Workout
 import com.example.fitlife.ui.components.BottomNavBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -43,11 +43,14 @@ fun RecordTrainingScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateToCalendar: () -> Unit = {},
     onNavigateToMap: () -> Unit = {},
-    onNavigateToProfile: () -> Unit = {}
+    onNavigateToProfile: () -> Unit = {},
+    planTitle: String = "",
+    planDate: String = "",
+    onMarkPlanDone: () -> Unit = {}
 ) {
     val context = LocalContext.current
 
-    var trainingType by remember { mutableStateOf("Strength Training") }
+    var trainingType by remember { mutableStateOf(if (planTitle.isNotBlank()) planTitle else "Strength Training") }
     val trainingTypes = listOf(
         "Strength Training",
         "Cardio",
@@ -67,14 +70,15 @@ fun RecordTrainingScreen(
     var calories by remember { mutableStateOf("") }
     var intensity by remember { mutableStateOf("Challenging") }
     var notes by remember { mutableStateOf(TextFieldValue("")) }
-    var selectedDate by remember { mutableStateOf("Select Date") }
+    var selectedDate by remember { mutableStateOf(if (planDate.isNotBlank()) planDate else "Select Date") }
     var selectedTime by remember { mutableStateOf("Select Time") }
+
+    var isFromCalendarPlan by remember { mutableStateOf(planTitle.isNotBlank() && planDate.isNotBlank()) }
 
     val dateFormatter = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
     val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     var showDialog by remember { mutableStateOf(false) }
     var caloriesBurned by remember { mutableStateOf(0) }
-
 
     Scaffold(
         topBar = {
@@ -104,13 +108,13 @@ fun RecordTrainingScreen(
                     )
                 }
                 Text(
-                    text = "Let's Burn Calories",
+                    text = if (isFromCalendarPlan) "Complete Plan: $planTitle" else "Let's Burn Calories",
                     fontSize = MaterialTheme.typography.titleLarge.fontSize,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 16.dp),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    textAlign = TextAlign.Center,
                     color = Color(0xFF1F2937)
                 )
                 Spacer(modifier = Modifier.size(36.dp))
@@ -137,7 +141,27 @@ fun RecordTrainingScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Workout Type Section in a Card
+            if (isFromCalendarPlan) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFE6F0FF)
+                    ),
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            "Completing plan: $planTitle on $planDate",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF1F2937)
+                        )
+                    }
+                }
+            }
+            
             Card(
                 shape = MaterialTheme.shapes.medium,
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -367,7 +391,12 @@ fun RecordTrainingScreen(
                     }
 
                     caloriesBurned = estimateCalories(trainingType, duration, intensity)
-                    showDialog = true
+                    
+                    if (isFromCalendarPlan) {
+                        showDialog = true
+                    } else {
+                        showDialog = true
+                    }
                 }
                 ,modifier = Modifier
                     .fillMaxWidth()
@@ -379,7 +408,7 @@ fun RecordTrainingScreen(
                 )
             )
             {
-                Text("Save Record")
+                Text(if (isFromCalendarPlan) "Complete Plan" else "Save Record")
             }
             if (showDialog) {
                 AlertDialog(
@@ -406,6 +435,11 @@ fun RecordTrainingScreen(
                                         dao.insertWorkout(workout)
                                         withContext(Dispatchers.Main) {
                                             Toast.makeText(context, "Workout saved", Toast.LENGTH_SHORT).show()
+                                            
+                                            if (isFromCalendarPlan) {
+                                                onMarkPlanDone()
+                                                Toast.makeText(context, "Plan marked as completed!", Toast.LENGTH_SHORT).show()
+                                            }
                                         }
                                     } catch (e: Exception) {
                                         withContext(Dispatchers.Main) {
