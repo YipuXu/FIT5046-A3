@@ -111,6 +111,8 @@ class MainActivity : ComponentActivity() {
                                     onSettingsClick = { currentScreen.value = "settings" },
                                     onAICoachClick = { currentScreen.value = "aiCoach" },
                                     onNavigateToMap = { currentScreen.value = "map" },
+                                    onNavigateToHome = { currentScreen.value = "home" },
+                                    onNavigateToCalendar = { currentScreen.value = "calendar" },
                                     selectedFitnessTags = selectedFitnessTags.value,
                                     onFitnessTagsUpdated = { tags ->
                                         Log.d("MainActivity", "Update tags: ${tags.joinToString()}")

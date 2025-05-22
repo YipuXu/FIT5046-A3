@@ -10,8 +10,7 @@ class WorkoutRepository(application: Application) {
     private val dao: WorkoutDao =
         WorkoutDatabase.getDatabase(application).workoutDao()
 
-    val allWorkouts: Flow<List<Workout>> = dao.getAll()
-
+    suspend fun getAllWorkouts(): List<Workout> = dao.getAll()
     suspend fun insert(workout: Workout) = dao.insertWorkout(workout)
     suspend fun delete(workout: Workout) = dao.deleteWorkout(workout)
     suspend fun update(workout: Workout) = dao.updateWorkout(workout)

@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface WorkoutDao {
     @Query("SELECT * FROM workout_table")
-    fun getAll(): Flow<List<Workout>>
+    suspend fun getAll(): List<Workout>
 
     @Query("SELECT * FROM workout_table ORDER BY date DESC, time DESC")
     fun getAllOrderByDateDesc(): Flow<List<Workout>>
