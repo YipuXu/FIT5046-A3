@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import com.example.fitlife.ui.about.AboutUsScreen
 import com.example.fitlife.ui.auth.LoginScreen
 import com.example.fitlife.ui.auth.RegisterScreen
+import com.example.fitlife.ui.calendar.FitnessCalendarScreen
 import com.example.fitlife.ui.map.MapScreen
 import com.example.fitlife.ui.profile.ProfileEditScreen
 import com.example.fitlife.ui.profile.ProfileScreen
@@ -45,6 +46,15 @@ class MainActivity : ComponentActivity() {
                         when (currentScreen.value) {
                             "home" -> {
                                 HomeScreen(
+                                    currentRoute = currentScreen.value,
+                                    onNavigateToHome = { currentScreen.value = "home" },
+                                    onNavigateToCalendar = { currentScreen.value = "calendar" },
+                                    onNavigateToMap = { currentScreen.value = "map" },
+                                    onNavigateToProfile = { currentScreen.value = "profile" }
+                                )
+                            }
+                            "calendar" -> {
+                                FitnessCalendarScreen(
                                     currentRoute = currentScreen.value,
                                     onNavigateToHome = { currentScreen.value = "home" },
                                     onNavigateToCalendar = { currentScreen.value = "calendar" },

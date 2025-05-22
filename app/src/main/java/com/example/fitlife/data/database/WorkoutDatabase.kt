@@ -1,20 +1,27 @@
-package com.example.fitlife.data.database
+package com.example.fitlife.data.database // 或者你 WorkoutDatabase 所在的包
 
-import com.example.fitlife.data.model.Workout  // ✅ 正确导入实体类
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.fitlife.data.dao.WorkoutDao
-import com.example.fitlife.data.dao.UserDao
-import com.example.fitlife.data.model.User
-// import com.example.fitlife.data.model.User // 移除导入 User 实体
 
-@Database(entities = [Workout::class, User::class], version = 2, exportSchema = false)
+import com.example.fitlife.data.dao.WorkoutDao
+import com.example.fitlife.data.model.Workout
+import com.example.fitlife.data.dao.FitnessEventDao
+import com.example.fitlife.data.model.FitnessEvent
+
+@Database(
+    entities = [
+        Workout::class,
+        FitnessEvent::class
+    ],
+    version = 2,
+    exportSchema = false
+)
 abstract class WorkoutDatabase : RoomDatabase() {
+
     abstract fun workoutDao(): WorkoutDao
-    abstract fun userDao(): UserDao
-    // abstract fun userDao(): UserDao // 移除 userDao 方法
+    abstract fun fitnessEventDao(): FitnessEventDao
 
     companion object {
         @Volatile
@@ -27,8 +34,7 @@ abstract class WorkoutDatabase : RoomDatabase() {
                     WorkoutDatabase::class.java,
                     "workout_database"
                 )
-                .fallbackToDestructiveMigration()
-                .build()
+                    .build()
                 INSTANCE = instance
                 instance
             }
