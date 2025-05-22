@@ -29,6 +29,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import com.example.fitlife.utils.ResourceUtils
+import com.example.fitlife.ui.theme.AccessibilityUtils
+import com.example.fitlife.ui.components.AccessibleHeading
+import com.example.fitlife.ui.components.AccessibleButton
+import com.example.fitlife.ui.theme.AccessibilityUtils.highContrastBorder
 
 @Composable
 fun SettingsScreen(
@@ -42,10 +46,17 @@ fun SettingsScreen(
     onTermsOfServiceClick: () -> Unit = {},
     onAccessibilityClick: () -> Unit = {}
 ) {
+    val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF9FAFB))
+            .background(
+                AccessibilityUtils.getFullyAccessibleColor(
+                    normalColor = Color(0xFFF9FAFB), 
+                    highContrastColor = Color.White
+                )
+            )
             .windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
         Column(
@@ -62,99 +73,87 @@ fun SettingsScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp)
             ) {
+                Spacer(modifier = Modifier.height(8.dp))
+                
                 // Profile
-                SettingsItem(
+                SettingsItemUnified(
                     icon = ResourceUtils.getResourceId("ic_profile", R.drawable.profile_photo),
                     title = "Profile",
-                    onClick = onProfileClick
+                    onClick = onProfileClick,
+                    backgroundColor = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color.White,
+                        highContrastColor = Color.White
+                    )
                 )
                 
                 // Privacy Policy
-                SettingsItem(
+                SettingsItemUnified(
                     icon = ResourceUtils.getResourceId("ic_privacy", R.drawable.profile_photo),
                     title = "Privacy Policy",
-                    onClick = onPrivacyPolicyClick
+                    onClick = onPrivacyPolicyClick,
+                    backgroundColor = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color.White,
+                        highContrastColor = Color.White
+                    )
                 )
                 
                 // Terms of Service
-                SettingsItem(
+                SettingsItemUnified(
                     icon = ResourceUtils.getResourceId("ic_privacy", R.drawable.profile_photo),
                     title = "Terms of Service",
-                    onClick = onTermsOfServiceClick
+                    onClick = onTermsOfServiceClick,
+                    backgroundColor = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color.White,
+                        highContrastColor = Color.White
+                    )
                 )
                 
                 // Change password
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp)
-                        .clickable { onChangePasswordClick() },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.White
-                    ),
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 0.dp
+                SettingsItemUnified(
+                    icon = R.drawable.profile_photo, // 替换为实际的锁图标
+                    title = "Change Password",
+                    onClick = onChangePasswordClick,
+                    useVectorIcon = true,
+                    vectorIcon = Icons.Default.Lock,
+                    backgroundColor = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color.White,
+                        highContrastColor = Color.White
                     )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFF3F4F6)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Lock,
-                                contentDescription = null,
-                                tint = Color(0xFF6B7280),
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                        
-                        Text(
-                            text = "Change Password",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFF1F2937),
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 12.dp)
-                        )
-                        
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = "Change",
-                            tint = Color(0xFF9CA3AF)
-                        )
-                    }
-                }
+                )
                 
-                // Accessibility - New Item
-                SettingsItemWithIconVector(
-                    icon = Icons.Filled.Settings,
+                // Accessibility
+                SettingsItemUnified(
+                    icon = R.drawable.profile_photo, // 占位图标
                     title = "Accessibility",
-                    onClick = onAccessibilityClick
+                    onClick = onAccessibilityClick,
+                    useVectorIcon = true,
+                    vectorIcon = Icons.Default.Settings,
+                    backgroundColor = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color.White,
+                        highContrastColor = Color.White
+                    )
                 )
                 
                 // Help and feedback
-                SettingsItem(
+                SettingsItemUnified(
                     icon = ResourceUtils.getResourceId("ic_help", R.drawable.profile_photo),
                     title = "Help & Feedback",
-                    onClick = onHelpFeedbackClick
+                    onClick = onHelpFeedbackClick,
+                    backgroundColor = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color.White,
+                        highContrastColor = Color.White
+                    )
                 )
                 
                 // About us
-                SettingsItem(
+                SettingsItemUnified(
                     icon = ResourceUtils.getResourceId("ic_help", R.drawable.profile_photo),
                     title = "About Us",
-                    onClick = onAboutUsClick
+                    onClick = onAboutUsClick,
+                    backgroundColor = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color.White,
+                        highContrastColor = Color.White
+                    )
                 )
                 
                 Spacer(modifier = Modifier.height(80.dp))
@@ -170,16 +169,27 @@ fun SettingsScreen(
                     onClick = onLogout,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(56.dp)
+                        .let {
+                            if (AccessibilityUtils.isHighContrastModeEnabled()) {
+                                it.highContrastBorder(RoundedCornerShape(12.dp))
+                            } else {
+                                it
+                            }
+                        },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFEF4444)
+                        containerColor = AccessibilityUtils.getFullyAccessibleColor(
+                            normalColor = Color(0xFFEF4444), 
+                            highContrastColor = Color.Black
+                        )
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = "Logout",
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
+                        fontWeight = if (AccessibilityUtils.isHighContrastModeEnabled()) 
+                                     FontWeight.ExtraBold else FontWeight.Medium,
                         color = Color.White
                     )
                 }
@@ -190,6 +200,8 @@ fun SettingsScreen(
 
 @Composable
 private fun TopBar(onBackClick: () -> Unit) {
+    val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -201,7 +213,7 @@ private fun TopBar(onBackClick: () -> Unit) {
             modifier = Modifier
                 .size(32.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFF3F4F6))
+                .background(if (isHighContrastMode) Color.Black else Color(0xFFF3F4F6))
                 .clickable { onBackClick() },
             contentAlignment = Alignment.Center
         ) {
@@ -209,7 +221,7 @@ private fun TopBar(onBackClick: () -> Unit) {
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
                 modifier = Modifier.size(20.dp),
-                tint = Color(0xFF6B7280)
+                tint = if (isHighContrastMode) Color.White else Color(0xFF6B7280)
             )
         }
 
@@ -217,12 +229,12 @@ private fun TopBar(onBackClick: () -> Unit) {
         Text(
             text = "Settings",
             fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = if (isHighContrastMode) FontWeight.ExtraBold else FontWeight.Bold,
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 16.dp),
             textAlign = TextAlign.Center,
-            color = Color(0xFF1F2937)
+            color = if (isHighContrastMode) Color.Black else Color(0xFF1F2937)
         )
         
         // Placeholder to maintain symmetry
@@ -234,21 +246,33 @@ private fun TopBar(onBackClick: () -> Unit) {
 }
 
 @Composable
-private fun SettingsItem(
+private fun SettingsItemUnified(
     icon: Int,
     title: String,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit,
+    backgroundColor: Color = Color.White,
+    useVectorIcon: Boolean = false,
+    vectorIcon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Default.Settings
 ) {
+    val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        shape = RoundedCornerShape(16.dp),
+            .padding(vertical = 4.dp)
+            .let {
+                if (isHighContrastMode) {
+                    it.highContrastBorder(RoundedCornerShape(12.dp))
+                } else {
+                    it
+                }
+            },
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = backgroundColor
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 0.dp
+            defaultElevation = if (isHighContrastMode) 4.dp else 0.dp
         )
     ) {
         Row(
@@ -263,23 +287,32 @@ private fun SettingsItem(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFF3F4F6)),
+                    .background(if (isHighContrastMode) Color.Black else Color(0xFFF3F4F6)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    painter = painterResource(id = icon),
-                    contentDescription = null,
-                    tint = Color(0xFF6B7280),
-                    modifier = Modifier.size(24.dp)
-                )
+                if (useVectorIcon) {
+                    Icon(
+                        imageVector = vectorIcon,
+                        contentDescription = null,
+                        tint = if (isHighContrastMode) Color.White else Color(0xFF6B7280),
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(id = icon),
+                        contentDescription = null,
+                        tint = if (isHighContrastMode) Color.White else Color(0xFF6B7280),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
             
             // Text
             Text(
                 text = title,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF1F2937),
+                fontWeight = if (isHighContrastMode) FontWeight.Bold else FontWeight.Medium,
+                color = if (isHighContrastMode) Color.Black else Color(0xFF1F2937),
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 12.dp)
@@ -288,70 +321,8 @@ private fun SettingsItem(
             // Arrow right
             Icon(
                 imageVector = Icons.Default.KeyboardArrowRight,
-                contentDescription = "打开",
-                tint = Color(0xFF9CA3AF)
-            )
-        }
-    }
-}
-
-@Composable
-private fun SettingsItemWithIconVector(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String,
-    onClick: () -> Unit = {}
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 0.dp
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick)
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Icon from ImageVector
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFF3F4F6)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = Color(0xFF6B7280),
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-
-            // Text
-            Text(
-                text = title,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF1F2937),
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 12.dp)
-            )
-
-            // Arrow right
-            Icon(
-                imageVector = Icons.Default.KeyboardArrowRight,
-                contentDescription = "打开",
-                tint = Color(0xFF9CA3AF)
+                contentDescription = "Open",
+                tint = if (isHighContrastMode) Color.Black else Color(0xFF9CA3AF)
             )
         }
     }

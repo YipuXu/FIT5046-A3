@@ -41,6 +41,23 @@ android {
     buildFeatures {
         compose = true
     }
+    
+    // 添加打包配置，解决META-INF冲突问题
+    packaging {
+        resources {
+            excludes += listOf(
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/license.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/notice.txt",
+                "META-INF/ASL2.0",
+                "META-INF/*.kotlin_module"
+            )
+        }
+    }
 }
 
 dependencies {
@@ -52,11 +69,9 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation("com.google.android.gms:play-services-maps:18.2.0")
-    // implementation("com.google.maps.android:maps-compose:2.11.4")
     implementation("com.google.maps.android:maps-compose:4.3.3") 
     implementation("com.google.android.libraries.places:places:3.3.0")
-    // Coil 图片加载库 - 用于加载 Google Places 图片
-    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("io.coil-kt:coil-compose:2.6.0")
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
@@ -66,6 +81,13 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation ("io.coil-kt:coil-compose:2.4.0")
+
+    // SendGrid Email API
+    implementation("com.sendgrid:sendgrid-java:4.9.3")
+
+    // DataStore Preferences
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.datastore:datastore-core:1.0.0")
 
     // Google Generative AI (Gemini API)
     implementation("com.google.ai.client.generativeai:generativeai:0.2.2")

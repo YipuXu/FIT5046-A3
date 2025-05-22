@@ -24,21 +24,40 @@ import com.example.fitlife.ui.policy.PrivacyPolicyScreen
 import com.example.fitlife.ui.policy.TermsOfServiceScreen
 import com.example.fitlife.ui.profile.AccessibilityScreen
 import com.example.fitlife.ui.train.RecordTrainingScreen
-
-
+import com.example.fitlife.ui.train.AllRecentRecordsScreen
+import com.example.fitlife.utils.DatabaseHelper
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    // 添加可访问的属性
+    var planEventToDeleteId = mutableStateOf<Long?>(null)
+        private set
+        
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // 初始化用户数据
+        lifecycleScope.launch {
+            DatabaseHelper.initializeUserData(applicationContext)
+        }
+        
         enableEdgeToEdge()
         setContent {
             FitLifeTheme {
                 // Use state to control login status and current page
                 val isLoggedIn = remember { mutableStateOf(false) }
-                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit, settings, about, helpFeedback, changePassword, aiCoach, privacyPolicy, termsOfService, accessibility
+                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit, settings, about, helpFeedback, changePassword, aiCoach, privacyPolicy, termsOfService, accessibility, all_records
                 
                 // Add a state to store selected fitness tags
                 val selectedFitnessTags = remember { mutableStateOf(listOf("Strength Training", "Cardio")) }
+                
+                // 添加用于存储计划信息的state
+                val planTitle = remember { mutableStateOf("") }
+                val planDate = remember { mutableStateOf("") }
+                val isPlanDone = remember { mutableStateOf(false) }
+                // 使用类级别的属性而不是局部变量
+                planEventToDeleteId = remember { mutableStateOf<Long?>(null) }
                 
                 when {
                     isLoggedIn.value -> {
@@ -49,7 +68,8 @@ class MainActivity : ComponentActivity() {
                                     onNavigateToHome = { currentScreen.value = "home" },
                                     onNavigateToCalendar = { currentScreen.value = "calendar" },
                                     onNavigateToMap = { currentScreen.value = "map" },
-                                    onNavigateToProfile = { currentScreen.value = "profile" }
+                                    onNavigateToProfile = { currentScreen.value = "profile" },
+                                    onNavigateToRecord = { currentScreen.value = "record" }
                                 )
                             }
                             "calendar" -> {
@@ -58,7 +78,15 @@ class MainActivity : ComponentActivity() {
                                     onNavigateToHome = { currentScreen.value = "home" },
                                     onNavigateToCalendar = { currentScreen.value = "calendar" },
                                     onNavigateToMap = { currentScreen.value = "map" },
-                                    onNavigateToProfile = { currentScreen.value = "profile" }
+                                    onNavigateToProfile = { currentScreen.value = "profile" },
+                                    onNavigateToRecordTraining = { eventTitle, eventDate, eventId ->
+                                        // 存储事件标题、日期和ID，以便在记录训练页面使用
+                                        planTitle.value = eventTitle
+                                        planDate.value = eventDate
+                                        planEventToDeleteId.value = eventId
+                                        // 跳转到记录训练页面
+                                        currentScreen.value = "record"
+                                    }
                                 )
                             }
                             "map" -> {
@@ -75,7 +103,7 @@ class MainActivity : ComponentActivity() {
                                 // Display profile page
                                 ProfileScreen(
                                     onBackClick = { /* 移除返回按钮功能 */ },
-                                    onViewAllHistory = { currentScreen.value = "record" },
+                                    onViewAllHistory = { currentScreen.value = "all_records" },
                                     onEditProfileClick = { tags -> 
                                         Log.d("MainActivity", "Navigate to edit page, tags: ${selectedFitnessTags.value.joinToString()}")
                                         currentScreen.value = "profileEdit"
@@ -87,7 +115,8 @@ class MainActivity : ComponentActivity() {
                                     onFitnessTagsUpdated = { tags ->
                                         Log.d("MainActivity", "Update tags: ${tags.joinToString()}")
                                         selectedFitnessTags.value = tags
-                                    }
+                                    },
+                                    plansDoneCount = if (isPlanDone.value) 9 else 8 // 如果计划已完成，显示9，否则显示8
                                 )
                             }
                             "profileEdit" -> {
@@ -143,16 +172,42 @@ class MainActivity : ComponentActivity() {
                                         // TODO: Implement actual password change logic
                                         println("Changing password from $current to $new")
                                         currentScreen.value = "settings" // Navigate back after attempting change
+                                    },
+                                    onLogout = {
+                                        // 登出操作并跳转到登录页面
+                                        isLoggedIn.value = false
+                                        currentScreen.value = "login"
                                     }
                                 )
                             }
                             "record" -> {
                                 RecordTrainingScreen(
                                     currentRoute = "record",
-                                    onNavigateToHome = { currentScreen.value = "map" },
-                                    onNavigateToCalendar = { /* 可扩展 */ },
+                                    onNavigateToHome = { currentScreen.value = "home" },
+                                    onNavigateToCalendar = { currentScreen.value = "calendar" },
                                     onNavigateToMap = { currentScreen.value = "map" },
-                                    onNavigateToProfile = { currentScreen.value = "profile" }
+                                    onNavigateToProfile = { currentScreen.value = "profile" },
+                                    planTitle = planTitle.value,
+                                    planDate = planDate.value,
+                                    onMarkPlanDone = {
+                                        // 标记计划已完成
+                                        isPlanDone.value = true
+                                        
+                                        // 如果有计划ID，则跳转回日历页面并删除该计划
+                                        if (planEventToDeleteId.value != null) {
+                                            currentScreen.value = "calendar"
+                                        } else {
+                                            // 否则返回个人资料页面
+                                            currentScreen.value = "profile" 
+                                        }
+                                    }
+                                )
+                            }
+                            "all_records" -> {
+                                // Display all recent records page
+                                AllRecentRecordsScreen(
+                                    onBack = { currentScreen.value = "profile" }, // 返回个人资料页面
+                                    onAddRecord = { currentScreen.value = "record" } // 导航到添加记录页面
                                 )
                             }
                             "aiCoach" -> {
