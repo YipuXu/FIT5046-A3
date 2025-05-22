@@ -39,5 +39,6 @@ abstract class WorkoutDatabase : RoomDatabase() {
                 instance
             }
         }
+
     }
 }

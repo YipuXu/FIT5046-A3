@@ -28,7 +28,9 @@ import com.example.fitlife.data.model.Workout
 import com.example.fitlife.ui.components.BottomNavBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -60,10 +62,16 @@ fun RecordTrainingScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "Record Workout",
-                        fontWeight = FontWeight.Bold
-                    )
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Record Workout",
+                            fontWeight = FontWeight.Bold,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
                 }
             )
         },
@@ -87,70 +95,131 @@ fun RecordTrainingScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            var expanded by remember { mutableStateOf(false) }
-            Text("Workout Type")
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded }
+            // Workout Type Section in a Card
+            Card(
+                shape = MaterialTheme.shapes.medium,
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                OutlinedTextField(
-                    value = trainingType,
-                    onValueChange = {},
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor()
-                        .clickable { expanded = true }
-                )
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                        .padding(16.dp)
                 ) {
-                    trainingTypes.forEach {
-                        DropdownMenuItem(
-                            text = { Text(it) },
-                            onClick = {
-                                trainingType = it
-                                expanded = false
+                    var expanded by remember { mutableStateOf(false) }
+
+                    Text(
+                        text = "Workout Type",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded }
+                    ) {
+                        OutlinedTextField(
+                            value = trainingType,
+                            onValueChange = {},
+                            readOnly = true,
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor()
+                                .clickable { expanded = true }
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            trainingTypes.forEach {
+                                DropdownMenuItem(
+                                    text = { Text(it) },
+                                    onClick = {
+                                        trainingType = it
+                                        expanded = false
+                                    }
+                                )
                             }
+                        }
+                    }
+                }
+            }
+
+            Card(
+                shape = MaterialTheme.shapes.medium,
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            val calendar = Calendar.getInstance()
+                            DatePickerDialog(
+                                context,
+                                { _, year, month, dayOfMonth ->
+                                    calendar.set(year, month, dayOfMonth)
+                                    selectedDate = dateFormatter.format(calendar.time)
+                                },
+                                calendar.get(Calendar.YEAR),
+                                calendar.get(Calendar.MONTH),
+                                calendar.get(Calendar.DAY_OF_MONTH)
+                            ).show()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF3B82F6),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text(
+                            text = if (selectedDate == "Select Date") "Select Date" else "Date: $selectedDate",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(onClick = {
+                        val calendar = Calendar.getInstance()
+                        TimePickerDialog(
+                            context,
+                            { _, hourOfDay, minute ->
+                                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                                calendar.set(Calendar.MINUTE, minute)
+                                selectedTime = timeFormatter.format(calendar.time)
+                            },
+                            calendar.get(Calendar.HOUR_OF_DAY),
+                            calendar.get(Calendar.MINUTE),
+                            true
+                        ).show()
+                    }, modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF3B82F6),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text(
+                            text = if (selectedTime == "Select Time") "Select Time" else "Time: $selectedTime",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
                 }
             }
 
-            Button(onClick = {
-                val calendar = Calendar.getInstance()
-                DatePickerDialog(
-                    context,
-                    { _, year, month, dayOfMonth ->
-                        calendar.set(year, month, dayOfMonth)
-                        selectedDate = dateFormatter.format(calendar.time)
-                    },
-                    calendar.get(Calendar.YEAR),
-                    calendar.get(Calendar.MONTH),
-                    calendar.get(Calendar.DAY_OF_MONTH)
-                ).show()
-            }, modifier = Modifier.fillMaxWidth()) {
-                Text("Select Date: $selectedDate")
-            }
 
-            Button(onClick = {
-                val calendar = Calendar.getInstance()
-                TimePickerDialog(
-                    context,
-                    { _, hourOfDay, minute ->
-                        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
-                        calendar.set(Calendar.MINUTE, minute)
-                        selectedTime = timeFormatter.format(calendar.time)
-                    },
-                    calendar.get(Calendar.HOUR_OF_DAY),
-                    calendar.get(Calendar.MINUTE),
-                    true
-                ).show()
-            }, modifier = Modifier.fillMaxWidth()) {
-                Text("Select Time: $selectedTime")
-            }
 
             Column {
                 Text("Workout Duration (minutes)")
@@ -223,22 +292,51 @@ fun RecordTrainingScreen(
             Button(
                 onClick = {
                     val dao = (context.applicationContext as MyApplication).database.workoutDao()
+
+                    val calorieInt = calories.toIntOrNull()
+                    if (selectedDate == "Select Date" || selectedTime == "Select Time") {
+                        Toast.makeText(context, "Please select date and time", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    if (calorieInt == null) {
+                        Toast.makeText(context, "Please enter valid calories", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
                     val workout = Workout(
                         type = trainingType,
                         duration = duration,
-                        calories = calories.toIntOrNull() ?: 0,
+                        calories = calorieInt,
                         intensity = intensity,
                         notes = notes.text,
                         date = selectedDate,
                         time = selectedTime
                     )
+
+                    println("Preparing to insert: $workout") //
+
                     CoroutineScope(Dispatchers.IO).launch {
-                        dao.insertWorkout(workout)
+                        try {
+                            dao.insertWorkout(workout)
+                            println("Inserted workout: $workout") //
+                        } catch (e: Exception) {
+                            println("Insertion failed: ${e.message}")
+                        }
+
+                        // 查看数据库中现有内容
+                        val all = dao.getAll()
+                        println("📋 All records in DB:")
+                        all.forEach {
+                            println(it)
+                        }
+
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "Insert done", Toast.LENGTH_SHORT).show()
+                        }
                     }
-                    Toast.makeText(context, "Saved to Room DB!", Toast.LENGTH_SHORT).show()
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
+                }
+            )
+            {
                 Text("Save Record")
             }
         }

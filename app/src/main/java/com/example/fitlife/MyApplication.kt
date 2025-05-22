@@ -14,6 +14,6 @@ class MyApplication : Application() {
             applicationContext,
             WorkoutDatabase::class.java,
             "workout_database"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
 }
