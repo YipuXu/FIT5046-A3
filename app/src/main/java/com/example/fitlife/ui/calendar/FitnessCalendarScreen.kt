@@ -1,4 +1,4 @@
-package com.example.fitlife.ui.calendar // Or your UI package
+package com.example.fitlife.ui.calendar
 
 import android.Manifest
 import android.app.TimePickerDialog
@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fitlife.data.model.FitnessEvent
 import com.example.fitlife.ui.components.BottomNavBar
+
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -44,8 +46,14 @@ fun FitnessCalendarScreen(
 
     val selectedDateMillis by viewModel.selectedDateMillis.collectAsState()
     val eventsOnSelectedDate by viewModel.eventsForSelectedDate.collectAsState()
-    var showAddEventDialog by remember { mutableStateOf(false) }
 
+    // add
+    var showAddEventDialog by remember { mutableStateOf(false) }
+    // delete
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var eventToDelete by remember { mutableStateOf<FitnessEvent?>(null) }
+
+    // Permission Request Launcher
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -58,7 +66,8 @@ fun FitnessCalendarScreen(
         }
     }
 
-    LaunchedEffect(Unit) { // Runs once when the composable enters the composition
+    // Request permissions when a Composable first enters the composition
+    LaunchedEffect(Unit) {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED
         ) {
@@ -125,7 +134,7 @@ fun FitnessCalendarScreen(
                     modifier = Modifier.fillMaxWidth().weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No fitness plan today!", style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
+                    Text("No fitness plan today.！", style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
                 }
             } else {
                 LazyColumn(
@@ -133,7 +142,14 @@ fun FitnessCalendarScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(eventsOnSelectedDate) { event ->
-                        EventCard(event = event, onClick = { /* TODO: Implement Edit/Delete event */ })
+                        EventCard(
+                            event = event,
+                            onClick = {},
+                            onDeleteClick = {
+                                eventToDelete = event
+                                showDeleteConfirmDialog = true
+                            }
+                        )
                     }
                 }
             }
@@ -141,8 +157,8 @@ fun FitnessCalendarScreen(
         }
     }
 
+    // Add conditional rendering of event dialog
     if (showAddEventDialog) {
-        // Using the AddFitnessEventDialog that calls android.app.TimePickerDialog
         AddFitnessEventDialog(
             initialDateMillis = selectedDateMillis,
             onDismiss = { showAddEventDialog = false },
@@ -152,9 +168,42 @@ fun FitnessCalendarScreen(
             }
         )
     }
+
+    // Conditional rendering of delete confirmation dialog
+    if (showDeleteConfirmDialog && eventToDelete != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteConfirmDialog = false
+                eventToDelete = null
+            },
+            title = { Text("Confirm Delete") },
+            text = { Text("Are you sure you want to delete '${eventToDelete!!.title}' Is this the plan? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteEvent(eventToDelete!!)
+                        showDeleteConfirmDialog = false
+                        eventToDelete = null
+                    }
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirmDialog = false
+                        eventToDelete = null
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
-// --- CalendarViewComposable (from previous response) ---
+
 @Composable
 fun CalendarViewComposable(
     selectedDateMillis: Long,
@@ -180,9 +229,12 @@ fun CalendarViewComposable(
     )
 }
 
-// --- EventCard (from previous response) ---
 @Composable
-fun EventCard(event: FitnessEvent, onClick: () -> Unit) {
+fun EventCard(
+    event: FitnessEvent,
+    onClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
     val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     Card(
         modifier = Modifier
@@ -191,22 +243,33 @@ fun EventCard(event: FitnessEvent, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        Column(Modifier.padding(16.dp)) {
-            Text(event.title, style = MaterialTheme.typography.titleSmall)
-            Spacer(Modifier.height(4.dp))
-            Text(
-                "Time: ${timeFormatter.format(Date(event.startTime))} - ${timeFormatter.format(Date(event.endTime))}",
-                style = MaterialTheme.typography.bodySmall
-            )
-            if (!event.description.isNullOrBlank()) {
+        Row(
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp, end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(event.title, style = MaterialTheme.typography.titleSmall)
                 Spacer(Modifier.height(4.dp))
-                Text("Remark: ${event.description}", style = MaterialTheme.typography.bodySmall)
+                Text(
+                    "Time: ${timeFormatter.format(Date(event.startTime))} - ${timeFormatter.format(Date(event.endTime))}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                if (!event.description.isNullOrBlank()) {
+                    Spacer(Modifier.height(4.dp))
+                    Text("Remark: ${event.description}", style = MaterialTheme.typography.bodySmall)
+                }
+            }
+            IconButton(onClick = onDeleteClick) {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = "Delete a plan",
+                    tint = MaterialTheme.colorScheme.error
+                )
             }
         }
     }
 }
 
-// --- AddFitnessEventDialog (using android.app.TimePickerDialog - simplest version from previous response) ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddFitnessEventDialog(
@@ -236,27 +299,94 @@ fun AddFitnessEventDialog(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text("Add a fitness plan", style = MaterialTheme.typography.titleLarge)
-                Text("date: ${sdfDate.format(Date(initialDateMillis))}", style = MaterialTheme.typography.bodyMedium)
-                OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Program Name (eg: Chest)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text("Notes (optional)") }, modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp, max=120.dp))
-                // Start Time
+                Text("Date: ${sdfDate.format(Date(initialDateMillis))}", style = MaterialTheme.typography.bodyMedium)
+
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Program Name (eg: Chest)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Notes (optional)") },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp, max=120.dp)
+                )
+
+                // start time
                 Text("Start time: ${String.format(Locale.getDefault(), "%02d:%02d", startHour, startMinute)}")
-                Button(onClick = { TimePickerDialog(context, { _, h, m -> startHour = h; startMinute = m }, startHour, startMinute, true).show() }, modifier = Modifier.fillMaxWidth()) { Text("Select start time") }
-                // End Time
+                Button(
+                    onClick = {
+                        TimePickerDialog(
+                            context,
+                            { _, selectedHour, selectedMinute ->
+                                startHour = selectedHour
+                                startMinute = selectedMinute
+                            },
+                            startHour,
+                            startMinute,
+                            true // 24-hour system
+                        ).show()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Select start time") }
+
+                // End time
                 Text("End time: ${String.format(Locale.getDefault(), "%02d:%02d", endHour, endMinute)}")
-                Button(onClick = { TimePickerDialog(context, { _, h, m -> endHour = h; endMinute = m }, endHour, endMinute, true).show() }, modifier = Modifier.fillMaxWidth()) { Text("Select end time") }
-                // Action Buttons
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                Button(
+                    onClick = {
+                        TimePickerDialog(
+                            context,
+                            { _, selectedHour, selectedMinute ->
+                                endHour = selectedHour
+                                endMinute = selectedMinute
+                            },
+                            endHour,
+                            endMinute,
+                            true
+                        ).show()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Select end time") }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     TextButton(onClick = onDismiss) { Text("Cancel") }
                     Spacer(Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            val startCal = Calendar.getInstance().apply { timeInMillis = initialDateMillis; set(Calendar.HOUR_OF_DAY, startHour); set(Calendar.MINUTE, startMinute); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0) }
-                            val endCal = Calendar.getInstance().apply { timeInMillis = initialDateMillis; set(Calendar.HOUR_OF_DAY, endHour); set(Calendar.MINUTE, endMinute); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0) }
-                            if (endCal.timeInMillis <= startCal.timeInMillis) endCal.timeInMillis = startCal.timeInMillis + 3600000 // add 1 hour if end time is not after start time
-                            onSave(title.trim(), description.trim().ifBlank { null }, startCal.timeInMillis, endCal.timeInMillis)
+                            val startCal = Calendar.getInstance().apply {
+                                timeInMillis = initialDateMillis
+                                set(Calendar.HOUR_OF_DAY, startHour)
+                                set(Calendar.MINUTE, startMinute)
+                                set(Calendar.SECOND, 0)
+                                set(Calendar.MILLISECOND, 0)
+                            }
+                            val endCal = Calendar.getInstance().apply {
+                                timeInMillis = initialDateMillis
+                                set(Calendar.HOUR_OF_DAY, endHour)
+                                set(Calendar.MINUTE, endMinute)
+                                set(Calendar.SECOND, 0)
+                                set(Calendar.MILLISECOND, 0)
+                            }
+                            // If the end time is not later than the start time, set the end time to 1 hour after the start time
+                            if (endCal.timeInMillis <= startCal.timeInMillis) {
+                                endCal.timeInMillis = startCal.timeInMillis + (60 * 60 * 1000)
+                            }
+                            onSave(
+                                title.trim(),
+                                description.trim().ifBlank { null },
+                                startCal.timeInMillis,
+                                endCal.timeInMillis
+                            )
                         },
-                        enabled = title.isNotBlank()
+                        enabled = title.isNotBlank() // Can only be saved if the title is not empty
                     ) { Text("save") }
                 }
             }
