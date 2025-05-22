@@ -3,10 +3,16 @@ package com.example.fitlife.data.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "user_table")
+@Entity(tableName = "users")
 data class User(
-    @PrimaryKey val id: Int = 0, // Assuming a single user for now, or you can manage IDs
-    val name: String? = null,
-    val email: String? = null,
-    val avatarUri: String? = null
+    @PrimaryKey
+    val id: Int = 0, // 只使用一个用户，ID固定为0
+    var name: String = "Xiao Ming", // 默认名称
+    var email: String = "xiaoming@example.com", // 默认邮箱
+    var avatarUri: String? = null, // 头像URI，可以为空
+    var height: String = "178", // 身高，单位cm
+    var weight: String = "70", // 体重，单位kg
+    var fitnessGoal: String = "Muscle Gain & Fat Loss", // 健身目标
+    var workoutFrequency: String = "4-5 Times Weekly", // 锻炼频率
+    var fitnessTags: String = "Strength Training,Cardio" // 健身标签，逗号分隔
 ) 

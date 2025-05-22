@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -29,7 +30,8 @@ import com.example.fitlife.MyApplication
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AllRecentRecordsScreen(
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    onAddRecord: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val workoutDao = (context.applicationContext as MyApplication).database.workoutDao()
@@ -49,6 +51,15 @@ fun AllRecentRecordsScreen(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddRecord,
+                containerColor = Color(0xFF3B82F6),
+                contentColor = Color.White
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Record")
+            }
         }
     ) { padding ->
         Column(

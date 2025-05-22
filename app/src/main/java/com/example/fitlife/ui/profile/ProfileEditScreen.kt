@@ -65,10 +65,22 @@ import android.net.Uri // 导入 Uri
 import androidx.activity.compose.rememberLauncherForActivityResult // 导入 rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts // 导入 ActivityResultContracts
 import coil.compose.AsyncImage // 导入 AsyncImage
-import com.example.fitlife.MyApplication // 导入 MyApplication
 import kotlinx.coroutines.launch // 导入 launch
-import androidx.compose.runtime.rememberCoroutineScope // 导入 rememberCoroutineScope
+import androidx.compose.foundation.BorderStroke // 导入 BorderStroke
 import androidx.compose.ui.platform.LocalContext
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fitlife.MyApplication
+import com.example.fitlife.data.model.User
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import java.util.UUID
+import android.provider.MediaStore
 
 @Composable
 fun ProfileEditScreen(
@@ -82,6 +94,7 @@ fun ProfileEditScreen(
     onNavigateToProfile: () -> Unit
 ) {
     val density = LocalDensity.current
+    val context = LocalContext.current
     var showProfilePhotoDialog by remember { mutableStateOf(false) }
     var showBasicInfoDialog by remember { mutableStateOf(false) }
     var showHeightWeightDialog by remember { mutableStateOf(false) }
@@ -89,33 +102,74 @@ fun ProfileEditScreen(
     var showWorkoutFrequencyDialog by remember { mutableStateOf(false) }
     var showFitnessTagsDialog by remember { mutableStateOf(false) }
     
-    // State for selected image URI
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-    
-    // Coroutine scope and DAO must be defined before the launcher that uses them
-    val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
+    // 获取数据库实例
     val userDao = remember { (context.applicationContext as MyApplication).database.userDao() }
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
     
-    // Activity result launcher for picking images from gallery
-    val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
-        uri: Uri? ->
-        selectedImageUri = uri
-        // Save the URI to Room and close dialog if URI is not null
-        uri?.let {
-            coroutineScope.launch {
-                userDao.updateAvatar(0, it.toString()) // Assuming user ID is 0
-                showProfilePhotoDialog = false // Close dialog after saving
-            }
+    // 从数据库获取用户信息
+    var user by remember { mutableStateOf<User?>(null) }
+    
+    // 加载用户信息
+    LaunchedEffect(key1 = true) {
+        // 尝试获取用户
+        val existingUser = userDao.getUserByIdSync(0)
+        
+        if (existingUser == null) {
+            // 如果用户不存在，创建一个新用户
+            val newUser = User(id = 0)
+            userDao.insertUser(newUser)
+            user = newUser
+        } else {
+            // 如果用户存在，获取用户信息
+            user = existingUser
         }
     }
     
-    // State data
+    // 动态状态，基于用户对象
+    var nameValue by remember { mutableStateOf("Xiao Ming") } 
+    var emailValue by remember { mutableStateOf("xiaoming@example.com") }
     var heightValue by remember { mutableStateOf("178") }
     var weightValue by remember { mutableStateOf("70") }
     var fitnessGoal by remember { mutableStateOf("Muscle Gain & Fat Loss") }
     var workoutFrequency by remember { mutableStateOf("4-5 Times Weekly") }
     var selectedFitnessTags by remember { mutableStateOf(initialFitnessTags) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    
+    // 当用户加载完成后，更新所有状态
+    LaunchedEffect(key1 = user) {
+        user?.let { loadedUser ->
+            nameValue = loadedUser.name
+            emailValue = loadedUser.email
+            heightValue = loadedUser.height
+            weightValue = loadedUser.weight
+            fitnessGoal = loadedUser.fitnessGoal
+            workoutFrequency = loadedUser.workoutFrequency
+            selectedFitnessTags = loadedUser.fitnessTags.split(",")
+            selectedImageUri = loadedUser.avatarUri?.let { Uri.parse(it) }
+        }
+    }
+    
+    // Activity result launcher for picking images from gallery
+    val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+        uri: Uri? ->
+        if (uri != null) {
+            coroutineScope.launch {
+                // 将图片复制到应用内部存储
+                val savedUri = saveImageToInternalStorage(context, uri)
+                
+                // 更新UI和数据库
+                selectedImageUri = savedUri
+                showProfilePhotoDialog = false // Close dialog after selecting
+                
+                // 保存URI到Room数据库
+                userDao.updateAvatar(0, savedUri.toString())
+                user = userDao.getUserByIdSync(0)
+                
+                snackbarHostState.showSnackbar("Upload successful!")
+            }
+        }
+    }
     
     // Fitness goal options
     val fitnessGoalOptions = listOf(
@@ -177,6 +231,9 @@ fun ProfileEditScreen(
             ) {
                 // User profile card
                 UserProfileCard(
+                    name = nameValue,
+                    email = emailValue,
+                    imageUri = selectedImageUri, // Pass the selected image URI
                     onAvatarClick = { showProfilePhotoDialog = true },
                     onProfileEditClick = { showBasicInfoDialog = true }
                 )
@@ -249,26 +306,39 @@ fun ProfileEditScreen(
             onNavigateToProfile = onNavigateToProfile, // 点击Profile图标返回ProfileScreen
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+        // SnackbarHost to display snackbar messages
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
     
     // Profile Photo Dialog
     if (showProfilePhotoDialog) {
         ProfilePhotoDialog(
+            selectedImageUri = selectedImageUri, // Pass selected image URI
             onDismiss = { showProfilePhotoDialog = false },
             onUploadPhoto = { // Modified to launch gallery picker
                 pickImageLauncher.launch("image/*") // Launch gallery to select images
-            },
-            selectedImageUri = selectedImageUri // Pass selected image URI
+            }
         )
     }
     
     // Basic Info Edit Dialog
     if (showBasicInfoDialog) {
         BasicInfoEditDialog(
+            initialName = nameValue,
+            initialEmail = emailValue,
             onDismiss = { showBasicInfoDialog = false },
             onSave = { name, email ->
-                // Mock function for saving basic info
-                showBasicInfoDialog = false
+                nameValue = name
+                emailValue = email
+                // 保存到数据库
+                coroutineScope.launch {
+                    userDao.updateBasicInfo(0, name, email)
+                    user = userDao.getUserByIdSync(0)
+                    showBasicInfoDialog = false
+                }
             }
         )
     }
@@ -282,7 +352,12 @@ fun ProfileEditScreen(
             onSave = { height, weight ->
                 heightValue = height
                 weightValue = weight
-                showHeightWeightDialog = false
+                // 保存到数据库
+                coroutineScope.launch {
+                    userDao.updateHeightWeight(0, height, weight)
+                    user = userDao.getUserByIdSync(0)
+                    showHeightWeightDialog = false
+                }
             }
         )
     }
@@ -296,7 +371,12 @@ fun ProfileEditScreen(
             iconTint = Color(0xFF10B981),
             onOptionSelected = { option ->
                 fitnessGoal = option
-                showFitnessGoalDialog = false
+                // 保存到数据库
+                coroutineScope.launch {
+                    userDao.updateFitnessGoal(0, option)
+                    user = userDao.getUserByIdSync(0)
+                    showFitnessGoalDialog = false
+                }
             },
             onDismiss = { showFitnessGoalDialog = false }
         )
@@ -311,7 +391,12 @@ fun ProfileEditScreen(
             iconTint = Color(0xFF9061F9),
             onOptionSelected = { option ->
                 workoutFrequency = option
-                showWorkoutFrequencyDialog = false
+                // 保存到数据库
+                coroutineScope.launch {
+                    userDao.updateWorkoutFrequency(0, option)
+                    user = userDao.getUserByIdSync(0)
+                    showWorkoutFrequencyDialog = false
+                }
             },
             onDismiss = { showWorkoutFrequencyDialog = false }
         )
@@ -325,16 +410,16 @@ fun ProfileEditScreen(
             selectedOptions = selectedFitnessTags,
             iconTint = Color(0xFFFF6B00),
             onConfirm = { selected ->
-                // Print logs for debugging
-                println("Fitness tags updated, selected: ${selected.joinToString()}")
-                // Update local state
                 selectedFitnessTags = selected
-                // Call callback to notify parent component when tags are updated
-                onFitnessTagsSelected(selected)
-                showFitnessTagsDialog = false
+                // 保存到数据库，将列表转换为逗号分隔的字符串
+                coroutineScope.launch {
+                    val tagsString = selected.joinToString(",")
+                    userDao.updateFitnessTags(0, tagsString)
+                    user = userDao.getUserByIdSync(0)
+                    showFitnessTagsDialog = false
+                }
             },
             onDismiss = { 
-                println("Cancelled fitness tag selection")
                 showFitnessTagsDialog = false 
             }
         )
@@ -388,71 +473,83 @@ private fun TopBar(onBackClick: () -> Unit) {
 
 @Composable
 private fun UserProfileCard(
+    name: String,
+    email: String,
+    imageUri: Uri? = null, // Add imageUri parameter
     onAvatarClick: () -> Unit,
     onProfileEditClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 0.dp
-        )
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onProfileEditClick() }
-                .padding(16.dp),
+                .padding(16.dp)
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 外层布局包含头像和加号
+            // Profile Avatar
             Box(
                 modifier = Modifier
-                    .width(65.dp)
-                    .height(65.dp)
+                    .size(80.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFE5E7EB))
+                    .clickable(onClick = onAvatarClick), // Make avatar clickable
+                contentAlignment = Alignment.Center
             ) {
-                // 头像部分
-                Image(
-                    painter = painterResource(id = R.drawable.profile_photo),
-                    contentDescription = "Profile Photo",
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .clickable { onAvatarClick() },
-                    contentScale = ContentScale.Crop
-                )
-                
-                // 加号按钮 - 使用绝对定位
+                if (imageUri != null) {
+                    AsyncImage(
+                        model = imageUri,
+                        contentDescription = "Selected Profile Photo",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        error = painterResource(id = R.drawable.profile_photo), // Fallback in case of error
+                        placeholder = painterResource(id = R.drawable.profile_photo) // Placeholder while loading
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.profile_photo),
+                        contentDescription = "Profile Avatar",
+                        modifier = Modifier.fillMaxSize(), // Changed from size(72.dp)
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                // Small "add" icon overlay
                 Box(
                     modifier = Modifier
-                        .size(20.dp)
-                        .offset(x = 42.dp, y = 42.dp)
+                        .align(Alignment.BottomEnd)
+                        .offset(x = (-8).dp, y = (-8).dp) // Changed from (-4).dp
+                        .size(24.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFF3B82F6))
-                        .clickable { onAvatarClick() },
-                    contentAlignment = Alignment.Center
+                        .background(Color(0xFF3B82F6)) // Blue background
+                        .border(2.dp, Color.White, CircleShape) // White border
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Upload photo",
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Add Photo",
                         tint = Color.White,
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier
+                            .size(16.dp) // Smaller icon
+                            .align(Alignment.Center)
                     )
                 }
             }
-            
-            // Name and email section
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // User Info
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 16.dp)
             ) {
                 Text(
-                    text = "Xiao Ming",
+                    text = name,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color(0xFF1F2937)
@@ -462,7 +559,7 @@ private fun UserProfileCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "xiaoming@example.com",
+                        text = email,
                         fontSize = 14.sp,
                         color = Color(0xFF6B7280)
                     )
@@ -853,9 +950,9 @@ private fun SettingsItem(
 
 @Composable
 private fun ProfilePhotoDialog(
+    selectedImageUri: Uri?, // Pass selectedImageUri to display in dialog
     onDismiss: () -> Unit,
-    onUploadPhoto: () -> Unit,
-    selectedImageUri: Uri? // Add parameter for selected image URI
+    onUploadPhoto: () -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -874,56 +971,48 @@ private fun ProfilePhotoDialog(
                 Box(
                     modifier = Modifier
                         .size(200.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFFE6F0FF)),
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                        .height(200.dp) // Fixed height for the image preview area
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFF3F4F6)), // Light gray background for preview area
                     contentAlignment = Alignment.Center
                 ) {
                     if (selectedImageUri != null) {
-                        // Display selected image using Coil
                         AsyncImage(
                             model = selectedImageUri,
                             contentDescription = "Selected Profile Photo",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(8.dp)),
-                            contentScale = ContentScale.Crop
+                            modifier = Modifier.fillMaxSize(), // Fill the preview area
+                            contentScale = ContentScale.Fit, // Fit the image within bounds
+                            error = painterResource(id = R.drawable.profile_photo), // Fallback image
+                            placeholder = painterResource(id = R.drawable.profile_photo) // Placeholder
                         )
                     } else {
-                        // Display default placeholder if no image is selected or there's no photo yet
-                        val hasProfilePhoto = true // 此处可替换为实际逻辑以检查是否有照片
-                        if (hasProfilePhoto) {
-                             Image(
-                                 painter = painterResource(id = R.drawable.profile_photo),
-                                 contentDescription = "Profile Photo",
-                                 modifier = Modifier
-                                     .fillMaxSize()
-                                     .clip(RoundedCornerShape(8.dp)),
-                                 contentScale = ContentScale.Crop
-                             )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.Info, // Placeholder icon
-                                contentDescription = "No photo available",
-                                modifier = Modifier.size(48.dp),
-                                tint = Color.Gray
-                            )
-                        }
+                        Image(
+                            painter = painterResource(id = R.drawable.profile_photo), // Use profile_photo as placeholder
+                            contentDescription = "Placeholder for new photo",
+                            modifier = Modifier.size(100.dp), // Placeholder size
+                            contentScale = ContentScale.Fit
+                        )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
+                // Buttons
                 Button(
                     onClick = onUploadPhoto, // This will now trigger the gallery picker
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6)) // Blue background
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Upload")
-                    Spacer(Modifier.width(8.dp))
-                    Text("Upload New Photo")
+                    Text("Upload New Photo", color = Color.White)
                 }
-
                 Spacer(modifier = Modifier.height(8.dp))
+                // Removed OutlinedButton for Take Photo
+                Spacer(modifier = Modifier.height(8.dp))
+                // Removed OutlinedButton for Choose from Gallery
+
+                Spacer(modifier = Modifier.height(24.dp))
 
                 TextButton(onClick = onDismiss) {
                     Text("Close")
@@ -1050,11 +1139,13 @@ private fun PasswordChangeDialog(
 
 @Composable
 private fun BasicInfoEditDialog(
+    initialName: String,
+    initialEmail: String,
     onDismiss: () -> Unit,
     onSave: (String, String) -> Unit
 ) {
-    var name by remember { mutableStateOf("Xiao Ming") }
-    var email by remember { mutableStateOf("xiaoming@example.com") }
+    var name by remember { mutableStateOf(initialName) }
+    var email by remember { mutableStateOf(initialEmail) }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -1535,5 +1626,43 @@ private fun MultiSelectDialog(
                 }
             }
         }
+    }
+}
+
+// 新增函数：保存图片到应用内部存储
+private suspend fun saveImageToInternalStorage(context: Context, sourceUri: Uri): Uri = withContext(Dispatchers.IO) {
+    try {
+        // 创建一个唯一文件名
+        val fileName = "profile_photo_${UUID.randomUUID()}.jpg"
+        
+        // 创建目标文件
+        val directory = File(context.filesDir, "profile_photos")
+        if (!directory.exists()) {
+            directory.mkdirs()
+        }
+        val destinationFile = File(directory, fileName)
+        
+        // 从URI获取输入流并创建输出流
+        val inputStream = context.contentResolver.openInputStream(sourceUri)
+        val outputStream = FileOutputStream(destinationFile)
+        
+        // 复制文件
+        inputStream?.use { input ->
+            outputStream.use { output ->
+                val buffer = ByteArray(4 * 1024) // 4KB缓冲区
+                var read: Int
+                while (input.read(buffer).also { read = it } != -1) {
+                    output.write(buffer, 0, read)
+                }
+                output.flush()
+            }
+        }
+        
+        // 创建并返回一个指向内部存储文件的URI
+        Uri.fromFile(destinationFile)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        // 如果出现错误，返回原始URI
+        sourceUri
     }
 } 

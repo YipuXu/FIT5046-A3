@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -23,21 +24,30 @@ import androidx.compose.ui.zIndex
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import com.example.fitlife.data.preferences.AccessibilityPreferences
+import com.example.fitlife.ui.theme.AccessibilityUtils
+import kotlinx.coroutines.launch
 
 @Composable
 fun AccessibilityScreen(
     onBackClick: () -> Unit = {}
 ) {
-    var highContrastEnabled by remember { mutableStateOf(false) }
-    var colorBlindModeEnabled by remember { mutableStateOf(false) }
-    var zoomEnabled by remember { mutableStateOf(false) }
-    var screenReaderEnabled by remember { mutableStateOf(false) }
-    var keyboardControlEnabled by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val accessibilityPreferences = remember { AccessibilityPreferences(context) }
+    val coroutineScope = rememberCoroutineScope()
+    val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
+
+    // 从DataStore获取设置
+    val highContrastEnabled by accessibilityPreferences.highContrastMode.collectAsState(initial = false)
+    val colorBlindModeEnabled by accessibilityPreferences.colorBlindMode.collectAsState(initial = false)
+    val zoomEnabled by accessibilityPreferences.zoomFunction.collectAsState(initial = false)
+    val screenReaderEnabled by accessibilityPreferences.screenReader.collectAsState(initial = false)
+    val keyboardControlEnabled by accessibilityPreferences.keyboardControl.collectAsState(initial = false)
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF9FAFB))
+            .background(if (isHighContrastMode) Color.White else Color(0xFFF9FAFB))
             .windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
         // Fixed top bar
@@ -46,7 +56,7 @@ fun AccessibilityScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .zIndex(1f) // Ensure top bar stays above scrolling content
-                .background(Color(0xFFF9FAFB))
+                .background(if (isHighContrastMode) Color.White else Color(0xFFF9FAFB))
         )
 
         // Scrollable content area
@@ -59,34 +69,80 @@ fun AccessibilityScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            AccessibilityItem(
+            // 使用AccessibilityUtils中的组件
+            AccessibilityUtils.AccessibleSettingsItem(
                 title = "High Contrast Mode",
-                checked = highContrastEnabled,
-                onCheckedChange = { highContrastEnabled = it }
+                description = "Enhance the contrast between text and background for better visibility",
+                trailingContent = {
+                    AccessibilityUtils.AccessibleSwitch(
+                        checked = highContrastEnabled,
+                        onCheckedChange = { 
+                            coroutineScope.launch {
+                                accessibilityPreferences.saveHighContrastMode(it)
+                            }
+                        }
+                    )
+                }
             )
 
-            AccessibilityItem(
+            AccessibilityUtils.AccessibleSettingsItem(
                 title = "Color Blind Mode",
-                checked = colorBlindModeEnabled,
-                onCheckedChange = { colorBlindModeEnabled = it }
+                description = "Adjust colors for color blind users to improve recognition",
+                trailingContent = {
+                    AccessibilityUtils.AccessibleSwitch(
+                        checked = colorBlindModeEnabled,
+                        onCheckedChange = { 
+                            coroutineScope.launch {
+                                accessibilityPreferences.saveColorBlindMode(it)
+                            }
+                        }
+                    )
+                }
             )
 
-            AccessibilityItem(
+            AccessibilityUtils.AccessibleSettingsItem(
                 title = "Zoom Function",
-                checked = zoomEnabled,
-                onCheckedChange = { zoomEnabled = it }
+                description = "Allow zooming interface elements to make content easier to read",
+                trailingContent = {
+                    AccessibilityUtils.AccessibleSwitch(
+                        checked = zoomEnabled,
+                        onCheckedChange = { 
+                            coroutineScope.launch {
+                                accessibilityPreferences.saveZoomFunction(it)
+                            }
+                        }
+                    )
+                }
             )
 
-            AccessibilityItem(
+            AccessibilityUtils.AccessibleSettingsItem(
                 title = "Screen Reader",
-                checked = screenReaderEnabled,
-                onCheckedChange = { screenReaderEnabled = it }
+                description = "Enable screen reading functionality for visually impaired users",
+                trailingContent = {
+                    AccessibilityUtils.AccessibleSwitch(
+                        checked = screenReaderEnabled,
+                        onCheckedChange = { 
+                            coroutineScope.launch {
+                                accessibilityPreferences.saveScreenReader(it)
+                            }
+                        }
+                    )
+                }
             )
 
-            AccessibilityItem(
+            AccessibilityUtils.AccessibleSettingsItem(
                 title = "Keyboard Control",
-                checked = keyboardControlEnabled,
-                onCheckedChange = { keyboardControlEnabled = it }
+                description = "Allow keyboard navigation and control of the application",
+                trailingContent = {
+                    AccessibilityUtils.AccessibleSwitch(
+                        checked = keyboardControlEnabled,
+                        onCheckedChange = { 
+                            coroutineScope.launch {
+                                accessibilityPreferences.saveKeyboardControl(it)
+                            }
+                        }
+                    )
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -99,10 +155,12 @@ private fun TopBar(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
+    
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color(0xFFF9FAFB))
+            .background(if (isHighContrastMode) Color.White else Color(0xFFF9FAFB))
     ) {
         Row(
             modifier = Modifier
@@ -115,7 +173,7 @@ private fun TopBar(
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFF3F4F6))
+                    .background(if (isHighContrastMode) Color.Black else Color(0xFFF3F4F6))
                     .clickable { onBackClick() },
                 contentAlignment = Alignment.Center
             ) {
@@ -123,7 +181,7 @@ private fun TopBar(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
                     modifier = Modifier.size(20.dp),
-                    tint = Color(0xFF6B7280)
+                    tint = if (isHighContrastMode) Color.White else Color(0xFF6B7280)
                 )
             }
 
@@ -131,61 +189,16 @@ private fun TopBar(
             Text(
                 text = "Accessibility",
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = if (isHighContrastMode) FontWeight.ExtraBold else FontWeight.Bold,
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 16.dp),
                 textAlign = TextAlign.Center,
-                color = Color(0xFF1F2937)
+                color = if (isHighContrastMode) Color.Black else Color(0xFF1F2937)
             )
 
             // Placeholder for symmetry
             Spacer(modifier = Modifier.size(32.dp))
-        }
-    }
-}
-
-@Composable
-private fun AccessibilityItem(
-    title: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp), // Adjust padding for switch
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = title,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF1F2937)
-            )
-
-            Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color.White,
-                    checkedTrackColor = Color(0xFF34C759), // iOS Green
-                    uncheckedThumbColor = Color.White,
-                    uncheckedTrackColor = Color(0xFFE5E5EA), // iOS Grey Track
-                    uncheckedBorderColor = Color(0xFFE5E5EA).copy(alpha = 0.8f) // iOS Grey Border
-                )
-            )
         }
     }
 }

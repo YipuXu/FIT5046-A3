@@ -51,11 +51,9 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation("com.google.android.gms:play-services-maps:18.2.0")
-    // implementation("com.google.maps.android:maps-compose:2.11.4")
     implementation("com.google.maps.android:maps-compose:4.3.3") 
     implementation("com.google.android.libraries.places:places:3.3.0")
-    // Coil 图片加载库 - 用于加载 Google Places 图片
-    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("io.coil-kt:coil-compose:2.6.0")
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
@@ -64,8 +62,9 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.gson)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation ("io.coil-kt:coil-compose:2.4.0")
-
+    
+    // DataStore Preferences
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

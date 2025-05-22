@@ -6,13 +6,15 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.fitlife.data.dao.WorkoutDao
-import com.example.fitlife.data.dao.UserDao // 导入 UserDao
-import com.example.fitlife.data.model.User // 导入 User 实体
+import com.example.fitlife.data.dao.UserDao
+import com.example.fitlife.data.model.User
+// import com.example.fitlife.data.model.User // 移除导入 User 实体
 
-@Database(entities = [Workout::class, User::class], version = 1, exportSchema = false) // 添加 User 实体
+@Database(entities = [Workout::class, User::class], version = 2, exportSchema = false)
 abstract class WorkoutDatabase : RoomDatabase() {
     abstract fun workoutDao(): WorkoutDao
-    abstract fun userDao(): UserDao // 添加 userDao 方法
+    abstract fun userDao(): UserDao
+    // abstract fun userDao(): UserDao // 移除 userDao 方法
 
     companion object {
         @Volatile
@@ -24,7 +26,9 @@ abstract class WorkoutDatabase : RoomDatabase() {
                     context.applicationContext,
                     WorkoutDatabase::class.java,
                     "workout_database"
-                ).build()
+                )
+                .fallbackToDestructiveMigration()
+                .build()
                 INSTANCE = instance
                 instance
             }

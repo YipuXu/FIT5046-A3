@@ -149,7 +149,8 @@ class MainActivity : ComponentActivity() {
                             "all_records" -> {
                                 // Display all recent records page
                                 AllRecentRecordsScreen(
-                                    onBack = { currentScreen.value = "profile" } // 返回个人资料页面
+                                    onBack = { currentScreen.value = "profile" }, // 返回个人资料页面
+                                    onAddRecord = { currentScreen.value = "record" } // 导航到添加记录页面
                                 )
                             }
                             "aiCoach" -> {
