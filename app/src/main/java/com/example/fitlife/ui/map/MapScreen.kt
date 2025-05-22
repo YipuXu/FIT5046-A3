@@ -541,18 +541,6 @@ fun SearchBarWithTitle(
                 textAlign = TextAlign.Center,
                 color = Color(0xFF1F2937)
             )
-
-            // Menu icon button
-            IconButton(
-                onClick = { /* TODO: Add menu action */ },
-                modifier = Modifier.size(32.dp) 
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Menu",
-                    tint = Color(0xFF6B7280)
-                )
-            }
         }
         
         // Add spacing between the title line and the search bar
@@ -854,23 +842,23 @@ fun PlaceItem(place: FitnessPlace) {
                         modifier = Modifier.widthIn(min = 45.dp),
                         contentAlignment = Alignment.CenterEnd
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_star),
-                                contentDescription = "Rating",
-                                tint = Color(0xFFFACC15),
-                                modifier = Modifier.size(16.dp)
-                            )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_star),
+                            contentDescription = "Rating",
+                            tint = Color(0xFFFACC15),
+                            modifier = Modifier.size(16.dp)
+                        )
 
-                            Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
 
-                            Text(
-                                text = place.rating.toString(),
-                                fontSize = 14.sp,
-                                color = Color(0xFF6B7280)
-                            )
+                        Text(
+                            text = place.rating.toString(),
+                            fontSize = 14.sp,
+                            color = Color(0xFF6B7280)
+                        )
                         }
                     }
                 }
