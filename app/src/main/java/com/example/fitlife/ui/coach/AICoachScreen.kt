@@ -267,7 +267,7 @@ fun AICoachHeader() {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // AI avatar - 使用自定义图片替换通用图标
+                // AI avatar
                 Box(
                     modifier = Modifier
                         .size(64.dp)
@@ -308,48 +308,6 @@ fun AICoachHeader() {
         }
     }
 }
-
-//@Composable
-//fun FeaturesGrid(features: List<AIFeature>) {
-//    Column(
-//        modifier = Modifier
-//            .padding(horizontal = 16.dp, vertical = 8.dp)
-//    ) {
-//        Text(
-//            text = "Can I help you?",
-//            fontSize = 16.sp,
-//            fontWeight = FontWeight.SemiBold,
-//            color = Color(0xFF374151),
-//            modifier = Modifier.padding(bottom = 12.dp)
-//        )
-//
-//        Row(
-//            modifier = Modifier.fillMaxWidth(),
-//            horizontalArrangement = Arrangement.spacedBy(8.dp)
-//        ) {
-//            features.take(2).forEach { feature ->
-//                FeatureCard(
-//                    feature = feature,
-//                    modifier = Modifier.weight(1f)
-//                )
-//            }
-//        }
-//
-//        Spacer(modifier = Modifier.height(8.dp))
-//
-//        Row(
-//            modifier = Modifier.fillMaxWidth(),
-//            horizontalArrangement = Arrangement.spacedBy(8.dp)
-//        ) {
-//            features.drop(2).forEach { feature ->
-//                FeatureCard(
-//                    feature = feature,
-//                    modifier = Modifier.weight(1f)
-//                )
-//            }
-//        }
-//    }
-//}
 
 @Composable
 fun FeatureCard(
@@ -425,7 +383,7 @@ fun ChatSection(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(480.dp), // Fixed height for chat area
+                .height(480.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Color.White

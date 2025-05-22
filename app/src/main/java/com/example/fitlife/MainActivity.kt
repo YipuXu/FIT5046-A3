@@ -68,7 +68,8 @@ class MainActivity : ComponentActivity() {
                                     onNavigateToHome = { currentScreen.value = "home" },
                                     onNavigateToCalendar = { currentScreen.value = "calendar" },
                                     onNavigateToMap = { currentScreen.value = "map" },
-                                    onNavigateToProfile = { currentScreen.value = "profile" }
+                                    onNavigateToProfile = { currentScreen.value = "profile" },
+                                    onNavigateToRecord = { currentScreen.value = "record" }
                                 )
                             }
                             "calendar" -> {
@@ -182,7 +183,7 @@ class MainActivity : ComponentActivity() {
                             "record" -> {
                                 RecordTrainingScreen(
                                     currentRoute = "record",
-                                    onNavigateToHome = { currentScreen.value = "map" },
+                                    onNavigateToHome = { currentScreen.value = "home" },
                                     onNavigateToCalendar = { currentScreen.value = "calendar" },
                                     onNavigateToMap = { currentScreen.value = "map" },
                                     onNavigateToProfile = { currentScreen.value = "profile" },

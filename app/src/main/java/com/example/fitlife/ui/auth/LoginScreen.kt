@@ -60,7 +60,7 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     
-    // 读取保存的邮箱
+    // Read the saved mailbox
     val sharedPreferences = remember { context.getSharedPreferences("fitlife_prefs", Context.MODE_PRIVATE) }
     val savedEmail = remember { sharedPreferences.getString("saved_email", "") ?: "" }
     
@@ -70,21 +70,21 @@ fun LoginScreen(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     
-    // 显示提示信息
+    // Display prompt information
     var showRememberMeInfo by remember { mutableStateOf(false) }
     
-    // 当邮箱变化时，如果邮箱和保存的不同，取消"记住我"
+    // When the email address changes, if it is different from the saved one, cancel "Remember Me".
     LaunchedEffect(email) {
         if (email != savedEmail && rememberMe) {
             rememberMe = false
         }
     }
     
-    // 启动效果：如果检测到自动填充邮箱，显示简短的提示消息
+    // Startup effect: If auto-fill mailbox is detected, a short prompt message will be displayed
     LaunchedEffect(Unit) {
         showRememberMeInfo = savedEmail.isNotEmpty()
         if (showRememberMeInfo) {
-            kotlinx.coroutines.delay(2000) // 显示提示信息2秒
+            kotlinx.coroutines.delay(2000) // Display the prompt message for 2 seconds
             showRememberMeInfo = false
         }
     }
@@ -130,7 +130,7 @@ fun LoginScreen(
         }
     }
 
-    // 保存邮箱函数
+    // Save the mailbox function
     fun saveEmail(email: String, remember: Boolean) {
         sharedPreferences.edit().apply {
             if (remember) {
@@ -153,7 +153,7 @@ fun LoginScreen(
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 顶部背景图和标题
+            // Top background image and title
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -167,7 +167,7 @@ fun LoginScreen(
                         )
                     )
             ) {
-                // 背景图片
+                // Background Image
                 Image(
                     painter = painterResource(id = R.drawable.fitness_background),
                     contentDescription = "Fitness Background",
@@ -177,7 +177,7 @@ fun LoginScreen(
                         .background(Color(0xFF4F46E5).copy(alpha = 0.4f))
                 )
                 
-                // 标题文本
+                // Title
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -201,13 +201,13 @@ fun LoginScreen(
                 }
             }
             
-            // 登录表单
+            // Login Form
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(24.dp)
             ) {
-                // 欢迎文本
+                // Welcome text
                 Text(
                     text = "Welcome Back",
                     fontSize = 24.sp,
@@ -219,7 +219,7 @@ fun LoginScreen(
                     textAlign = TextAlign.Start
                 )
                 
-                // 邮箱输入框
+                // Email Input
                 Column(modifier = Modifier.padding(bottom = 16.dp)) {
                     Text(
                         text = "Email",
@@ -245,7 +245,7 @@ fun LoginScreen(
                     )
                 }
                 
-                // 密码输入框
+                // Password input
                 Column(modifier = Modifier.padding(bottom = 16.dp)) {
                     Text(
                         text = "Password",
@@ -271,7 +271,7 @@ fun LoginScreen(
                                         else 
                                             R.drawable.ic_visibility
                                     ),
-                                    contentDescription = if (passwordVisible) "隐藏密码" else "显示密码",
+                                    contentDescription = if (passwordVisible) "Hide Password" else "Show Password",
                                     tint = Color(0xFF6B7280)
                                 )
                             }
@@ -288,7 +288,7 @@ fun LoginScreen(
                     )
                 }
                 
-                // 记住我选项和忘记密码
+                // Remember my options and forget the password
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -296,10 +296,10 @@ fun LoginScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween // 两端对齐
                 ) {
-                    // 左侧：记住我选项
+                    // Left: Remember Me option
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.offset(x = (-12).dp) // 通过负偏移量去除 Checkbox 左侧的默认空白
+                        modifier = Modifier.offset(x = (-12).dp)
                     ) {
                         Checkbox(
                             checked = rememberMe,
@@ -316,7 +316,7 @@ fun LoginScreen(
                         )
                     }
                     
-                    // 右侧：忘记密码
+                    // Right side: Forgot password
                     Text(
                         text = "Forgot password?",
                         color = Color(0xFF2563EB),
@@ -348,7 +348,7 @@ fun LoginScreen(
                     )
                 }
                 
-                // 显示错误信息
+                // Display error message
                 errorMessage?.let {
                     Text(
                         text = it,
@@ -358,7 +358,7 @@ fun LoginScreen(
                     )
                 }
                 
-                // 登录按钮
+                // Login Button
                 Button(
                     onClick = {
                         if (email.isBlank() || password.isBlank()) {
@@ -366,7 +366,7 @@ fun LoginScreen(
                             return@Button
                         }
                         
-                        // 保存邮箱（如果勾选了"记住我"）
+                        // Save the email path name
                         saveEmail(email, rememberMe)
                         
                         isLoading = true
@@ -421,7 +421,7 @@ fun LoginScreen(
                     }
                 }
                 
-                // 添加分隔线和"或"文本
+                // Add a separator line and "or" text
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -444,7 +444,7 @@ fun LoginScreen(
                     )
                 }
                 
-                // 谷歌登录按钮
+                // Google login button
                 OutlinedButton(
                     onClick = {
                         isLoading = true
@@ -463,7 +463,7 @@ fun LoginScreen(
                         contentColor = Color(0xFF374151)
                     )
                 ) {
-                    // 谷歌图标
+                    // Our Logo Project
                     Icon(
                         painter = painterResource(id = R.drawable.ic_google),
                         contentDescription = "Google",
@@ -478,7 +478,7 @@ fun LoginScreen(
                     )
                 }
                 
-                // 注册链接
+                // Registration link
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

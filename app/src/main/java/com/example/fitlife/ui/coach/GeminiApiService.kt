@@ -17,9 +17,9 @@ class GeminiApiService(private val context: Context) {
         private const val API_KEY = "AIzaSyAQsgSlR1BjdxFQJFZqcPK3PtAB8DjnL0w"
         
         // Available model options
-        private const val MODEL_GEMINI_FLASH = "gemini-1.5-flash" // Try this model first
-        private const val MODEL_GEMINI_PRO = "gemini-1.0-pro"     // Fallback option
-        private const val MODEL_GEMINI_BASIC = "models/gemini-pro" // Basic model
+        private const val MODEL_GEMINI_FLASH = "gemini-1.5-flash" 
+        private const val MODEL_GEMINI_PRO = "gemini-1.0-pro"    
+        private const val MODEL_GEMINI_BASIC = "models/gemini-pro"
     }
     
     // Default to MODEL_GEMINI_FLASH
@@ -204,7 +204,6 @@ class GeminiApiService(private val context: Context) {
                 sections[currentSectionTitle]?.add(trimmedLine)
             } else if (trimmedLine.isNotEmpty()) {
                 // If it doesn't belong to any section and isn't a list item, add it as a normal paragraph to main content
-                // (This usually happens after switching to non-main content mode and then encountering plain text)
                 mainContentBuilder.append(line).append("\n") 
             }
         }
