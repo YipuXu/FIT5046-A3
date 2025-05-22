@@ -56,6 +56,7 @@ import androidx.compose.ui.text.TextStyle
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import com.example.fitlife.data.repository.FirebaseUserRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,6 +75,13 @@ fun ProfileScreen(
     val workoutDao = remember { (context.applicationContext as MyApplication).database.workoutDao() }
     val userDao = remember { (context.applicationContext as MyApplication).database.userDao() }
     val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
+    
+    // 创建Firebase用户仓库
+    val firebaseUserRepository = remember { FirebaseUserRepository() }
+    
+    // 获取Firebase当前用户信息
+    val firebaseUser by firebaseUserRepository.currentUser.collectAsState()
+    val firebaseDisplayName = firebaseUser?.displayName
     
     // 从数据库获取用户信息
     val userFlow = remember { userDao.getUserById(0) }
@@ -117,6 +125,7 @@ fun ProfileScreen(
                 onAICoachClick = onAICoachClick,
                 selectedFitnessTags = fitnessTags,
                 user = user,
+                firebaseDisplayName = firebaseDisplayName,
                 latestWorkouts = latestWorkouts,
                 onWorkoutClick = { workout ->
                     selectedWorkout = workout
@@ -278,6 +287,7 @@ private fun ProfileContent(
     onAICoachClick: () -> Unit,
     selectedFitnessTags: List<String>,
     user: User?,
+    firebaseDisplayName: String?,
     latestWorkouts: List<Workout>,
     onWorkoutClick: (Workout) -> Unit,
     plansDoneCount: Int = 8,
@@ -335,6 +345,7 @@ private fun ProfileContent(
             onEditClick = onEditProfileClick,
             fitnessTags = selectedFitnessTags,
             user = user,
+            firebaseDisplayName = firebaseDisplayName,
             plansDoneCount = plansDoneCount,
             workoutDaysCount = workoutDaysCount,
             streakDays = streakDays, // 传递实际的连续训练天数
@@ -365,13 +376,14 @@ private fun UserInfoCard(
     onEditClick: () -> Unit,
     fitnessTags: List<String>,
     user: User?,
+    firebaseDisplayName: String?,
     plansDoneCount: Int = 8,
     workoutDaysCount: Int = 0,
     streakDays: Int = 0,
     modifier: Modifier = Modifier
 ) {
-    // 使用用户数据或默认值
-    val username = user?.name ?: "Xiao Ming"
+    // 优先使用Firebase的displayName，如果为空则使用数据库中的用户名，再没有则使用默认名
+    val username = firebaseDisplayName ?: user?.name ?: "Xiao Ming"
     val context = LocalContext.current
     
     // 修改头像URI的处理方式
