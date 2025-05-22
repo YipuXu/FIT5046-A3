@@ -428,14 +428,14 @@ fun ChatSection(
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color(0xFF374151),
-            modifier = Modifier.padding(vertical = 12.dp)
+            modifier = Modifier.padding(bottom = 12.dp)
         )
         
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(480.dp),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Color.White
             ),

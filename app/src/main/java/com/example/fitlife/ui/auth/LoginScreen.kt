@@ -19,7 +19,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,7 +26,6 @@ import com.example.fitlife.R
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Divider
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 
 @Composable
@@ -151,28 +149,13 @@ fun LoginScreen(
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
                     
-                    var passwordVisible by remember { mutableStateOf(false) }
-                    
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
                         placeholder = { Text("••••••••") },
                         leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Password") },
-                        trailingIcon = {
-                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                Icon(
-                                    painter = painterResource(
-                                        id = if (passwordVisible) 
-                                            R.drawable.ic_visibility_off 
-                                        else 
-                                            R.drawable.ic_visibility
-                                    ),
-                                    contentDescription = if (passwordVisible) "隐藏密码" else "显示密码",
-                                    tint = Color(0xFF6B7280)
-                                )
-                            }
-                        },
-                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        // 移除这里的trailingIcon
+                        visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier
                             .fillMaxWidth(),
                         singleLine = true,
