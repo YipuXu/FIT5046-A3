@@ -190,7 +190,7 @@ class MainActivity : ComponentActivity() {
                         LoginScreen(
                             onLoginSuccess = {
                                 isLoggedIn.value = true
-                                currentScreen.value = "map"
+                                currentScreen.value = "home"
                             },
                             onRegisterClick = { currentScreen.value = "register" }
                         )
@@ -200,7 +200,7 @@ class MainActivity : ComponentActivity() {
                         RegisterScreen(
                             onRegisterSuccess = {
                                 isLoggedIn.value = true
-                                currentScreen.value = "map"
+                                currentScreen.value = "home"
                             },
                             onNavigateToLogin = { currentScreen.value = "login" },
                             onNavigateToTerms = { currentScreen.value = "termsOfService" },

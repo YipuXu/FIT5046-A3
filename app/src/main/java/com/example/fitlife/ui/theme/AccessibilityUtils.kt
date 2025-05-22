@@ -37,6 +37,15 @@ object AccessibilityUtils {
     }
     
     /**
+     * 检查色盲模式是否启用
+     */
+    @Composable
+    @ReadOnlyComposable
+    fun isColorBlindModeEnabled(): Boolean {
+        return LocalAccessibilitySettings.current.colorBlindMode
+    }
+    
+    /**
      * 获取适用于高对比度模式的颜色
      * @param normalColor 正常模式下的颜色
      * @param highContrastColor 高对比度模式下的颜色
@@ -46,6 +55,75 @@ object AccessibilityUtils {
     @ReadOnlyComposable
     fun getAccessibleColor(normalColor: Color, highContrastColor: Color): Color {
         return if (isHighContrastModeEnabled()) highContrastColor else normalColor
+    }
+    
+    /**
+     * 获取适配色盲模式的颜色
+     * 主要针对红绿色盲(Deuteranopia)进行优化
+     * 
+     * @param normalColor 正常模式下的颜色
+     * @return 根据当前模式返回适合色盲用户的颜色
+     */
+    @Composable
+    @ReadOnlyComposable
+    fun getColorBlindFriendlyColor(normalColor: Color): Color {
+        if (!isColorBlindModeEnabled()) {
+            return normalColor
+        }
+        
+        // 分解颜色的RGB值
+        val red = normalColor.red
+        val green = normalColor.green
+        val blue = normalColor.blue
+        
+        // 红绿色盲友好色彩优化
+        // 1. 避免同时使用红色和绿色
+        // 2. 针对红绿色盲，增强蓝色通道的差异
+        // 3. 常见替代组合：蓝/黄, 蓝/橙, 黑/白
+        
+        return when {
+            // 如果原色是红色系 (#FF0000 到 #FF5050)
+            red > 0.7f && green < 0.4f && blue < 0.4f -> {
+                Color(0xFF0072B2) // 替换为蓝色
+            }
+            // 如果原色是绿色系 (#00FF00 到 #50FF50)
+            green > 0.7f && red < 0.4f && blue < 0.4f -> {
+                Color(0xFFE69F00) // 替换为橙/黄色
+            }
+            // 粉色系转为紫蓝色
+            red > 0.7f && blue > 0.7f && green < 0.4f -> {
+                Color(0xFF56B4E9) // 蓝色
+            }
+            // 如果是接近白色或黑色的颜色，不进行转换
+            (red > 0.9f && green > 0.9f && blue > 0.9f) || (red < 0.1f && green < 0.1f && blue < 0.1f) -> {
+                normalColor
+            }
+            // 其他颜色略微调整以提高可区分度
+            else -> {
+                // 增加蓝黄对比度
+                val newRed = red * 0.8f
+                val newGreen = green * 0.9f
+                val newBlue = blue * 1.1f.coerceAtMost(1.0f)
+                
+                Color(newRed, newGreen, newBlue, normalColor.alpha)
+            }
+        }
+    }
+    
+    /**
+     * 获取同时适配高对比度和色盲模式的颜色
+     * @param normalColor 正常模式下的颜色
+     * @param highContrastColor 高对比度模式下的颜色
+     * @return 根据当前的辅助功能设置返回合适的颜色
+     */
+    @Composable
+    @ReadOnlyComposable
+    fun getFullyAccessibleColor(normalColor: Color, highContrastColor: Color): Color {
+        return when {
+            isHighContrastModeEnabled() -> highContrastColor
+            isColorBlindModeEnabled() -> getColorBlindFriendlyColor(normalColor)
+            else -> normalColor
+        }
     }
     
     /**
@@ -154,6 +232,7 @@ object AccessibilityUtils {
         val isHighContrast = isHighContrastModeEnabled()
         
         AccessibleCard(
+            modifier = Modifier.padding(vertical = 4.dp),
             onClick = onClick
         ) {
             Row(
@@ -200,6 +279,19 @@ object AccessibilityUtils {
         modifier: Modifier = Modifier
     ) {
         val isHighContrast = isHighContrastModeEnabled()
+        val isColorBlind = isColorBlindModeEnabled()
+        
+        val checkedTrackColor = when {
+            isHighContrast -> Color.Black
+            isColorBlind -> Color(0xFF0072B2) // 蓝色，适合红绿色盲
+            else -> Color(0xFF34C759) // 默认绿色
+        }
+        
+        val uncheckedTrackColor = when {
+            isHighContrast -> Color.Gray
+            isColorBlind -> Color(0xFFCCCCCC) // 浅灰色，增强与蓝色对比
+            else -> Color(0xFFE5E5EA) // iOS默认灰色
+        }
         
         Switch(
             checked = checked,
@@ -207,9 +299,9 @@ object AccessibilityUtils {
             modifier = modifier,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = if (isHighContrast) Color.Black else Color(0xFF34C759),
+                checkedTrackColor = checkedTrackColor,
                 uncheckedThumbColor = Color.White,
-                uncheckedTrackColor = if (isHighContrast) Color.Gray else Color(0xFFE5E5EA),
+                uncheckedTrackColor = uncheckedTrackColor,
                 uncheckedBorderColor = if (isHighContrast) Color.Black else Color(0xFFE5E5EA).copy(alpha = 0.8f)
             )
         )

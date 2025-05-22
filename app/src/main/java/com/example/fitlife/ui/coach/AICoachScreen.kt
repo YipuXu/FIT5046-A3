@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -30,7 +31,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
-import com.example.fitlife.ui.components.BottomNavBar
+import android.util.Log
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.Image
 
 
 data class Message(
@@ -60,57 +66,28 @@ fun AICoachScreen(
     onNavigateToProfile: () -> Unit,
     currentRoute: String
 ) {
+    val context = LocalContext.current
     var messageText by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
     
+    // Create GeminiApiService instance
+    val geminiApiService = remember { GeminiApiService(context) }
+    
+    // Message loading state
+    var isLoading by remember { mutableStateOf(false) }
+    
+    // Message list
     val messages = remember {
         mutableStateListOf(
             Message(
-                content = "Hello! I'm your AI fitness coach. How can I help you today?",
+                content = "Hello! I'm your AI Fitness Coach. How can I help you today?",
                 isFromUser = false,
-                isCentered = true
-            ),
-            Message(
-                content = "I want to build muscle and lose fat. Any suggestions?",
-                isFromUser = true
-            ),
-            Message(
-                content = "Building muscle while losing fat requires a balanced approach to diet and training. Recommendations:",
-                isFromUser = false,
-                details = listOf(
-                    "Control calorie intake, maintain a moderate deficit",
-                    "Increase protein intake (1.6-2.2g per kg of body weight)",
-                    "Perform strength training 3-4 times per week",
-                    "Include moderate cardio (2-3 times weekly, 20-30 minutes each session)"
-                )
-            ),
-            Message(
-                content = "Yes, please help me create a detailed plan",
-                isFromUser = true
-            ),
-            Message(
-                content = "Based on your needs, I've created a 7-day muscle building and fat loss plan:",
-                isFromUser = false,
-                sections = mapOf(
-                    "Dietary Recommendations:" to listOf(
-                        "Daily calories: BMR minus 300-500 calories",
-                        "Protein: 2g per kg of body weight",
-                        "Carbohydrates: 40-50% of total calories",
-                        "Fat: 20-30% of total calories"
-                    ),
-                    "Training Schedule:" to listOf(
-                        "Monday: Upper body strength training",
-                        "Tuesday: 20 minutes HIIT",
-                        "Wednesday: Lower body strength training",
-                        "Thursday: Rest",
-                        "Friday: Full body strength training",
-                        "Saturday: 30 minutes moderate cardio",
-                        "Sunday: Rest and recovery"
-                    )
-                )
+                isCentered = false
             )
         )
     }
     
+    // Quick questions list
     val quickQuestions = remember {
         listOf(
             QuickQuestion("How to start fitness training?"),
@@ -120,33 +97,56 @@ fun AICoachScreen(
         )
     }
     
-    val features = remember {
-        listOf(
-            AIFeature(
-                R.drawable.ic_fitness,
-                "Personalized Fitness Plan",
-                Color(0xFFEBF5FF),
-                Color(0xFF3B82F6)
-            ),
-            AIFeature(
-                R.drawable.ic_restaurant,
-                "Nutrition Recommendations",
-                Color(0xFFECFDF5),
-                Color(0xFF10B981)
-            ),
-            AIFeature(
-                R.drawable.ic_calendar,
-                "Training Progress Tracking",
-                Color(0xFFF5F3FF),
-                Color(0xFF8B5CF6)
-            ),
-            AIFeature(
-                R.drawable.ic_help,
-                "Fitness Q&A",
-                Color(0xFFFEF3C7),
-                Color(0xFFD97706)
-            )
-        )
+    // Function to send message and handle response
+    val sendMessage = { message: String ->
+        if (message.isNotEmpty() && !isLoading) {
+            // Add user message to list
+            messages.add(Message(message, true))
+            
+            // Set loading state
+            isLoading = true
+            
+            // Add a temporary AI message placeholder, showing "Thinking..."
+            val loadingMessageIndex = messages.size
+            messages.add(Message("Thinking...", false, isCentered = true))
+            
+            // Send message to API and handle response
+            coroutineScope.launch {
+                try {
+                    var fullResponse = ""
+                    
+                    // Collect streamed response
+                    geminiApiService.sendMessage(message).collectLatest { partialResponse ->
+                        fullResponse = partialResponse
+                        
+                        // Update temporary message with currently received partial response
+                        if (messages.size > loadingMessageIndex) {
+                            messages[loadingMessageIndex] = geminiApiService.parseStructuredContent(fullResponse)
+                        }
+                    }
+                    
+                    // Remove temporary message, add fully parsed response
+                    if (messages.size > loadingMessageIndex) {
+                        messages[loadingMessageIndex] = geminiApiService.parseStructuredContent(fullResponse)
+                    }
+                    
+                } catch (e: Exception) {
+                    Log.e("AICoachScreen", "Error sending message", e)
+                    // Show error message on failure
+                    if (messages.size > loadingMessageIndex) {
+                        messages[loadingMessageIndex] = Message(
+                            "Sorry, I encountered an issue and couldn't respond to your request. Please try again later.", 
+                            isFromUser = false
+                        )
+                    }
+                } finally {
+                    isLoading = false
+                }
+            }
+            
+            // Clear input field
+            messageText = ""
+        }
     }
     
     Box(
@@ -158,43 +158,39 @@ fun AICoachScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 80.dp)
+                .padding(bottom = 80.dp) // Adjust padding to avoid overlap with BottomNavBar
         ) {
-            // 顶部栏
+            // Top bar
             TopAppBar(
                 onNavigateBack = onNavigateBack
             )
             
-            // AI教练头像和介绍
+            // AI Coach header and introduction
             AICoachHeader()
             
-            // 聊天界面（包含输入框）
+            // Chat interface (including input field)
             ChatSection(
                 messages = messages,
                 messageText = messageText,
                 onMessageTextChange = { messageText = it },
-                onSendClick = {
-                    if (messageText.isNotEmpty()) {
-                        messages.add(Message(messageText, true))
-                        messageText = ""
-                    }
-                }
+                onSendClick = { sendMessage(messageText) },
+                isLoading = isLoading
             )
             
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(1f)) // Pushes QuickQuestionsRow to the bottom
             
-            // 快捷问题
+            // Quick questions
             QuickQuestionsRow(
                 questions = quickQuestions,
                 onQuestionClick = { question ->
-                    messages.add(Message(question.text, true))
+                    sendMessage(question.text)
                 }
             )
         }
         
-        // 底部导航
+        // Bottom navigation
         BottomNavBar(
-            currentRoute = "profile",
+            currentRoute = "profile", // Assuming AICoach is part of Profile or a separate tab
             onNavigateToHome = onNavigateToHome,
             onNavigateToCalendar = onNavigateToCalendar,
             onNavigateToMap = onNavigateToMap,
@@ -214,7 +210,7 @@ fun TopAppBar(
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 返回按钮
+        // Back button
         Box(
             modifier = Modifier
                 .size(32.dp)
@@ -231,9 +227,9 @@ fun TopAppBar(
             )
         }
         
-        // 标题
+        // Title
         Text(
-            text = "AI Coach",
+            text = "My Smart Coach",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
@@ -271,39 +267,33 @@ fun AICoachHeader() {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // AI头像
+                // AI avatar - 使用自定义图片替换通用图标
                 Box(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
                         .background(Color.White)
-                        .padding(4.dp),
+                        .padding(2.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Box(
+                    Image(
+                        painter = painterResource(id = R.drawable.ai_coach_avatar),
+                        contentDescription = "AI Coach Avatar",
                         modifier = Modifier
                             .fillMaxSize()
-                            .clip(CircleShape)
-                            .background(Color(0xFFEBF5FF)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_person),
-                            contentDescription = "AI Avatar",
-                            modifier = Modifier.size(40.dp),
-                            tint = Color(0xFF3B82F6)
-                        )
-                    }
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
                 }
                 
-                // AI介绍
+                // AI introduction
                 Column(
                     modifier = Modifier
                         .padding(start = 16.dp)
                         .weight(1f)
                 ) {
                     Text(
-                        text = "FitLife AI",
+                        text = "FitLife Smart Coach",
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold
@@ -417,14 +407,15 @@ fun ChatSection(
     messages: List<Message>,
     messageText: String,
     onMessageTextChange: (String) -> Unit,
-    onSendClick: () -> Unit
+    onSendClick: () -> Unit,
+    isLoading: Boolean = false
 ) {
     Column(
         modifier = Modifier
             .padding(horizontal = 16.dp)
     ) {
         Text(
-            text = "Chat with AI Coach",
+            text = "Chat with Smart Coach",
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color(0xFF374151),
@@ -434,7 +425,7 @@ fun ChatSection(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(480.dp),
+                .height(480.dp), // Fixed height for chat area
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Color.White
@@ -446,21 +437,29 @@ fun ChatSection(
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
-                // 聊天消息列表
+                // Chat messages list
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(bottom = 2.dp)
+                    contentPadding = PaddingValues(bottom = 2.dp),
+                    reverseLayout = false, // Ensure latest messages are at the bottom
+                    state = rememberLazyListState().apply {
+                        LaunchedEffect(messages.size) {
+                            if (messages.isNotEmpty()) {
+                                animateScrollToItem(messages.size - 1)
+                            }
+                        }
+                    }
                 ) {
                     items(messages) { message ->
                         MessageItem(message = message)
                     }
                 }
                 
-                // 输入框
+                // Input field
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -495,18 +494,26 @@ fun ChatSection(
                                 modifier = Modifier
                                     .size(32.dp)
                                     .clip(CircleShape)
-                                    .background(Color(0xFF3B82F6))
+                                    .background(Color(0xFF3B82F6)),
+                                enabled = !isLoading && messageText.isNotEmpty()
                             ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_send_arrow),
-                                    contentDescription = "Send",
-                                    tint = Color.White,
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                )
+                                if (isLoading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        color = Color.White,
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_send_arrow),
+                                        contentDescription = "Send",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
                             }
                         },
-                        maxLines = 1
+                        enabled = !isLoading
                     )
                 }
             }

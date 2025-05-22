@@ -842,33 +842,45 @@ fun PlaceItem(place: FitnessPlace) {
                 // Name and rating
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    // 名称使用weight并设置最多占用空间，允许末尾省略
                     Text(
                         text = place.name,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF1F2937)
+                        color = Color(0xFF1F2937),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                    // 评分部分不再使用weight，而是固定宽度
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    // 评分组件设为固定布局
+                    Box(
+                        modifier = Modifier.widthIn(min = 45.dp),
+                        contentAlignment = Alignment.CenterEnd
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_star),
-                            contentDescription = "Rating",
-                            tint = Color(0xFFFACC15),
-                            modifier = Modifier.size(16.dp)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_star),
+                                contentDescription = "Rating",
+                                tint = Color(0xFFFACC15),
+                                modifier = Modifier.size(16.dp)
+                            )
 
-                        Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
 
-                        Text(
-                            text = place.rating.toString(),
-                            fontSize = 14.sp,
-                            color = Color(0xFF6B7280)
-                        )
+                            Text(
+                                text = place.rating.toString(),
+                                fontSize = 14.sp,
+                                color = Color(0xFF6B7280)
+                            )
+                        }
                     }
                 }
                 

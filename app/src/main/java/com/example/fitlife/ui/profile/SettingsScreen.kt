@@ -51,7 +51,12 @@ fun SettingsScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(if (isHighContrastMode) Color.White else Color(0xFFF9FAFB))
+            .background(
+                AccessibilityUtils.getFullyAccessibleColor(
+                    normalColor = Color(0xFFF9FAFB), 
+                    highContrastColor = Color.White
+                )
+            )
             .windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
         Column(
@@ -75,7 +80,10 @@ fun SettingsScreen(
                     icon = ResourceUtils.getResourceId("ic_profile", R.drawable.profile_photo),
                     title = "Profile",
                     onClick = onProfileClick,
-                    backgroundColor = Color.White
+                    backgroundColor = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color.White,
+                        highContrastColor = Color.White
+                    )
                 )
                 
                 // Privacy Policy
@@ -83,7 +91,10 @@ fun SettingsScreen(
                     icon = ResourceUtils.getResourceId("ic_privacy", R.drawable.profile_photo),
                     title = "Privacy Policy",
                     onClick = onPrivacyPolicyClick,
-                    backgroundColor = Color.White
+                    backgroundColor = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color.White,
+                        highContrastColor = Color.White
+                    )
                 )
                 
                 // Terms of Service
@@ -91,7 +102,10 @@ fun SettingsScreen(
                     icon = ResourceUtils.getResourceId("ic_privacy", R.drawable.profile_photo),
                     title = "Terms of Service",
                     onClick = onTermsOfServiceClick,
-                    backgroundColor = Color.White
+                    backgroundColor = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color.White,
+                        highContrastColor = Color.White
+                    )
                 )
                 
                 // Change password
@@ -100,7 +114,11 @@ fun SettingsScreen(
                     title = "Change Password",
                     onClick = onChangePasswordClick,
                     useVectorIcon = true,
-                    vectorIcon = Icons.Default.Lock
+                    vectorIcon = Icons.Default.Lock,
+                    backgroundColor = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color.White,
+                        highContrastColor = Color.White
+                    )
                 )
                 
                 // Accessibility
@@ -109,7 +127,11 @@ fun SettingsScreen(
                     title = "Accessibility",
                     onClick = onAccessibilityClick,
                     useVectorIcon = true,
-                    vectorIcon = Icons.Default.Settings
+                    vectorIcon = Icons.Default.Settings,
+                    backgroundColor = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color.White,
+                        highContrastColor = Color.White
+                    )
                 )
                 
                 // Help and feedback
@@ -117,7 +139,10 @@ fun SettingsScreen(
                     icon = ResourceUtils.getResourceId("ic_help", R.drawable.profile_photo),
                     title = "Help & Feedback",
                     onClick = onHelpFeedbackClick,
-                    backgroundColor = Color.White
+                    backgroundColor = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color.White,
+                        highContrastColor = Color.White
+                    )
                 )
                 
                 // About us
@@ -125,7 +150,10 @@ fun SettingsScreen(
                     icon = ResourceUtils.getResourceId("ic_help", R.drawable.profile_photo),
                     title = "About Us",
                     onClick = onAboutUsClick,
-                    backgroundColor = Color.White
+                    backgroundColor = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color.White,
+                        highContrastColor = Color.White
+                    )
                 )
                 
                 Spacer(modifier = Modifier.height(80.dp))
@@ -143,21 +171,25 @@ fun SettingsScreen(
                         .fillMaxWidth()
                         .height(56.dp)
                         .let {
-                            if (isHighContrastMode) {
+                            if (AccessibilityUtils.isHighContrastModeEnabled()) {
                                 it.highContrastBorder(RoundedCornerShape(12.dp))
                             } else {
                                 it
                             }
                         },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isHighContrastMode) Color.Black else Color(0xFFEF4444)
+                        containerColor = AccessibilityUtils.getFullyAccessibleColor(
+                            normalColor = Color(0xFFEF4444), 
+                            highContrastColor = Color.Black
+                        )
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = "Logout",
                         fontSize = 16.sp,
-                        fontWeight = if (isHighContrastMode) FontWeight.ExtraBold else FontWeight.Medium,
+                        fontWeight = if (AccessibilityUtils.isHighContrastModeEnabled()) 
+                                     FontWeight.ExtraBold else FontWeight.Medium,
                         color = Color.White
                     )
                 }

@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -62,9 +63,19 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.gson)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
-    
+    implementation ("io.coil-kt:coil-compose:2.4.0")
+
     // DataStore Preferences
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.datastore:datastore-core:1.0.0")
+
+    // Google Generative AI (Gemini API)
+    implementation("com.google.ai.client.generativeai:generativeai:0.2.2")
+
+    // Firebase Authentication
+    implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.android.gms:play-services-auth:21.1.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

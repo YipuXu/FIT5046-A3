@@ -1,5 +1,10 @@
 package com.example.fitlife.ui.profile
 
+import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.Context
+import android.content.Intent
+import android.provider.Settings
+import android.view.accessibility.AccessibilityManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -36,18 +41,31 @@ fun AccessibilityScreen(
     val accessibilityPreferences = remember { AccessibilityPreferences(context) }
     val coroutineScope = rememberCoroutineScope()
     val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
-
+    
     // 从DataStore获取设置
     val highContrastEnabled by accessibilityPreferences.highContrastMode.collectAsState(initial = false)
     val colorBlindModeEnabled by accessibilityPreferences.colorBlindMode.collectAsState(initial = false)
     val zoomEnabled by accessibilityPreferences.zoomFunction.collectAsState(initial = false)
     val screenReaderEnabled by accessibilityPreferences.screenReader.collectAsState(initial = false)
     val keyboardControlEnabled by accessibilityPreferences.keyboardControl.collectAsState(initial = false)
+    
+    // 对话框状态
+    var showScreenReaderDialog by remember { mutableStateOf(false) }
+
+    // 检查TalkBack服务是否启用
+    val isTalkBackEnabled = remember(context) {
+        isTalkBackEnabled(context)
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(if (isHighContrastMode) Color.White else Color(0xFFF9FAFB))
+            .background(
+                AccessibilityUtils.getFullyAccessibleColor(
+                    normalColor = Color(0xFFF9FAFB),
+                    highContrastColor = Color.White
+                )
+            )
             .windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
         // Fixed top bar
@@ -56,7 +74,12 @@ fun AccessibilityScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .zIndex(1f) // Ensure top bar stays above scrolling content
-                .background(if (isHighContrastMode) Color.White else Color(0xFFF9FAFB))
+                .background(
+                    AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color(0xFFF9FAFB),
+                        highContrastColor = Color.White
+                    )
+                )
         )
 
         // Scrollable content area
@@ -67,15 +90,14 @@ fun AccessibilityScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // 使用AccessibilityUtils中的组件
             AccessibilityUtils.AccessibleSettingsItem(
                 title = "High Contrast Mode",
-                description = "Enhance the contrast between text and background for better visibility",
                 trailingContent = {
                     AccessibilityUtils.AccessibleSwitch(
-                        checked = highContrastEnabled,
+                checked = highContrastEnabled,
                         onCheckedChange = { 
                             coroutineScope.launch {
                                 accessibilityPreferences.saveHighContrastMode(it)
@@ -87,10 +109,9 @@ fun AccessibilityScreen(
 
             AccessibilityUtils.AccessibleSettingsItem(
                 title = "Color Blind Mode",
-                description = "Adjust colors for color blind users to improve recognition",
                 trailingContent = {
                     AccessibilityUtils.AccessibleSwitch(
-                        checked = colorBlindModeEnabled,
+                checked = colorBlindModeEnabled,
                         onCheckedChange = { 
                             coroutineScope.launch {
                                 accessibilityPreferences.saveColorBlindMode(it)
@@ -102,10 +123,9 @@ fun AccessibilityScreen(
 
             AccessibilityUtils.AccessibleSettingsItem(
                 title = "Zoom Function",
-                description = "Allow zooming interface elements to make content easier to read",
                 trailingContent = {
                     AccessibilityUtils.AccessibleSwitch(
-                        checked = zoomEnabled,
+                checked = zoomEnabled,
                         onCheckedChange = { 
                             coroutineScope.launch {
                                 accessibilityPreferences.saveZoomFunction(it)
@@ -117,13 +137,18 @@ fun AccessibilityScreen(
 
             AccessibilityUtils.AccessibleSettingsItem(
                 title = "Screen Reader",
-                description = "Enable screen reading functionality for visually impaired users",
                 trailingContent = {
                     AccessibilityUtils.AccessibleSwitch(
-                        checked = screenReaderEnabled,
-                        onCheckedChange = { 
-                            coroutineScope.launch {
-                                accessibilityPreferences.saveScreenReader(it)
+                checked = screenReaderEnabled,
+                        onCheckedChange = { newValue -> 
+                            if (newValue && !isTalkBackEnabled) {
+                                // 如果用户试图启用屏幕阅读器但TalkBack未开启，显示对话框
+                                showScreenReaderDialog = true
+                            } else {
+                                // 其他情况正常保存设置
+                                coroutineScope.launch {
+                                    accessibilityPreferences.saveScreenReader(newValue)
+                                }
                             }
                         }
                     )
@@ -132,10 +157,9 @@ fun AccessibilityScreen(
 
             AccessibilityUtils.AccessibleSettingsItem(
                 title = "Keyboard Control",
-                description = "Allow keyboard navigation and control of the application",
                 trailingContent = {
                     AccessibilityUtils.AccessibleSwitch(
-                        checked = keyboardControlEnabled,
+                checked = keyboardControlEnabled,
                         onCheckedChange = { 
                             coroutineScope.launch {
                                 accessibilityPreferences.saveKeyboardControl(it)
@@ -145,9 +169,92 @@ fun AccessibilityScreen(
                 }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(80.dp))
+        }
+        
+        // 屏幕阅读器设置对话框
+        if (showScreenReaderDialog) {
+            AlertDialog(
+                onDismissRequest = { showScreenReaderDialog = false },
+                icon = {},  // 空图标
+                title = { 
+                    Text(
+                        text = "Enable Screen Reader",
+                        fontWeight = if (isHighContrastMode) FontWeight.ExtraBold else FontWeight.Bold
+                    ) 
+                },
+                text = { 
+                    Text(
+                        text = "TalkBack is an Android system accessibility service that needs to be enabled in system settings. Click \"Go to Settings\" to open the system accessibility settings page where you can enable TalkBack service."
+                    ) 
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            // 打开系统无障碍设置
+                            openAccessibilitySettings(context)
+                            showScreenReaderDialog = false
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF2196F3) // 蓝色按钮
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Go to Settings")
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = { showScreenReaderDialog = false },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE0E0E0) // 灰色按钮
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Cancel", color = Color.Black)
+                    }
+                },
+                containerColor = AccessibilityUtils.getFullyAccessibleColor(
+                    normalColor = MaterialTheme.colorScheme.surface,
+                    highContrastColor = Color.White
+                ),
+                titleContentColor = AccessibilityUtils.getFullyAccessibleColor(
+                    normalColor = MaterialTheme.colorScheme.onSurface,
+                    highContrastColor = Color.Black
+                ),
+                textContentColor = AccessibilityUtils.getFullyAccessibleColor(
+                    normalColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    highContrastColor = Color.Black
+                )
+            )
         }
     }
+}
+
+/**
+ * 检查TalkBack服务是否开启
+ */
+private fun isTalkBackEnabled(context: Context): Boolean {
+    val accessibilityManager = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+    val enabledServices = accessibilityManager.getEnabledAccessibilityServiceList(
+        AccessibilityServiceInfo.FEEDBACK_SPOKEN
+    )
+    
+    return enabledServices.any { 
+        it.resolveInfo.serviceInfo.packageName.contains("talkback", ignoreCase = true) ||
+        it.resolveInfo.serviceInfo.name.contains("talkback", ignoreCase = true)
+    }
+}
+
+/**
+ * 打开系统无障碍设置页面
+ */
+private fun openAccessibilitySettings(context: Context) {
+    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+    context.startActivity(intent)
 }
 
 @Composable
@@ -160,7 +267,12 @@ private fun TopBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(if (isHighContrastMode) Color.White else Color(0xFFF9FAFB))
+            .background(
+                AccessibilityUtils.getFullyAccessibleColor(
+                    normalColor = Color(0xFFF9FAFB),
+                    highContrastColor = Color.White
+                )
+            )
     ) {
         Row(
             modifier = Modifier
@@ -173,7 +285,13 @@ private fun TopBar(
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape)
-                    .background(if (isHighContrastMode) Color.Black else Color(0xFFF3F4F6))
+                    .background(
+                        // 使用getFullyAccessibleColor同时支持高对比度和色盲模式
+                        AccessibilityUtils.getFullyAccessibleColor(
+                            normalColor = Color(0xFFF3F4F6),
+                            highContrastColor = Color.Black
+                        )
+                    )
                     .clickable { onBackClick() },
                 contentAlignment = Alignment.Center
             ) {
@@ -181,7 +299,10 @@ private fun TopBar(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
                     modifier = Modifier.size(20.dp),
-                    tint = if (isHighContrastMode) Color.White else Color(0xFF6B7280)
+                    tint = AccessibilityUtils.getFullyAccessibleColor(
+                        normalColor = Color(0xFF6B7280),
+                        highContrastColor = Color.White
+                    )
                 )
             }
 
@@ -194,7 +315,10 @@ private fun TopBar(
                     .weight(1f)
                     .padding(horizontal = 16.dp),
                 textAlign = TextAlign.Center,
-                color = if (isHighContrastMode) Color.Black else Color(0xFF1F2937)
+                color = AccessibilityUtils.getFullyAccessibleColor(
+                    normalColor = Color(0xFF1F2937),
+                    highContrastColor = Color.Black
+                )
             )
 
             // Placeholder for symmetry

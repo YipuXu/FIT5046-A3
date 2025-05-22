@@ -76,11 +76,23 @@ private val HighContrastDarkColorScheme = darkColorScheme(
 
 // 色盲模式的颜色方案 (红绿色盲友好)
 private val ColorBlindLightColorScheme = lightColorScheme(
-    primary = Color(0xFF0072B2), // 蓝色
-    secondary = Color(0xFFE69F00), // 橙色
+    primary = Color(0xFF0072B2), // 蓝色 - 替代绿色
+    secondary = Color(0xFFE69F00), // 橙色 - 替代红色
     tertiary = Color(0xFF56B4E9), // 天蓝色
     background = Color.White,
-    onBackground = Color(0xFF000000)
+    onBackground = Color(0xFF000000),
+    surface = Color.White,
+    onSurface = Color(0xFF000000),
+    onPrimary = Color.White,
+    onSecondary = Color.Black,
+    onTertiary = Color.Black,
+    error = Color(0xFF9467BD), // 紫色 - 替代红色作为错误色
+    onError = Color.White,
+    primaryContainer = Color(0xFFD0E7F7), // 浅蓝色
+    secondaryContainer = Color(0xFFFFF0D0), // 浅橙色
+    tertiaryContainer = Color(0xFFD9F0FB), // 浅天蓝色
+    errorContainer = Color(0xFFE9DBEE), // 浅紫色
+    onErrorContainer = Color(0xFF9467BD)
 )
 
 private val ColorBlindDarkColorScheme = darkColorScheme(
@@ -88,7 +100,19 @@ private val ColorBlindDarkColorScheme = darkColorScheme(
     secondary = Color(0xFFFFB74D), // 亮橙色
     tertiary = Color(0xFF80DEEA), // 亮天蓝色
     background = Color(0xFF121212),
-    onBackground = Color(0xFFFFFFFF)
+    onBackground = Color(0xFFFFFFFF),
+    surface = Color(0xFF121212),
+    onSurface = Color(0xFFFFFFFF),
+    onPrimary = Color.Black,
+    onSecondary = Color.Black,
+    onTertiary = Color.Black,
+    error = Color(0xFFD0A9DF), // 浅紫色 - 替代红色
+    onError = Color.Black,
+    primaryContainer = Color(0xFF004080), // 深蓝色
+    secondaryContainer = Color(0xFFC87800), // 深橙色
+    tertiaryContainer = Color(0xFF0097A7), // 深蓝绿色
+    errorContainer = Color(0xFF7E4E9B), // 深紫色
+    onErrorContainer = Color(0xFFE9DBEE) // 浅紫色
 )
 
 // 默认颜色方案
