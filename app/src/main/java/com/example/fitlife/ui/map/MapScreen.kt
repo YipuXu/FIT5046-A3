@@ -526,18 +526,14 @@ fun SearchBarWithTitle(
         // Title and menu button lines
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            // Leave the left side blank to maintain symmetry
-            Spacer(modifier = Modifier.width(32.dp))
-
             // Title
             Text(
                 text = "Nearby Fitness Places",
-                fontSize = 18.sp, 
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .weight(1f),
                 textAlign = TextAlign.Center,
                 color = Color(0xFF1F2937)
             )
