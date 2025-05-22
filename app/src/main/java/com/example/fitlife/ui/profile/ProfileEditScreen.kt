@@ -61,6 +61,15 @@ import androidx.compose.foundation.layout.FlowRow
 import com.example.fitlife.utils.ResourceUtils
 import com.example.fitlife.ui.components.BottomNavBar // 添加导入
 
+import android.net.Uri // 导入 Uri
+import androidx.activity.compose.rememberLauncherForActivityResult // 导入 rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts // 导入 ActivityResultContracts
+import coil.compose.AsyncImage // 导入 AsyncImage
+import com.example.fitlife.MyApplication // 导入 MyApplication
+import kotlinx.coroutines.launch // 导入 launch
+import androidx.compose.runtime.rememberCoroutineScope // 导入 rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+
 @Composable
 fun ProfileEditScreen(
     onBackClick: () -> Unit = {},
@@ -79,6 +88,27 @@ fun ProfileEditScreen(
     var showFitnessGoalDialog by remember { mutableStateOf(false) }
     var showWorkoutFrequencyDialog by remember { mutableStateOf(false) }
     var showFitnessTagsDialog by remember { mutableStateOf(false) }
+    
+    // State for selected image URI
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    
+    // Coroutine scope and DAO must be defined before the launcher that uses them
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val userDao = remember { (context.applicationContext as MyApplication).database.userDao() }
+    
+    // Activity result launcher for picking images from gallery
+    val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
+        uri: Uri? ->
+        selectedImageUri = uri
+        // Save the URI to Room and close dialog if URI is not null
+        uri?.let {
+            coroutineScope.launch {
+                userDao.updateAvatar(0, it.toString()) // Assuming user ID is 0
+                showProfilePhotoDialog = false // Close dialog after saving
+            }
+        }
+    }
     
     // State data
     var heightValue by remember { mutableStateOf("178") }
@@ -225,10 +255,10 @@ fun ProfileEditScreen(
     if (showProfilePhotoDialog) {
         ProfilePhotoDialog(
             onDismiss = { showProfilePhotoDialog = false },
-            onUploadPhoto = { 
-                // Mock function for photo upload UI
-                showProfilePhotoDialog = false 
-            }
+            onUploadPhoto = { // Modified to launch gallery picker
+                pickImageLauncher.launch("image/*") // Launch gallery to select images
+            },
+            selectedImageUri = selectedImageUri // Pass selected image URI
         )
     }
     
@@ -824,7 +854,8 @@ private fun SettingsItem(
 @Composable
 private fun ProfilePhotoDialog(
     onDismiss: () -> Unit,
-    onUploadPhoto: () -> Unit
+    onUploadPhoto: () -> Unit,
+    selectedImageUri: Uri? // Add parameter for selected image URI
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -839,7 +870,7 @@ private fun ProfilePhotoDialog(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Large profile photo
+                // Large profile photo or selected image
                 Box(
                     modifier = Modifier
                         .size(200.dp)
@@ -847,58 +878,55 @@ private fun ProfilePhotoDialog(
                         .background(Color(0xFFE6F0FF)),
                     contentAlignment = Alignment.Center
                 ) {
-                    val hasProfilePhoto = true // 此处可替换为实际逻辑以检查是否有照片
-                    
-                    if (hasProfilePhoto) {
-                        Image(
-                            painter = painterResource(id = R.drawable.profile_photo),
-                            contentDescription = "Profile Photo",
-                            modifier = Modifier.fillMaxSize(),
+                    if (selectedImageUri != null) {
+                        // Display selected image using Coil
+                        AsyncImage(
+                            model = selectedImageUri,
+                            contentDescription = "Selected Profile Photo",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(8.dp)),
                             contentScale = ContentScale.Crop
                         )
                     } else {
-                        // Fallback if image cannot be loaded
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = "Profile Photo",
-                            modifier = Modifier.size(64.dp),
-                            tint = Color(0xFF3B82F6)
-                        )
+                        // Display default placeholder if no image is selected or there's no photo yet
+                        val hasProfilePhoto = true // 此处可替换为实际逻辑以检查是否有照片
+                        if (hasProfilePhoto) {
+                             Image(
+                                 painter = painterResource(id = R.drawable.profile_photo),
+                                 contentDescription = "Profile Photo",
+                                 modifier = Modifier
+                                     .fillMaxSize()
+                                     .clip(RoundedCornerShape(8.dp)),
+                                 contentScale = ContentScale.Crop
+                             )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Info, // Placeholder icon
+                                contentDescription = "No photo available",
+                                modifier = Modifier.size(48.dp),
+                                tint = Color.Gray
+                            )
+                        }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
-                // Upload button
+
                 Button(
-                    onClick = onUploadPhoto,
+                    onClick = onUploadPhoto, // This will now trigger the gallery picker
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF3B82F6)
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add, // 使用Add图标替代Upload
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Upload New Photo")
-                    }
+                    Icon(Icons.Default.Add, contentDescription = "Upload")
+                    Spacer(Modifier.width(8.dp))
+                    Text("Upload New Photo")
                 }
-                
+
                 Spacer(modifier = Modifier.height(8.dp))
-                
-                // Close button
-                TextButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Close", color = Color(0xFF6B7280))
+
+                TextButton(onClick = onDismiss) {
+                    Text("Close")
                 }
             }
         }

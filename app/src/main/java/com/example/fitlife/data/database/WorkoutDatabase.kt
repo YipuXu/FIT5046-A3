@@ -6,10 +6,13 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.fitlife.data.dao.WorkoutDao
+import com.example.fitlife.data.dao.UserDao // 导入 UserDao
+import com.example.fitlife.data.model.User // 导入 User 实体
 
-@Database(entities = [Workout::class], version = 1, exportSchema = false)
+@Database(entities = [Workout::class, User::class], version = 1, exportSchema = false) // 添加 User 实体
 abstract class WorkoutDatabase : RoomDatabase() {
     abstract fun workoutDao(): WorkoutDao
+    abstract fun userDao(): UserDao // 添加 userDao 方法
 
     companion object {
         @Volatile

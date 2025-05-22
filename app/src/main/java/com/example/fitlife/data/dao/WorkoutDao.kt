@@ -8,6 +8,9 @@ interface WorkoutDao {
     @Query("SELECT * FROM workout_table")
     fun getAll(): Flow<List<Workout>>
 
+    @Query("SELECT * FROM workout_table ORDER BY date DESC, time DESC LIMIT 2")
+    fun getLatestTwoWorkouts(): Flow<List<Workout>>
+
     @Insert
     suspend fun insertWorkout(workout: Workout)
 

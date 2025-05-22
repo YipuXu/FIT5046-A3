@@ -38,7 +38,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.FlowRow
 import com.example.fitlife.utils.ResourceUtils
+import com.example.fitlife.MyApplication
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
+import com.example.fitlife.data.model.Workout
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     onBackClick: () -> Unit,
@@ -63,6 +72,14 @@ fun ProfileScreen(
 ) {
     val userData = getUserData()
     
+    val context = LocalContext.current
+    val workoutDao = remember { (context.applicationContext as MyApplication).database.workoutDao() }
+    val latestWorkouts by workoutDao.getLatestTwoWorkouts().collectAsState(initial = emptyList())
+
+    // State for the workout detail dialog
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedWorkout by remember { mutableStateOf<Workout?>(null) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -80,7 +97,12 @@ fun ProfileScreen(
                 onAICoachClick = onAICoachClick,
                 selectedFitnessTags = selectedFitnessTags,
                 onFitnessTagsUpdated = onFitnessTagsUpdated,
-                userData = userData
+                userData = userData,
+                latestWorkouts = latestWorkouts,
+                onWorkoutClick = { workout ->
+                    selectedWorkout = workout
+                    showDialog = true
+                }
             )
         }
         
@@ -94,6 +116,34 @@ fun ProfileScreen(
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
+
+    // Workout detail dialog
+    if (showDialog && selectedWorkout != null) {
+        val workout = selectedWorkout // Create a local non-nullable variable
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(workout!!.type) }, // Use non-null assertion
+            text = {
+                Column {
+                    Text("Date: ${workout!!.date}") // Use non-null assertion
+                    Text("Time: ${workout!!.time}") // Use non-null assertion
+                    Text("Duration: ${workout!!.duration} min") // Use non-null assertion
+                    Text("Calories: ${workout!!.calories} kcal") // Use non-null assertion
+                    if (workout!!.notes.isNotBlank()) { // Use non-null assertion
+                        Text("Notes: ${workout!!.notes}") // Use non-null assertion
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6))
+                ) {
+                    Text("Close")
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -104,7 +154,9 @@ private fun ProfileContent(
     onAICoachClick: () -> Unit,
     selectedFitnessTags: List<String>,
     onFitnessTagsUpdated: (List<String>) -> Unit,
-    userData: Map<String, Any>
+    userData: Map<String, Any>,
+    latestWorkouts: List<Workout>,
+    onWorkoutClick: (Workout) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -162,7 +214,11 @@ private fun ProfileContent(
         )
 
         // 最近记录部分
-        RecentHistorySection(onViewAll = onViewAllHistory)
+        RecentHistorySection(
+            onViewAll = onViewAllHistory,
+            latestWorkouts = latestWorkouts,
+            onWorkoutClick = onWorkoutClick
+        )
 
         // AI教练部分
         AICoachSection(onStartChat = onAICoachClick)
@@ -370,7 +426,7 @@ private fun StatItem(
 }
 
 @Composable
-private fun RecentHistorySection(onViewAll: () -> Unit) {
+private fun RecentHistorySection(onViewAll: () -> Unit, latestWorkouts: List<Workout>, onWorkoutClick: (Workout) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -399,48 +455,29 @@ private fun RecentHistorySection(onViewAll: () -> Unit) {
         }
 
         // History records list - each record as a separate card
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White
-            ),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 0.dp
-            )
-        ) {
-            HistoryItem(
-                icon = R.drawable.ic_workout,
-                title = "Upper Body Training",
-                time = "Yesterday · 45 min",
-                calories = "320 kcal",
-                iconTint = Color(0xFF3B82F6),
-                background = Color.White
-            )
-        }
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White
-            ),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 0.dp
-            )
-        ) {
-            HistoryItem(
-                icon = R.drawable.ic_workout,
-                title = "HIIT Training",
-                time = "3 days ago · 30 min",
-                calories = "280 kcal",
-                iconTint = Color(0xFF10B981),
-                background = Color.White
-            )
+        latestWorkouts.forEach { workout ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 0.dp
+                )
+            ) {
+                HistoryItem(
+                    icon = R.drawable.ic_workout, // 使用默认图标
+                    title = workout.type,
+                    time = "${workout.date} · ${workout.duration} min",
+                    calories = "${workout.calories} kcal",
+                    iconTint = Color(0xFF3B82F6), // 使用默认颜色
+                    background = Color.White,
+                    onItemClick = { onWorkoutClick(workout) }
+                )
+            }
         }
     }
 }
@@ -533,12 +570,13 @@ private fun HistoryItem(
     time: String,
     calories: String,
     iconTint: Color = Color(0xFF3B82F6),
-    background: Color = Color.White
+    background: Color = Color.White,
+    onItemClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* View details */ }
+            .clickable { onItemClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

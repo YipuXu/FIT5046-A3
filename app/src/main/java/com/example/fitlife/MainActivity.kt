@@ -23,6 +23,7 @@ import com.example.fitlife.ui.policy.PrivacyPolicyScreen
 import com.example.fitlife.ui.policy.TermsOfServiceScreen
 import com.example.fitlife.ui.profile.AccessibilityScreen
 import com.example.fitlife.ui.train.RecordTrainingScreen
+import com.example.fitlife.ui.train.AllRecentRecordsScreen
 
 
 
@@ -34,7 +35,7 @@ class MainActivity : ComponentActivity() {
             FitLifeTheme {
                 // Use state to control login status and current page
                 val isLoggedIn = remember { mutableStateOf(false) }
-                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit, settings, about, helpFeedback, changePassword, aiCoach, privacyPolicy, termsOfService, accessibility
+                val currentScreen = remember { mutableStateOf("login") } // login, register, map, profile, profileEdit, settings, about, helpFeedback, changePassword, aiCoach, privacyPolicy, termsOfService, accessibility, all_records
                 
                 // Add a state to store selected fitness tags
                 val selectedFitnessTags = remember { mutableStateOf(listOf("Strength Training", "Cardio")) }
@@ -65,7 +66,7 @@ class MainActivity : ComponentActivity() {
                                 // Display profile page
                                 ProfileScreen(
                                     onBackClick = { /* 移除返回按钮功能 */ },
-                                    onViewAllHistory = { currentScreen.value = "record" },
+                                    onViewAllHistory = { currentScreen.value = "all_records" },
                                     onEditProfileClick = { tags -> 
                                         Log.d("MainActivity", "Navigate to edit page, tags: ${selectedFitnessTags.value.joinToString()}")
                                         currentScreen.value = "profileEdit"
@@ -143,6 +144,12 @@ class MainActivity : ComponentActivity() {
                                     onNavigateToCalendar = { /* 可扩展 */ },
                                     onNavigateToMap = { currentScreen.value = "map" },
                                     onNavigateToProfile = { currentScreen.value = "profile" }
+                                )
+                            }
+                            "all_records" -> {
+                                // Display all recent records page
+                                AllRecentRecordsScreen(
+                                    onBack = { currentScreen.value = "profile" } // 返回个人资料页面
                                 )
                             }
                             "aiCoach" -> {
