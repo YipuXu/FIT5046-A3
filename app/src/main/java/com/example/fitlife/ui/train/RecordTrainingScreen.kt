@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.SentimentNeutral
@@ -18,6 +19,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -46,7 +48,20 @@ fun RecordTrainingScreen(
     val context = LocalContext.current
 
     var trainingType by remember { mutableStateOf("Strength Training") }
-    val trainingTypes = listOf("Strength Training", "Cardio", "Yoga", "Swimming")
+    val trainingTypes = listOf(
+        "Strength Training",
+        "Cardio",
+        "HIIT",
+        "Yoga",
+        "Pilates",
+        "Functional Training",
+        "Outdoor Activities",
+        "Group Classes",
+        "Running",
+        "Swimming",
+        "Boxing",
+        "Dancing"
+    )
 
     var duration by remember { mutableStateOf(30) }
     var calories by remember { mutableStateOf("") }
@@ -57,24 +72,51 @@ fun RecordTrainingScreen(
 
     val dateFormatter = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
     val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    var showDialog by remember { mutableStateOf(false) }
+    var caloriesBurned by remember { mutableStateOf(0) }
+
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Record Workout",
-                            fontWeight = FontWeight.Bold,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
-                    }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFF3F4F6))
+                        .clickable {
+                            onNavigateToProfile()
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        modifier = Modifier.size(20.dp),
+                        tint = Color(0xFF6B7280)
+                    )
                 }
-            )
+                Text(
+                    text = "Let's Burn Calories",
+                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    color = Color(0xFF1F2937)
+                )
+                Spacer(modifier = Modifier.size(36.dp))
+            }
         },
+
         bottomBar = {
             BottomNavBar(
                 currentRoute = currentRoute,
@@ -175,7 +217,7 @@ fun RecordTrainingScreen(
                             .height(50.dp),
                         shape = MaterialTheme.shapes.medium,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF3B82F6),
+                            containerColor = Color(0xFF2563EB),
                             contentColor = Color.White
                         )
                     ) {
@@ -206,7 +248,7 @@ fun RecordTrainingScreen(
                         .height(50.dp),
                         shape = MaterialTheme.shapes.medium,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF3B82F6),
+                            containerColor = Color(0xFF2563EB),
                             contentColor = Color.White
                         )
                     ) {
@@ -220,125 +262,197 @@ fun RecordTrainingScreen(
             }
 
 
-
-            Column {
-                Text("Workout Duration (minutes)")
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(0, 30, 60, 90, 120).forEach {
-                        OutlinedButton(
-                            onClick = { duration = it },
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                containerColor = if (it == duration) Color.Blue.copy(alpha = 0.1f) else Color.Transparent
-                            )
-                        ) {
-                            Text("$it")
-                        }
-                    }
-                }
-            }
-
-            Text("Calories Burned (kcal)")
-            OutlinedTextField(
-                value = calories,
-                onValueChange = { calories = it },
-                label = { Text("Calories Burned (kcal)") },
+            Card(
+                shape = MaterialTheme.shapes.medium,
+                colors = CardDefaults.cardColors(containerColor = Color.White),
                 modifier = Modifier.fillMaxWidth()
-            )
-
-            Column {
-                Text("Workout Intensity")
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+            ){
+                Column (
+                    modifier = Modifier.padding(16.dp)
                 ) {
-                    listOf("Easy", "Moderate", "Challenging", "Hard").forEach {
-                        val selected = it == intensity
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .size(60.dp)
-                                .background(
-                                    color = if (selected) Color.Blue.copy(alpha = 0.1f) else Color.LightGray.copy(alpha = 0.1f),
-                                    shape = CircleShape
+                    Text(
+                        text = "Workout Duration (minutes)",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                        listOf(30, 60, 90, 120, 150).forEach {
+                            OutlinedButton(
+                                onClick = { duration = it },
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = if (it == duration) Color.Blue.copy(alpha = 0.1f) else Color.Transparent
                                 )
-                                .clickable { intensity = it },
-                        ) {
-                            Icon(
-                                imageVector = when (it) {
-                                    "Easy" -> Icons.Outlined.SentimentSatisfiedAlt
-                                    "Moderate" -> Icons.Outlined.SentimentNeutral
-                                    "Challenging" -> Icons.Outlined.FitnessCenter
-                                    else -> Icons.Filled.Warning
-                                },
-                                contentDescription = it,
-                                tint = if (selected) Color.Blue else Color.Gray,
-                                modifier = Modifier.padding(12.dp)
-                            )
+                            ) {
+                                Text("$it")
+                            }
                         }
                     }
                 }
             }
 
-            Text("Notes")
-            OutlinedTextField(
-                value = notes,
-                onValueChange = { notes = it },
-                label = { Text("Notes") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            )
+            Card(
+                shape = MaterialTheme.shapes.medium,
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Column (
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "Workout Intensity",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        listOf("Easy", "Moderate", "Challenging", "Hard").forEach {
+                            val selected = it == intensity
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .background(
+                                        color = if (selected) Color.Blue.copy(alpha = 0.1f) else Color.LightGray.copy(alpha = 0.1f),
+                                        shape = CircleShape
+                                    )
+                                    .clickable { intensity = it },
+                            ) {
+                                Icon(
+                                    imageVector = when (it) {
+                                        "Easy" -> Icons.Outlined.SentimentSatisfiedAlt
+                                        "Moderate" -> Icons.Outlined.SentimentNeutral
+                                        "Challenging" -> Icons.Outlined.FitnessCenter
+                                        else -> Icons.Filled.Warning
+                                    },
+                                    contentDescription = it,
+                                    tint = if (selected) Color.Blue else Color.Gray,
+                                    modifier = Modifier.padding(12.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            Card(
+                shape = MaterialTheme.shapes.medium,
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                )
+                {
+                    Text(
+                        text ="Notes",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    OutlinedTextField(
+                        value = notes,
+                        onValueChange = { notes = it },
+                        label = { Text("Notes") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp)
+                    )
+                }
+            }
 
             Button(
                 onClick = {
-                    val dao = (context.applicationContext as MyApplication).database.workoutDao()
-
-                    val calorieInt = calories.toIntOrNull()
                     if (selectedDate == "Select Date" || selectedTime == "Select Time") {
                         Toast.makeText(context, "Please select date and time", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
-                    if (calorieInt == null) {
-                        Toast.makeText(context, "Please enter valid calories", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
 
-                    val workout = Workout(
-                        type = trainingType,
-                        duration = duration,
-                        calories = calorieInt,
-                        intensity = intensity,
-                        notes = notes.text,
-                        date = selectedDate,
-                        time = selectedTime
-                    )
-
-                    println("Preparing to insert: $workout") //
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            dao.insertWorkout(workout)
-                            println("Inserted workout: $workout") //
-                        } catch (e: Exception) {
-                            println("Insertion failed: ${e.message}")
-                        }
-
-                        // 查看数据库中现有内容
-                        val all = dao.getAll()
-                        println("📋 All records in DB:")
-                        all.forEach {
-                            println(it)
-                        }
-
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(context, "Insert done", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+                    caloriesBurned = estimateCalories(trainingType, duration, intensity)
+                    showDialog = true
                 }
+                ,modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = MaterialTheme.shapes.medium,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2563EB),
+                    contentColor = Color.White
+                )
             )
             {
                 Text("Save Record")
             }
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Confirm Workout") },
+                    text = { Text("You will burn $caloriesBurned calories.") },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showDialog = false
+                                val dao = (context.applicationContext as MyApplication).database.workoutDao()
+                                val workout = Workout(
+                                    type = trainingType,
+                                    duration = duration,
+                                    calories = caloriesBurned,
+                                    intensity = intensity,
+                                    notes = notes.text,
+                                    date = selectedDate,
+                                    time = selectedTime
+                                )
+
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    try {
+                                        dao.insertWorkout(workout)
+                                        withContext(Dispatchers.Main) {
+                                            Toast.makeText(context, "Workout saved", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        withContext(Dispatchers.Main) {
+                                            Toast.makeText(context, "Failed to insert: ${e.message}", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
+                            }
+                        ) {
+                            Text("Confirm")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
         }
     }
 }
+fun estimateCalories(type: String, duration: Int, intensity: String): Int {
+    val baseRate = when (type) {
+        "Strength Training" -> 6.0
+        "Cardio" -> 8.0
+        "Yoga" -> 3.0
+        "Swimming" -> 9.0
+        "HIIT" -> 10.0
+        "Pilates" -> 4.5
+        "Functional Training" -> 7.0
+        "Outdoor Activities" -> 5.5
+        "Group Classes" -> 6.5
+        "Running" -> 11.0
+        "Boxing" -> 10.0
+        "Dancing" -> 6.5
+        else -> 5.0
+    }
+
+    val intensityFactor = when (intensity) {
+        "Easy" -> 0.8
+        "Moderate" -> 1.0
+        "Challenging" -> 1.2
+        "Hard" -> 1.5
+        else -> 1.0
+    }
+
+    return (baseRate * duration * intensityFactor).toInt()
+}
+
