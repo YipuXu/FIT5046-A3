@@ -25,12 +25,19 @@ import com.example.fitlife.ui.policy.TermsOfServiceScreen
 import com.example.fitlife.ui.profile.AccessibilityScreen
 import com.example.fitlife.ui.train.RecordTrainingScreen
 import com.example.fitlife.ui.train.AllRecentRecordsScreen
-
-
+import com.example.fitlife.utils.DatabaseHelper
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // 初始化用户数据
+        lifecycleScope.launch {
+            DatabaseHelper.initializeUserData(applicationContext)
+        }
+        
         enableEdgeToEdge()
         setContent {
             FitLifeTheme {
