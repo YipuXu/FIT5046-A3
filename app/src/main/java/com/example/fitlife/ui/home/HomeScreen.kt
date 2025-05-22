@@ -29,7 +29,8 @@ fun HomeScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToCalendar: () -> Unit,
     onNavigateToMap: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    onNavigateToRecord: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -61,11 +62,21 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             WelcomeSection()
-//            WeeklySummaryCard()
-//            TodayPlanCard()
+            Button(
+                onClick = onNavigateToRecord,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2563EB),
+                    contentColor   = Color.White
+                )
+
+            ) {
+                Text("Record Training")
+            }
             MusicPlayerScreen()
             ExerciseRecommendation()
-//            MusicPlayerSection()
         }
 
     }
@@ -101,143 +112,6 @@ fun WelcomeSection(userName: String = "User") {
         )
     }
 }
-//@Composable
-//fun WeeklySummaryCard() {
-//    var trainingCount by remember { mutableStateOf("0") }
-//    var totalHours by remember { mutableStateOf("0") }
-//    var calories by remember { mutableStateOf("0") }
-//
-//    var showConfirmDialog by remember { mutableStateOf(false) }
-//
-//    Card(
-//        modifier = Modifier.fillMaxWidth(),
-//        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-//        elevation = CardDefaults.cardElevation(4.dp),
-//        shape = RoundedCornerShape(16.dp)
-//    ) {
-//        Column(modifier = Modifier.padding(16.dp)) {
-//            // 顶部标题 + 刷新按钮
-//            Row(
-//                modifier = Modifier.fillMaxWidth(),
-//                horizontalArrangement = Arrangement.SpaceBetween,
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                Text(
-//                    text = "This week's fitness overview",
-//                    style = MaterialTheme.typography.titleMedium
-//                )
-//
-//                IconButton(onClick = { showConfirmDialog = true }) {
-//                    Icon(
-//                        imageVector = Icons.Default.Refresh,
-//                        contentDescription = "Refresh"
-//                    )
-//                }
-//            }
-//
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            Row(
-//                modifier = Modifier.fillMaxWidth(),
-//                horizontalArrangement = Arrangement.SpaceBetween
-//            ) {
-//                SummaryItem(
-//                    title = "Number of training",
-//                    number = trainingCount,
-//                    unit = "",
-//                    onEdit = { trainingCount = it }
-//                )
-//                SummaryItem(
-//                    title = "Total duration",
-//                    number = totalHours,
-//                    unit = "hours",
-//                    onEdit = { totalHours = it }
-//                )
-//                SummaryItem(
-//                    title = "Burn calories",
-//                    number = calories,
-//                    unit = "kcal",
-//                    onEdit = { calories = it }
-//                )
-//            }
-//        }
-//    }
-//
-//    // 确认弹窗
-//    if (showConfirmDialog) {
-//        AlertDialog(
-//            onDismissRequest = { showConfirmDialog = false },
-//            title = { Text("Confirm Refresh") },
-//            text = { Text("Are you sure you want to refresh all data?") },
-//            confirmButton = {
-//                TextButton(onClick = {
-//                    trainingCount = "0"
-//                    totalHours = "0"
-//                    calories = "0"
-//                    showConfirmDialog = false
-//                }) {
-//                    Text("Yes")
-//                }
-//            },
-//            dismissButton = {
-//                TextButton(onClick = { showConfirmDialog = false }) {
-//                    Text("Cancel")
-//                }
-//            }
-//        )
-//    }
-//}
-//
-//
-//@Composable
-//fun SummaryItem(
-//    title: String,
-//    number: String,              // 显示用的数字
-//    unit: String,                // 单位，例如 "kcal"
-//    onEdit: (String) -> Unit     // 编辑后返回的纯数字
-//) {
-//    var showDialog by remember { mutableStateOf(false) }
-//    var inputText by remember { mutableStateOf(number) }
-//
-//    Column(
-//        modifier = Modifier.clickable { showDialog = true },
-//        horizontalAlignment = Alignment.CenterHorizontally
-//    ) {
-//        Text(text = title, style = MaterialTheme.typography.labelMedium, color = Color.Gray)
-//        Spacer(modifier = Modifier.height(4.dp))
-//        Text(text = "$number $unit", style = MaterialTheme.typography.titleSmall)
-//    }
-//
-//    if (showDialog) {
-//        AlertDialog(
-//            onDismissRequest = { showDialog = false },
-//            title = { Text("Edit $title") },
-//            text = {
-//                TextField(
-//                    value = inputText,
-//                    onValueChange = { inputText = it.filter { c -> c.isDigit() || c == '.' } },
-//                    label = { Text("Please enter a number") },
-//                    singleLine = true
-//                )
-//            },
-//            confirmButton = {
-//                TextButton(onClick = {
-//                    if (inputText.isNotBlank()) {
-//                        onEdit(inputText)
-//                    }
-//                    showDialog = false
-//                }) {
-//                    Text("Yes")
-//                }
-//            },
-//            dismissButton = {
-//                TextButton(onClick = { showDialog = false }) {
-//                    Text("Cancel")
-//                }
-//            }
-//        )
-//    }
-//}
 
 
 
