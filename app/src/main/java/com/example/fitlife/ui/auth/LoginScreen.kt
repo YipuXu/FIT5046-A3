@@ -1,5 +1,11 @@
 package com.example.fitlife.ui.auth
 
+import android.app.Activity
+import android.content.Context
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,20 +30,117 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fitlife.R
-
+import androidx.compose.ui.platform.LocalContext
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Divider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
     onRegisterClick: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    
+    // 读取保存的邮箱
+    val sharedPreferences = remember { context.getSharedPreferences("fitlife_prefs", Context.MODE_PRIVATE) }
+    val savedEmail = remember { sharedPreferences.getString("saved_email", "") ?: "" }
+    
+    var email by remember { mutableStateOf(savedEmail) }
     var password by remember { mutableStateOf("") }
-    var rememberMe by remember { mutableStateOf(false) }
+    var rememberMe by remember { mutableStateOf(savedEmail.isNotEmpty()) } // 如果有保存的邮箱，默认勾选"记住我"
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    
+    // 显示提示信息
+    var showRememberMeInfo by remember { mutableStateOf(false) }
+    
+    // 当邮箱变化时，如果邮箱和保存的不同，取消"记住我"
+    LaunchedEffect(email) {
+        if (email != savedEmail && rememberMe) {
+            rememberMe = false
+        }
+    }
+    
+    // 启动效果：如果检测到自动填充邮箱，显示简短的提示消息
+    LaunchedEffect(Unit) {
+        showRememberMeInfo = savedEmail.isNotEmpty()
+        if (showRememberMeInfo) {
+            kotlinx.coroutines.delay(2000) // 显示提示信息2秒
+            showRememberMeInfo = false
+        }
+    }
+    
+    val coroutineScope = rememberCoroutineScope()
+    val auth: FirebaseAuth = Firebase.auth
+    val scrollState = rememberScrollState()
+
+    // Google Sign-In
+    val webClientId = "735710334901-1ak9pnf9hqetcsouc5sf2p67st5274oa.apps.googleusercontent.com"
+    val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(webClientId)
+        .requestEmail()
+        .build()
+    val googleSignInClient: GoogleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)!!
+                Log.d("LoginScreen", "Google sign in successful, got idToken: ${account.idToken}")
+                firebaseAuthWithGoogle(account.idToken!!, auth, onLoginSuccess = {
+                    Toast.makeText(context, "Google Sign-In Successful!", Toast.LENGTH_SHORT).show()
+                    onLoginSuccess()
+                }, onError = { errorMsg ->
+                    errorMessage = errorMsg
+                }, coroutineScope = coroutineScope, onLoadingChange = { isLoading = it })
+            } catch (e: ApiException) {
+                Log.w("LoginScreen", "Google sign in failed", e)
+                errorMessage = "Google sign in failed: ${e.localizedMessage} (Code: ${e.statusCode})"
+                isLoading = false
+            }
+        } else {
+             Log.w("LoginScreen", "Google sign in cancelled or failed. Result code: ${result.resultCode}")
+            
+            if (result.resultCode != Activity.RESULT_CANCELED) {
+                 errorMessage = "Google sign in failed. Please try again."
+            }
+            isLoading = false
+        }
+    }
+
+    // 保存邮箱函数
+    fun saveEmail(email: String, remember: Boolean) {
+        sharedPreferences.edit().apply {
+            if (remember) {
+                putString("saved_email", email)
+            } else {
+                remove("saved_email")
+            }
+            apply()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -46,7 +149,8 @@ fun LoginScreen(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // 顶部背景图和标题
@@ -184,7 +288,7 @@ fun LoginScreen(
                     )
                 }
                 
-                // 记住我选项和忘记密码放在同一行
+                // 记住我选项和忘记密码
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -218,26 +322,103 @@ fun LoginScreen(
                         color = Color(0xFF2563EB),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        modifier = Modifier.clickable { /* 处理忘记密码 */ }
+                        modifier = Modifier.clickable { 
+                            if (email.isBlank()) {
+                                errorMessage = "Please enter your email address"
+                                return@clickable
+                            }
+                            
+                            isLoading = true
+                            errorMessage = null
+                            
+                            auth.sendPasswordResetEmail(email)
+                                .addOnCompleteListener { task ->
+                                    isLoading = false
+                                    if (task.isSuccessful) {
+                                        Toast.makeText(
+                                            context,
+                                            "Password reset email sent!",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    } else {
+                                        errorMessage = task.exception?.message ?: "Failed to send password reset email"
+                                    }
+                                }
+                        }
+                    )
+                }
+                
+                // 显示错误信息
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        textAlign = TextAlign.Center
                     )
                 }
                 
                 // 登录按钮
                 Button(
-                    onClick = onLoginSuccess,
+                    onClick = {
+                        if (email.isBlank() || password.isBlank()) {
+                            errorMessage = "Please enter both email and password"
+                            return@Button
+                        }
+                        
+                        // 保存邮箱（如果勾选了"记住我"）
+                        saveEmail(email, rememberMe)
+                        
+                        isLoading = true
+                        errorMessage = null
+                        
+                        coroutineScope.launch {
+                            try {
+                                auth.signInWithEmailAndPassword(email, password)
+                                    .addOnCompleteListener { task ->
+                                        isLoading = false
+                                        if (task.isSuccessful) {
+                                            Log.d("LoginScreen", "signInWithEmail:success")
+                                            Toast.makeText(
+                                                context,
+                                                "Login successful!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            onLoginSuccess()
+                                        } else {
+                                            Log.w("LoginScreen", "signInWithEmail:failure", task.exception)
+                                            errorMessage = task.exception?.message ?: "Authentication failed"
+                                        }
+                                    }
+                            } catch (e: Exception) {
+                                isLoading = false
+                                errorMessage = e.message ?: "An unexpected error occurred"
+                                Log.e("LoginScreen", "Login error", e)
+                            }
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF2563EB)
-                    )
+                    ),
+                    enabled = !isLoading && email.isNotBlank() && password.isNotBlank()
                 ) {
-                    Text(
-                        text = "Sign In",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            text = "Sign In",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
                 
                 // 添加分隔线和"或"文本
@@ -265,7 +446,13 @@ fun LoginScreen(
                 
                 // 谷歌登录按钮
                 OutlinedButton(
-                    onClick = { /* 处理谷歌登录 */ },
+                    onClick = {
+                        isLoading = true
+                        errorMessage = null
+                        Log.d("LoginScreen", "Attempting Google Sign-In")
+                        val signInIntent = googleSignInClient.signInIntent
+                        googleSignInLauncher.launch(signInIntent)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
@@ -285,7 +472,7 @@ fun LoginScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Sign in with Google",
+                        text = if (isLoading && errorMessage == null) "Signing in..." else "Sign in with Google",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -313,6 +500,30 @@ fun LoginScreen(
                     )
                 }
             }
+        }
+    }
+}
+
+private fun firebaseAuthWithGoogle(
+    idToken: String,
+    auth: FirebaseAuth,
+    onLoginSuccess: () -> Unit,
+    onError: (String) -> Unit,
+    coroutineScope: kotlinx.coroutines.CoroutineScope,
+    onLoadingChange: (Boolean) -> Unit
+) {
+    onLoadingChange(true)
+    val credential = GoogleAuthProvider.getCredential(idToken, null)
+    coroutineScope.launch {
+        try {
+            auth.signInWithCredential(credential).await()
+            Log.d("LoginScreen", "Firebase signInWithCredential success")
+            onLoginSuccess()
+        } catch (e: Exception) {
+            Log.w("LoginScreen", "Firebase signInWithCredential failed", e)
+            onError("Firebase authentication failed: ${e.localizedMessage}")
+        } finally {
+            onLoadingChange(false)
         }
     }
 }
