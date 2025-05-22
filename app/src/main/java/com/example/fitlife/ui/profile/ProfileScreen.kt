@@ -67,6 +67,8 @@ fun ProfileScreen(
     onSettingsClick: () -> Unit,
     onAICoachClick: () -> Unit,
     onNavigateToMap: () -> Unit,
+    onNavigateToHome: () -> Unit,
+    onNavigateToCalendar: () -> Unit,
     selectedFitnessTags: List<String>,
     onFitnessTagsUpdated: (List<String>) -> Unit,
     plansDoneCount: Int = 8
@@ -140,8 +142,8 @@ fun ProfileScreen(
         // 底部导航
         BottomNavBar(
             currentRoute = "profile",
-            onNavigateToHome = { /* Empty for now */ },
-            onNavigateToCalendar = { /* Empty for now */ },
+            onNavigateToHome = onNavigateToHome,
+            onNavigateToCalendar = onNavigateToCalendar,
             onNavigateToMap = onNavigateToMap,
             onNavigateToProfile = {},
             modifier = Modifier.align(Alignment.BottomCenter)
