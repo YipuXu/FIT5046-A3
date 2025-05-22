@@ -53,6 +53,9 @@ import java.io.File
 import com.example.fitlife.ui.theme.AccessibilityUtils
 import com.example.fitlife.ui.components.AccessibleHeading
 import androidx.compose.ui.text.TextStyle
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,7 +67,8 @@ fun ProfileScreen(
     onAICoachClick: () -> Unit,
     onNavigateToMap: () -> Unit,
     selectedFitnessTags: List<String>,
-    onFitnessTagsUpdated: (List<String>) -> Unit
+    onFitnessTagsUpdated: (List<String>) -> Unit,
+    plansDoneCount: Int = 8
 ) {
     val context = LocalContext.current
     val workoutDao = remember { (context.applicationContext as MyApplication).database.workoutDao() }
@@ -77,6 +81,15 @@ fun ProfileScreen(
     
     // 从数据库获取最近的锻炼记录
     val latestWorkouts by workoutDao.getLatestTwoWorkouts().collectAsState(initial = emptyList())
+    
+    // 获取不同日期的健身记录数量
+    val workoutDaysCount by workoutDao.getUniqueWorkoutDaysCount().collectAsState(initial = 0)
+    
+    // 获取所有训练日期并计算连续天数
+    val allWorkoutDates by workoutDao.getAllWorkoutDatesDesc().collectAsState(initial = emptyList())
+    val streakDays = remember(allWorkoutDates) {
+        calculateStreakDays(allWorkoutDates)
+    }
 
     // 计算健身标签列表（从逗号分隔的字符串转换为列表）
     val fitnessTags = remember(user) {
@@ -86,7 +99,7 @@ fun ProfileScreen(
     // State for the workout detail dialog
     var showDialog by remember { mutableStateOf(false) }
     var selectedWorkout by remember { mutableStateOf<Workout?>(null) }
-
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -108,7 +121,10 @@ fun ProfileScreen(
                 onWorkoutClick = { workout ->
                     selectedWorkout = workout
                     showDialog = true
-                }
+                },
+                plansDoneCount = plansDoneCount,
+                workoutDaysCount = workoutDaysCount, // 传递不同日期的健身记录数量
+                streakDays = streakDays // 传递连续训练天数
             )
         }
         
@@ -204,6 +220,56 @@ fun ProfileScreen(
     }
 }
 
+// 计算连续训练天数的函数
+private fun calculateStreakDays(dates: List<String>): Int {
+    if (dates.isEmpty()) return 0
+    
+    try {
+        // 尝试解析日期，忽略格式不正确的日期
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val validDates = mutableListOf<LocalDate>()
+        
+        for (dateStr in dates) {
+            try {
+                if (dateStr != "Select Date") {
+                    validDates.add(LocalDate.parse(dateStr, formatter))
+                }
+            } catch (e: Exception) {
+                // 忽略无法解析的日期
+                continue
+            }
+        }
+        
+        if (validDates.isEmpty()) return 0
+        
+        // 按日期降序排序（最新日期在前）
+        val sortedDates = validDates.sortedDescending()
+        
+        // 从最新的日期开始检查连续天数
+        var currentStreak = 1
+        var previousDate = sortedDates[0]
+        
+        for (i in 1 until sortedDates.size) {
+            val currentDate = sortedDates[i]
+            val daysBetween = ChronoUnit.DAYS.between(currentDate, previousDate)
+            
+            if (daysBetween == 1L) {
+                // 两个日期相差1天，连续
+                currentStreak++
+                previousDate = currentDate
+            } else {
+                // 连续中断
+                break
+            }
+        }
+        
+        return currentStreak
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return 0
+    }
+}
+
 @Composable
 private fun ProfileContent(
     onViewAllHistory: () -> Unit,
@@ -213,7 +279,10 @@ private fun ProfileContent(
     selectedFitnessTags: List<String>,
     user: User?,
     latestWorkouts: List<Workout>,
-    onWorkoutClick: (Workout) -> Unit
+    onWorkoutClick: (Workout) -> Unit,
+    plansDoneCount: Int = 8,
+    workoutDaysCount: Int = 0,
+    streakDays: Int = 0
 ) {
     val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
     
@@ -266,6 +335,9 @@ private fun ProfileContent(
             onEditClick = onEditProfileClick,
             fitnessTags = selectedFitnessTags,
             user = user,
+            plansDoneCount = plansDoneCount,
+            workoutDaysCount = workoutDaysCount,
+            streakDays = streakDays, // 传递实际的连续训练天数
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
@@ -293,6 +365,9 @@ private fun UserInfoCard(
     onEditClick: () -> Unit,
     fitnessTags: List<String>,
     user: User?,
+    plansDoneCount: Int = 8,
+    workoutDaysCount: Int = 0,
+    streakDays: Int = 0,
     modifier: Modifier = Modifier
 ) {
     // 使用用户数据或默认值
@@ -326,10 +401,6 @@ private fun UserInfoCard(
         }
     }
     
-    val workoutDays = 42 // 这些数据目前没有存储在User实体中
-    val streakDays = 12
-    val plansDone = 8
-    
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -337,7 +408,7 @@ private fun UserInfoCard(
             containerColor = AccessibilityUtils.getAccessibleColor(
                 normalColor = Color(0xFF3B82F6),
                 highContrastColor = Color.White
-            )
+        )
         ),
         border = if (AccessibilityUtils.isHighContrastModeEnabled()) {
             BorderStroke(2.dp, Color.Black)
@@ -468,7 +539,7 @@ private fun UserInfoCard(
             ) {
                 // Training days
                 StatItem(
-                    count = workoutDays.toString(), 
+                    count = workoutDaysCount.toString(), 
                     label = "Workout Days",
                     modifier = Modifier.weight(1f),
                     alignment = Alignment.CenterHorizontally
@@ -487,7 +558,7 @@ private fun UserInfoCard(
                         )
                 )
                 
-                // Consecutive days
+                // 连续天数 - 使用计算的值
                 StatItem(
                     count = streakDays.toString(), 
                     label = "Streak Days",
@@ -510,7 +581,7 @@ private fun UserInfoCard(
                 
                 // Completed plans
                 StatItem(
-                    count = plansDone.toString(), 
+                    count = plansDoneCount.toString(), 
                     label = "Plans Done",
                     modifier = Modifier.weight(1f),
                     alignment = Alignment.CenterHorizontally
@@ -619,9 +690,9 @@ private fun RecentHistorySection(onViewAll: () -> Unit, latestWorkouts: List<Wor
         // History records list - each record as a separate card
         latestWorkouts.forEach { workout ->
             // 使用自定义卡片而不是AccessibleCard，以确保背景始终为白色
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
                     .padding(bottom = 8.dp)
                     .let {
                         if (isHighContrastMode) {
@@ -630,16 +701,16 @@ private fun RecentHistorySection(onViewAll: () -> Unit, latestWorkouts: List<Wor
                             it
                         }
                     },
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
                     containerColor = Color.White // 确保背景始终为白色
-                ),
-                elevation = CardDefaults.cardElevation(
+            ),
+            elevation = CardDefaults.cardElevation(
                     defaultElevation = if (isHighContrastMode) 4.dp else 0.dp
                 ),
                 onClick = { onWorkoutClick(workout) }
-            ) {
-                HistoryItem(
+        ) {
+            HistoryItem(
                     icon = R.drawable.ic_workout, // 使用默认图标
                     title = workout.type,
                     time = "${workout.date} · ${workout.duration} min",

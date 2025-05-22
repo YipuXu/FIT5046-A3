@@ -39,19 +39,24 @@ fun RecordTrainingScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateToCalendar: () -> Unit = {},
     onNavigateToMap: () -> Unit = {},
-    onNavigateToProfile: () -> Unit = {}
+    onNavigateToProfile: () -> Unit = {},
+    planTitle: String = "",
+    planDate: String = "",
+    onMarkPlanDone: () -> Unit = {}
 ) {
     val context = LocalContext.current
 
-    var trainingType by remember { mutableStateOf("Strength Training") }
+    var trainingType by remember { mutableStateOf(if (planTitle.isNotBlank()) planTitle else "Strength Training") }
     val trainingTypes = listOf("Strength Training", "Cardio", "Yoga", "Swimming")
 
     var duration by remember { mutableStateOf(30) }
     var calories by remember { mutableStateOf("") }
     var intensity by remember { mutableStateOf("Challenging") }
     var notes by remember { mutableStateOf(TextFieldValue("")) }
-    var selectedDate by remember { mutableStateOf("Select Date") }
+    var selectedDate by remember { mutableStateOf(if (planDate.isNotBlank()) planDate else "Select Date") }
     var selectedTime by remember { mutableStateOf("Select Time") }
+
+    var isFromCalendarPlan by remember { mutableStateOf(planTitle.isNotBlank() && planDate.isNotBlank()) }
 
     val dateFormatter = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
     val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
@@ -61,7 +66,7 @@ fun RecordTrainingScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Record Workout",
+                        text = if (isFromCalendarPlan) "Complete Plan: $planTitle" else "Record Workout",
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -87,6 +92,26 @@ fun RecordTrainingScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            if (isFromCalendarPlan) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            "Completing plan: $planTitle on $planDate",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+            }
+            
             var expanded by remember { mutableStateOf(false) }
             Text("Workout Type")
             ExposedDropdownMenuBox(
@@ -235,11 +260,21 @@ fun RecordTrainingScreen(
                     CoroutineScope(Dispatchers.IO).launch {
                         dao.insertWorkout(workout)
                     }
-                    Toast.makeText(context, "Saved to Room DB!", Toast.LENGTH_SHORT).show()
+                    
+                    if (isFromCalendarPlan) {
+                        Toast.makeText(context, "Plan marked as completed!", Toast.LENGTH_SHORT).show()
+                        
+                        onMarkPlanDone()
+                    } else {
+                        Toast.makeText(context, "Workout saved!", Toast.LENGTH_SHORT).show()
+                    }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
             ) {
-                Text("Save Record")
+                Text(if (isFromCalendarPlan) "Complete Plan" else "Save Record")
             }
         }
     }

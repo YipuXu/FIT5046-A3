@@ -3,6 +3,8 @@ package com.example.fitlife.ui.train
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -35,7 +37,7 @@ fun AllRecentRecordsScreen(
 ) {
     val context = LocalContext.current
     val workoutDao = (context.applicationContext as MyApplication).database.workoutDao()
-    val allWorkouts by workoutDao.getAll().collectAsState(initial = emptyList())
+    val allWorkouts by workoutDao.getAllOrderByDateDesc().collectAsState(initial = emptyList())
 
     // State for the workout detail dialog
     var showDialog by remember { mutableStateOf(false) }
@@ -62,75 +64,81 @@ fun AllRecentRecordsScreen(
             }
         }
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFF9FAFB))
                 .padding(padding)
-                .padding(16.dp)
         ) {
             if (allWorkouts.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text("No records found.", color = Color.Gray)
                 }
             } else {
-                allWorkouts.forEach { workout ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                    ) {
-                        Row(
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(allWorkouts) { workout ->
+                        Card(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { // Make the item clickable
-                                    selectedWorkout = workout
-                                    showDialog = true
-                                }
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                         ) {
-                            // 图标
-                            Box(
+                            Row(
                                 modifier = Modifier
-                                    .size(40.dp)
-                                    .background(Color(0xFFE6F0FF), RoundedCornerShape(8.dp)),
-                                contentAlignment = Alignment.Center
+                                    .fillMaxWidth()
+                                    .clickable { // Make the item clickable
+                                        selectedWorkout = workout
+                                        showDialog = true
+                                    }
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
+                                // 图标
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .background(Color(0xFFE6F0FF), RoundedCornerShape(8.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_workout),
+                                        contentDescription = null,
+                                        tint = Color(0xFF3B82F6),
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                                // 文字信息
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(start = 12.dp)
+                                ) {
+                                    Text(
+                                        text = workout.type,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Text(
+                                        text = "${workout.date} · ${workout.duration} min · ${workout.calories} kcal",
+                                        fontSize = 14.sp,
+                                        color = Color(0xFF6B7280),
+                                        modifier = Modifier.padding(top = 4.dp)
+                                    )
+                                }
+                                // Right arrow
                                 Icon(
-                                    painter = painterResource(id = R.drawable.ic_workout),
-                                    contentDescription = null,
-                                    tint = Color(0xFF3B82F6),
-                                    modifier = Modifier.size(24.dp)
+                                    imageVector = Icons.Default.KeyboardArrowRight,
+                                    contentDescription = "View details",
+                                    tint = Color(0xFF9CA3AF)
                                 )
                             }
-                            // 文字信息
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 12.dp)
-                            ) {
-                                Text(
-                                    text = workout.type,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                Text(
-                                    text = "${workout.date} · ${workout.duration} min · ${workout.calories} kcal",
-                                    fontSize = 14.sp,
-                                    color = Color(0xFF6B7280),
-                                    modifier = Modifier.padding(top = 4.dp)
-                                )
-                            }
-                            // Right arrow
-                            Icon(
-                                imageVector = Icons.Default.KeyboardArrowRight,
-                                contentDescription = "View details",
-                                tint = Color(0xFF9CA3AF)
-                            )
                         }
                     }
                 }

@@ -30,6 +30,10 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    // 添加可访问的属性
+    var planEventToDeleteId = mutableStateOf<Long?>(null)
+        private set
+        
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
@@ -47,6 +51,13 @@ class MainActivity : ComponentActivity() {
                 
                 // Add a state to store selected fitness tags
                 val selectedFitnessTags = remember { mutableStateOf(listOf("Strength Training", "Cardio")) }
+                
+                // 添加用于存储计划信息的state
+                val planTitle = remember { mutableStateOf("") }
+                val planDate = remember { mutableStateOf("") }
+                val isPlanDone = remember { mutableStateOf(false) }
+                // 使用类级别的属性而不是局部变量
+                planEventToDeleteId = remember { mutableStateOf<Long?>(null) }
                 
                 when {
                     isLoggedIn.value -> {
@@ -66,7 +77,15 @@ class MainActivity : ComponentActivity() {
                                     onNavigateToHome = { currentScreen.value = "home" },
                                     onNavigateToCalendar = { currentScreen.value = "calendar" },
                                     onNavigateToMap = { currentScreen.value = "map" },
-                                    onNavigateToProfile = { currentScreen.value = "profile" }
+                                    onNavigateToProfile = { currentScreen.value = "profile" },
+                                    onNavigateToRecordTraining = { eventTitle, eventDate, eventId ->
+                                        // 存储事件标题、日期和ID，以便在记录训练页面使用
+                                        planTitle.value = eventTitle
+                                        planDate.value = eventDate
+                                        planEventToDeleteId.value = eventId
+                                        // 跳转到记录训练页面
+                                        currentScreen.value = "record"
+                                    }
                                 )
                             }
                             "map" -> {
@@ -95,7 +114,8 @@ class MainActivity : ComponentActivity() {
                                     onFitnessTagsUpdated = { tags ->
                                         Log.d("MainActivity", "Update tags: ${tags.joinToString()}")
                                         selectedFitnessTags.value = tags
-                                    }
+                                    },
+                                    plansDoneCount = if (isPlanDone.value) 9 else 8 // 如果计划已完成，显示9，否则显示8
                                 )
                             }
                             "profileEdit" -> {
@@ -163,9 +183,23 @@ class MainActivity : ComponentActivity() {
                                 RecordTrainingScreen(
                                     currentRoute = "record",
                                     onNavigateToHome = { currentScreen.value = "map" },
-                                    onNavigateToCalendar = { /* 可扩展 */ },
+                                    onNavigateToCalendar = { currentScreen.value = "calendar" },
                                     onNavigateToMap = { currentScreen.value = "map" },
-                                    onNavigateToProfile = { currentScreen.value = "profile" }
+                                    onNavigateToProfile = { currentScreen.value = "profile" },
+                                    planTitle = planTitle.value,
+                                    planDate = planDate.value,
+                                    onMarkPlanDone = {
+                                        // 标记计划已完成
+                                        isPlanDone.value = true
+                                        
+                                        // 如果有计划ID，则跳转回日历页面并删除该计划
+                                        if (planEventToDeleteId.value != null) {
+                                            currentScreen.value = "calendar"
+                                        } else {
+                                            // 否则返回个人资料页面
+                                            currentScreen.value = "profile" 
+                                        }
+                                    }
                                 )
                             }
                             "all_records" -> {
