@@ -39,6 +39,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalContext
+import com.google.firebase.auth.UserProfileChangeRequest
 
 // Data class to hold password validation state
 data class PasswordValidationState(
@@ -373,19 +374,35 @@ fun RegisterScreen(
                             try {
                                 auth.createUserWithEmailAndPassword(email, password)
                                     .addOnCompleteListener { task ->
-                                        isLoading = false
                                         if (task.isSuccessful) {
-                                            // Registration success
-                                            Log.d("RegisterScreen", "createUserWithEmail:success")
-                                            Toast.makeText(
-                                                context, 
-                                                "Registered Successfully!",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            // To Login page
-                                            onNavigateToLogin()
+                                            // 注册成功后，设置用户的显示名称
+                                            val user = auth.currentUser
+                                            val profileUpdates = UserProfileChangeRequest.Builder()
+                                                .setDisplayName(fullName)
+                                                .build()
+                                                
+                                            user?.updateProfile(profileUpdates)
+                                                ?.addOnCompleteListener { profileTask ->
+                                                    isLoading = false
+                                                    if (profileTask.isSuccessful) {
+                                                        // 用户信息更新成功
+                                                        Log.d("RegisterScreen", "User profile updated with name: $fullName")
+                                                        Toast.makeText(
+                                                            context, 
+                                                            "Registered Successfully!",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                        // 跳转到登录页面
+                                                        onNavigateToLogin()
+                                                    } else {
+                                                        // 用户信息更新失败
+                                                        Log.w("RegisterScreen", "Failed to update user profile", profileTask.exception)
+                                                        errorMessage = "Registration successful but failed to save user name."
+                                                    }
+                                                }
                                         } else {
-                                            // If sign in fails, display a message to the user.
+                                            // 注册失败
+                                            isLoading = false
                                             Log.w("RegisterScreen", "createUserWithEmail:failure", task.exception)
                                             errorMessage = task.exception?.message ?: "Registration failed."
                                         }

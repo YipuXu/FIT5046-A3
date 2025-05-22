@@ -9,19 +9,23 @@ import com.example.fitlife.data.dao.WorkoutDao
 import com.example.fitlife.data.model.Workout
 import com.example.fitlife.data.dao.FitnessEventDao
 import com.example.fitlife.data.model.FitnessEvent
+import com.example.fitlife.data.dao.UserDao
+import com.example.fitlife.data.model.User
 
 @Database(
     entities = [
         Workout::class,
-        FitnessEvent::class
+        FitnessEvent::class,
+        User::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class WorkoutDatabase : RoomDatabase() {
 
     abstract fun workoutDao(): WorkoutDao
     abstract fun fitnessEventDao(): FitnessEventDao
+    abstract fun userDao(): UserDao
 
     companion object {
         @Volatile
@@ -34,6 +38,7 @@ abstract class WorkoutDatabase : RoomDatabase() {
                     WorkoutDatabase::class.java,
                     "workout_database"
                 )
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

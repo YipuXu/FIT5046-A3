@@ -1,5 +1,9 @@
 package com.example.fitlife.ui.help
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,7 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Send
@@ -18,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -27,12 +32,17 @@ import com.example.fitlife.R
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
+import com.example.fitlife.utils.EmailSender
+import kotlinx.coroutines.launch
 
 @Composable
 fun HelpFeedbackScreen(
     onBackClick: () -> Unit = {}
 ) {
     var feedbackText by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    var isLoading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -69,16 +79,64 @@ fun HelpFeedbackScreen(
             
             // Submit Button
             Button(
-                onClick = { /* TODO: Handle feedback submission */ },
+                onClick = { 
+                    if (feedbackText.isNotBlank()) {
+                        isLoading = true
+                        
+                        coroutineScope.launch {
+                            EmailSender.sendFeedbackEmail(
+                                context = context,
+                                feedback = feedbackText,
+                                onSuccess = {
+                                    // 显示成功提示
+                                    Toast.makeText(
+                                        context,
+                                        "Feedback submitted successfully", 
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    
+                                    // 清空输入框
+                                    feedbackText = ""
+                                    isLoading = false
+                                },
+                                onError = { errorMessage ->
+                                    // 显示错误提示
+                                    Toast.makeText(
+                                        context,
+                                        errorMessage, 
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    isLoading = false
+                                }
+                            )
+                        }
+                    } else {
+                        // 如果反馈为空，提示用户
+                        Toast.makeText(
+                            context,
+                            "Please enter your feedback",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF3B82F6)
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                enabled = !isLoading
             ) {
-                Text("Submit Feedback", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Submit Feedback", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -112,7 +170,7 @@ private fun TopBar(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
                     modifier = Modifier.size(20.dp),
                     tint = Color(0xFF6B7280)

@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,6 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fitlife.R
 import com.example.fitlife.data.model.FitnessEvent
 import com.example.fitlife.ui.components.BottomNavBar
+import com.example.fitlife.MainActivity
 
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -52,6 +54,7 @@ fun FitnessCalendarScreen(
     onNavigateToCalendar: () -> Unit,
     onNavigateToMap: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    onNavigateToRecordTraining: (String, String, Long) -> Unit = { _, _, _ -> },
     viewModel: CalendarViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -86,6 +89,24 @@ fun FitnessCalendarScreen(
             permissionLauncher.launch(
                 arrayOf(Manifest.permission.WRITE_CALENDAR, Manifest.permission.READ_CALENDAR)
             )
+        }
+    }
+    
+    // 检查是否有需要删除的计划ID
+    val mainActivity = context as? MainActivity
+    val eventIdToDelete by mainActivity?.planEventToDeleteId ?: remember { mutableStateOf<Long?>(null) }
+    
+    // 当事件ID发生变化时，执行删除操作
+    LaunchedEffect(eventIdToDelete) {
+        if (eventIdToDelete != null) {
+            // 找到对应的事件并删除
+            val allEvents = viewModel.eventsForSelectedDate.value
+            val eventToDelete = allEvents.find { it.id == eventIdToDelete }
+            eventToDelete?.let {
+                viewModel.deleteEvent(it)
+                // 重置ID
+                mainActivity?.planEventToDeleteId?.value = null
+            }
         }
     }
 
@@ -245,6 +266,10 @@ fun FitnessCalendarScreen(
                                 onDeleteClick = {
                                     eventToDelete = event
                                     showDeleteConfirmDialog = true
+                                },
+                                onMarkAsDone = {
+                                    val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(event.startTime))
+                                    onNavigateToRecordTraining(event.title, dateStr, event.id)
                                 }
                             )
                         }
@@ -331,7 +356,8 @@ fun CalendarViewComposable(
 fun EventCard(
     event: FitnessEvent,
     onClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    onMarkAsDone: () -> Unit
 ) {
     val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     Card(
@@ -391,6 +417,13 @@ fun EventCard(
                         color = Color(0xFF6B7280)
                     )
                 }
+            }
+            IconButton(onClick = onMarkAsDone) {
+                Icon(
+                    imageVector = Icons.Filled.CheckCircle,
+                    contentDescription = "Mark as done",
+                    tint = Color(0xFF3B82F6)
+                )
             }
             IconButton(onClick = onDeleteClick) {
                 Icon(

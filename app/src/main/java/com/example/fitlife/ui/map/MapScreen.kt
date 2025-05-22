@@ -532,7 +532,7 @@ fun SearchBarWithTitle(
             // Title
             Text(
                 text = "Nearby Fitness Places",
-                fontSize = 18.sp,
+                fontSize = 18.sp, 
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 color = Color(0xFF1F2937)
