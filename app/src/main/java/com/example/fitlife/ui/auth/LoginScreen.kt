@@ -316,20 +316,6 @@ fun LoginScreen(
                         )
                     }
                     
-                    // 显示邮箱自动填充提示
-                    AnimatedVisibility(
-                        visible = showRememberMeInfo,
-                        enter = fadeIn() + expandVertically(),
-                        exit = fadeOut() + shrinkVertically()
-                    ) {
-                        Text(
-                            text = "Email auto-filled from saved data",
-                            fontSize = 12.sp,
-                            color = Color(0xFF3B82F6),
-                            modifier = Modifier.padding(top = 2.dp, start = 8.dp)
-                        )
-                    }
-                    
                     // 右侧：忘记密码
                     Text(
                         text = "Forgot password?",
