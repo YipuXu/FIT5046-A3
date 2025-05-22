@@ -41,6 +41,23 @@ android {
     buildFeatures {
         compose = true
     }
+    
+    // 添加打包配置，解决META-INF冲突问题
+    packaging {
+        resources {
+            excludes += listOf(
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/license.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/notice.txt",
+                "META-INF/ASL2.0",
+                "META-INF/*.kotlin_module"
+            )
+        }
+    }
 }
 
 dependencies {
@@ -64,6 +81,9 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation ("io.coil-kt:coil-compose:2.4.0")
+
+    // SendGrid Email API
+    implementation("com.sendgrid:sendgrid-java:4.9.3")
 
     // DataStore Preferences
     implementation("androidx.datastore:datastore-preferences:1.0.0")

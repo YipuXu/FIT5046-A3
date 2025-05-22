@@ -134,6 +134,11 @@ class MainActivity : ComponentActivity() {
                                         // TODO: Implement actual password change logic
                                         println("Changing password from $current to $new")
                                         currentScreen.value = "settings" // Navigate back after attempting change
+                                    },
+                                    onLogout = {
+                                        // 登出操作并跳转到登录页面
+                                        isLoggedIn.value = false
+                                        currentScreen.value = "login"
                                     }
                                 )
                             }
