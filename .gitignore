@@ -1,21 +1,19 @@
+# IDE 配置
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
-/.gradle/
+.idea/
 
-# 忽略本地配置文件，但保留模板
-# Ignore local config files, but keep templates
-local.properties
+# Android/Gradle 构建输出
+/.gradle/
+build/
+.externalNativeBuild/
+.cxx/
+captures/
+
+# 系统文件
+.DS_Store
+
+# 本地配置文件（不上传）
+/local.properties
 !local.properties.template
+
+
