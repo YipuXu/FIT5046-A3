@@ -87,7 +87,7 @@ fun MapScreen(
     val placesSearchService = remember { PlacesSearchService(context) }
     val coroutineScope = rememberCoroutineScope()
     
-    // 默认示例数据（当没有搜索结果时显示）
+    // Default sample data (displayed when there are no search results)
     val defaultPlaces = remember {
         listOf(
             FitnessPlace(
@@ -120,7 +120,7 @@ fun MapScreen(
                 PlaceType.PARK,
                 -37.8750, 145.0460
             ),
-            // 添加更多示例数据点，以便地图显示更广阔的区域
+            // Add more sample data points to enable the map to display a broader area
             FitnessPlace(
                 4,
                 "Elite Swimming Club",
@@ -169,31 +169,31 @@ fun MapScreen(
     var searchLocation by remember { mutableStateOf<LatLng?>(null) }
     val filters = listOf("All", "Gym", "Yoga", "Swimming", "Park")
 
-    // 存储搜索到的健身场所
+    // Store the fitness places found through search
     var searchResults by remember { mutableStateOf<List<FitnessPlace>>(emptyList()) }
     
-    // 是否正在搜索
+    // Is it searching
     var isSearching by remember { mutableStateOf(false) }
     
-    // 错误信息
+    // error message
     var errorMessage by remember { mutableStateOf<String?>(null) }
     
-    // 用户当前位置
+    // The current location of the user
     var userLocation by remember { mutableStateOf<LatLng?>(null) }
     
-    // 是否已执行过初始搜索
+    // Has the initial search been performed
     var initialSearchDone by remember { mutableStateOf(false) }
     
-    // Clayton 校区坐标
+    // Coordinates of the Clayton campus
     val claytonCampus = remember { LatLng(-37.9105, 145.1363) }
     
-    // FusedLocationProviderClient 用于获取设备位置
+    // FusedLocationProviderClient Used to obtain the location of the device
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     
-    // 获取用户位置的函数
+    // The function for obtaining the user's location
     fun fetchUserLocation() {
         try {
-            // 检查权限
+            // Authority Check
             if (ActivityCompat.checkSelfPermission(
                     context,
                     Manifest.permission.ACCESS_FINE_LOCATION
@@ -202,34 +202,33 @@ fun MapScreen(
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
-                // 获取最后已知位置
+                // Obtain the last known position
                 fusedLocationClient.lastLocation
                     .addOnSuccessListener { location: Location? ->
                         location?.let {
                             userLocation = LatLng(it.latitude, it.longitude)
                         } ?: run {
-                            // 如果无法获取位置，使用Clayton校区
                             if (!initialSearchDone) {
                                 userLocation = claytonCampus
                             }
                         }
                     }
             } else {
-                // 如果没有位置权限，使用Clayton校区
+                // If you don't have location permission, use the Clayton campus
                 if (!initialSearchDone) {
                     userLocation = claytonCampus
                 }
             }
         } catch (e: Exception) {
             Log.e("MapScreen", "Error getting location", e)
-            // 发生错误时也使用Clayton校区
+            // Use the Clayton campus when errors occur
             if (!initialSearchDone) {
                 userLocation = claytonCampus
             }
         }
     }
     
-    // 执行搜索附近健身场所的函数
+    // Execute the function for searching nearby fitness places
     val searchNearbyPlaces = { location: LatLng, typeFilter: String? ->
         coroutineScope.launch {
             isSearching = true
@@ -267,13 +266,13 @@ fun MapScreen(
         }
     }
     
-    // 请求位置权限并获取用户位置
+    // Request location permissions and obtain the user's location
     DisposableEffect(Unit) {
         fetchUserLocation()
         onDispose { }
     }
     
-    // 当用户位置变化时自动搜索附近的健身场所
+    // Automatically search for nearby fitness venues when the user's location changes
     LaunchedEffect(userLocation) {
         userLocation?.let {
             if (!initialSearchDone) {
@@ -282,32 +281,31 @@ fun MapScreen(
         }
     }
     
-    // 监听搜索文本变化，如果为空则重置状态
+    // Listen for changes in the search text. If it is empty, reset the state
     LaunchedEffect(searchText) {
         if (searchText.isBlank() && initialSearchDone) {
-            // 当搜索栏清空时，回到初始搜索状态（显示当前位置或Clayton校区的结果）
             userLocation?.let {
                 searchNearbyPlaces(it, selectedFilter.takeIf { filter -> filter != "All" })
             }
         }
     }
     
-    // 处理搜索按钮点击
+    // Handle the click of the search button
     val handleSearch = {
         if (searchText.isNotBlank()) {
-            // 重置错误信息
+            // Reset the error message
             errorMessage = null
-            // 设置搜索中状态
+            // Set the status in search
             isSearching = true
             
-            // 启动协程执行搜索
+            // Start the coroutine to perform the search
             coroutineScope.launch {
                 try {
-                    // 1. 搜索地点并获取经纬度
+                    // 1. Search for the location and obtain the longitude and latitude
                     val location = placesSearchService.searchPlaceByName(searchText)
                     
                     if (location != null) {
-                        // 2. 搜索周围的健身场所
+                        // 2. Search for fitness places around
                         val selectedType = when (selectedFilter) {
                             "Gym" -> PlaceType.GYM
                             "Yoga" -> PlaceType.YOGA
@@ -321,7 +319,7 @@ fun MapScreen(
                             type = selectedType
                         )
                         
-                        // 3. 更新搜索结果
+                        // 3. Update the search results
                         if (places.isNotEmpty()) {
                             searchResults = places
                             searchLocation = location
@@ -332,29 +330,29 @@ fun MapScreen(
                             errorMessage = "No fitness places found near '${searchText}'"
                         }
                     } else {
-                        // 如果找不到地点，显示错误信息
+                        // If the location cannot be found, display an error message
                         searchResults = emptyList()
                         searchLocation = null
                         errorMessage = "Location not found: '${searchText}'"
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    // 发生错误，显示错误信息
+                    // An error occurs and the error message is displayed
                     searchResults = emptyList()
                     searchLocation = null
                     errorMessage = "Error during search: ${e.localizedMessage ?: "Unknown error"}"
                 } finally {
-                    // 结束搜索中状态
+                    // End the search status
                     isSearching = false
                 }
             }
         }
     }
 
-    // 实际显示的地点列表（由于我们现在自动搜索，总是显示真实搜索结果）
+    // The actual displayed list of locations
     val placesToShow = searchResults
     
-    // 使用derivedStateOf来确保过滤逻辑只会在依赖的状态改变时计算
+    // Use derivedStateOf to ensure that the filtering logic is calculated only when the dependent state changes
     val filteredPlaces by remember(selectedFilter, placesToShow) {
         derivedStateOf {
             placesToShow.filter { place ->
@@ -378,7 +376,7 @@ fun MapScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // 搜索栏和标题
+            // Search bar and title
             SearchBarWithTitle(
                 searchText = searchText,
                 onSearchTextChanged = { searchText = it },
@@ -386,31 +384,29 @@ fun MapScreen(
                 isSearching = isSearching
             )
             
-            // 地图视图（传入搜索位置和用户当前位置）
+            // Map view (input the search location and the current location of the user)
             MapView(
                 filteredPlaces = filteredPlaces,
                 searchLocation = searchLocation,
                 userLocation = userLocation
             )
             
-            // 筛选标签
+            // Filter label
             FilterTabs(
                 filters = filters,
                 selectedFilter = selectedFilter,
                 onFilterSelected = { 
                     selectedFilter = it
-                    // 修改筛选逻辑 - 不再触发新的搜索，只对现有结果进行筛选
-                    // 只有当搜索结果为空时才触发新搜索
+                    // A new search is triggered only when the search result is empty
                     if (searchResults.isEmpty() && userLocation != null) {
-                        // 如果没有搜索文本，使用当前位置重新搜索
                         searchNearbyPlaces(userLocation!!, selectedFilter.takeIf { filter -> filter != "All" })
                     }
                 }
             )
             
-            // 场所列表
+            // List
             if (isSearching) {
-                // 搜索中显示加载指示器
+                // The list of loading indicator venues is displayed in the battle search
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -429,7 +425,7 @@ fun MapScreen(
                     }
                 }
             } else if (errorMessage != null) {
-                // 显示错误消息
+                // Display error message
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -454,7 +450,7 @@ fun MapScreen(
                     }
                 }
             } else if (filteredPlaces.isEmpty() && searchText.isNotBlank()) {
-                // 无搜索结果
+                // No search results
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -488,7 +484,7 @@ fun MapScreen(
                     }
                 }
             } else {
-                // 显示地点列表
+                // Display the list of locations
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -503,7 +499,7 @@ fun MapScreen(
             }
         }
         
-        // 底部导航
+        // Bottom Tabbar
         BottomNavBar(
             currentRoute = "map",
             onNavigateToHome = onNavigateToHome,
@@ -527,29 +523,29 @@ fun SearchBarWithTitle(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
-        // 标题和菜单按钮行
+        // Title and menu button lines
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 左侧留白，保持对称
+            // Leave the left side blank to maintain symmetry
             Spacer(modifier = Modifier.width(32.dp))
 
-            // 标题
+            // Title
             Text(
                 text = "Nearby Fitness Places",
                 fontSize = 18.sp, 
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
-                    .weight(1f), // 占据中间空间
-                textAlign = TextAlign.Center, // 文本居中
+                    .weight(1f),
+                textAlign = TextAlign.Center,
                 color = Color(0xFF1F2937)
             )
 
-            // 菜单图标按钮
+            // Menu icon button
             IconButton(
                 onClick = { /* TODO: Add menu action */ },
-                modifier = Modifier.size(32.dp) // 保持尺寸对称
+                modifier = Modifier.size(32.dp) 
             ) {
                 Icon(
                     imageVector = Icons.Default.Menu,
@@ -559,10 +555,10 @@ fun SearchBarWithTitle(
             }
         }
         
-        // 在标题行和搜索栏之间添加间距
+        // Add spacing between the title line and the search bar
         Spacer(modifier = Modifier.height(16.dp))
         
-        // 搜索栏
+        // search box
         OutlinedTextField(
             value = searchText,
             onValueChange = { onSearchTextChanged(it) },
@@ -638,49 +634,47 @@ fun MapView(
     val context = LocalContext.current
     // Default camera position (Monash Clayton campus)
     val defaultCameraPosition = LatLng(-37.9105, 145.1363) // Changed from Melbourne to Monash Clayton
-    // 如果有用户位置，优先使用；否则如果有搜索位置，使用搜索位置；最后使用默认位置
     val initialPosition = userLocation ?: searchLocation ?: defaultCameraPosition
     
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(initialPosition, 13f) // 从9f增加到13f以适当放大视图
+        position = CameraPosition.fromLatLngZoom(initialPosition, 13f)
     }
 
     LaunchedEffect(filteredPlaces, searchLocation, userLocation) {
         if (searchLocation != null) {
-            // 如果有明确的搜索位置，优先显示该位置
             if (filteredPlaces.isEmpty()) {
-                // 如果没有过滤后的地点，只显示搜索位置
+                // If there is no filtered location, only the search location will be displayed
                 cameraPositionState.animate(
-                    CameraUpdateFactory.newLatLngZoom(searchLocation, 14f) // 适当放大视图 (从12f到14f)
+                    CameraUpdateFactory.newLatLngZoom(searchLocation, 14f)
                 )
             } else if (filteredPlaces.size == 1) {
-                // 如果只有一个地点，显示该地点
+                // If there is only one location, display that location
                 val place = filteredPlaces.first()
                 cameraPositionState.animate(
-                    CameraUpdateFactory.newLatLngZoom(LatLng(place.latitude, place.longitude), 15f) // 更进一步放大 (从14f到15f)
+                    CameraUpdateFactory.newLatLngZoom(LatLng(place.latitude, place.longitude), 15f)
                 )
             } else {
-                // 有多个地点，显示所有地点的边界
+                // There are multiple locations. Display the boundaries of all locations
                 val boundsBuilder = LatLngBounds.builder()
-                // 添加搜索位置
+                // Add the search location
                 boundsBuilder.include(searchLocation)
-                // 添加所有过滤后的地点
+                // Add all the filtered locations
                 for (place in filteredPlaces) {
                     boundsBuilder.include(LatLng(place.latitude, place.longitude))
                 }
-                val padding = 250 // 从200增加到250，提供更多边距
+                val padding = 250
                 cameraPositionState.animate(
                     CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), padding),
                     durationMs = 1000
                 )
             }
         } else if (userLocation != null && filteredPlaces.isEmpty()) {
-            // 如果有用户位置但没有搜索结果，显示用户位置
+            // If there is a user's location but no search results, display the user's location
             cameraPositionState.animate(
-                CameraUpdateFactory.newLatLngZoom(userLocation, 14f) // 适当放大用户位置视图
+                CameraUpdateFactory.newLatLngZoom(userLocation, 14f)
             )
         } else if (filteredPlaces.isNotEmpty()) {
-            // 没有明确的搜索位置，使用以前的逻辑
+            // There is no clear search location. Use the previous logic
             if (filteredPlaces.size == 1) {
                 val place = filteredPlaces.first()
                 cameraPositionState.animate(
@@ -698,10 +692,10 @@ fun MapView(
                 )
             }
         } else {
-            // 没有任何特定位置或搜索结果，显示用户位置或默认位置
+            // There is no specific location or search result that shows the user's location or the default location
             val position = userLocation ?: defaultCameraPosition
             cameraPositionState.animate(
-                CameraUpdateFactory.newLatLngZoom(position, 13f) // 从9f增加到13f
+                CameraUpdateFactory.newLatLngZoom(position, 13f)
             )
         }
     }
@@ -714,9 +708,9 @@ fun MapView(
             .clip(RoundedCornerShape(16.dp)),
         cameraPositionState = cameraPositionState
     ) {
-        // 显示所有过滤后的地点标记
+        // Display all filtered location markers
         filteredPlaces.forEach { place ->
-            // 根据地点类型选择不同的标记颜色
+            // Choose different marking colors according to the type of location
             val markerColor = when (place.type) {
                 PlaceType.GYM -> BitmapDescriptorFactory.HUE_RED
                 PlaceType.YOGA -> BitmapDescriptorFactory.HUE_VIOLET
@@ -732,7 +726,7 @@ fun MapView(
             )
         }
         
-        // 如果有搜索位置，显示一个蓝色标记表示搜索位置
+        // If there is a search location, display a blue mark to indicate the search location
         searchLocation?.let {
             Marker(
                 state = MarkerState(position = it),
@@ -741,7 +735,7 @@ fun MapView(
             )
         }
         
-        // 如果有用户位置，显示一个青色标记表示用户当前位置
+        // If there is a user location, display a cyan mark to indicate the current location of the user
         userLocation?.let {
             Marker(
                 state = MarkerState(position = it),
@@ -844,7 +838,6 @@ fun PlaceItem(place: FitnessPlace) {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // 名称使用weight并设置最多占用空间，允许末尾省略
                     Text(
                         text = place.name,
                         fontSize = 16.sp,
@@ -855,10 +848,8 @@ fun PlaceItem(place: FitnessPlace) {
                         modifier = Modifier.weight(1f, fill = false)
                     )
 
-                    // 评分部分不再使用weight，而是固定宽度
                     Spacer(modifier = Modifier.width(8.dp))
                     
-                    // 评分组件设为固定布局
                     Box(
                         modifier = Modifier.widthIn(min = 45.dp),
                         contentAlignment = Alignment.CenterEnd
@@ -892,14 +883,11 @@ fun PlaceItem(place: FitnessPlace) {
                     modifier = Modifier.padding(vertical = 1.dp)
                 )
                 
-                // Tags 包括场所类型和其他标签
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(top = 2.dp)
                 ) {
-                    // 显示所有标签（最多2个）
                     place.tags.take(2).forEach { tag ->
-                        // 根据标签内容设置不同样式
                         val (bgColor, textColor) = when (tag) {
                             "24/7" -> Pair(Color(0xFFE0F2FE), Color(0xFF0369A1))
                             "Gym" -> Pair(Color(0xFFFFE4E6), Color(0xFFBE123C))
@@ -929,13 +917,13 @@ fun PlaceItem(place: FitnessPlace) {
 }
 
 /**
- * 根据地点类型获取默认图片资源
+ * Obtain the default image resources based on the location type
  */
 private fun getDefaultImageResourceByType(type: PlaceType): Int {
     return when (type) {
         PlaceType.GYM -> R.drawable.gym_image
         PlaceType.YOGA -> R.drawable.yoga_image
-        PlaceType.SWIMMING -> R.drawable.gym_image // 假设我们没有游泳池图片，使用健身房图片
+        PlaceType.SWIMMING -> R.drawable.swim_image 
         PlaceType.PARK -> R.drawable.outdoor_gym
     }
 }

@@ -15,6 +15,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,6 +29,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,6 +80,8 @@ fun RegisterScreen(
 
     var passwordValidationState by remember { mutableStateOf(PasswordValidationState()) }
     var showPasswordCriteria by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
@@ -94,7 +99,7 @@ fun RegisterScreen(
                 .verticalScroll(scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 顶部背景图和标题
+            // Top background image and title
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -108,7 +113,7 @@ fun RegisterScreen(
                         )
                     )
             ) {
-                // 背景图片
+                // background image
                 Image(
                     painter = painterResource(id = R.drawable.fitness_background),
                     contentDescription = "Fitness Background",
@@ -118,7 +123,7 @@ fun RegisterScreen(
                         .background(Color(0xFF4F46E5).copy(alpha = 0.4f))
                 )
                 
-                // 标题文本
+                // Title
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -142,13 +147,13 @@ fun RegisterScreen(
                 }
             }
             
-            // 注册表单
+            // Registration Form
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(24.dp)
             ) {
-                // 创建账户文本
+                // Create account text
                 Text(
                     text = "Create Account",
                     fontSize = 24.sp,
@@ -160,7 +165,7 @@ fun RegisterScreen(
                     textAlign = TextAlign.Start
                 )
                 
-                // 全名输入框
+                // Full name input
                 Column(modifier = Modifier.padding(bottom = 16.dp)) {
                     Text(
                         text = "Full Name",
@@ -186,7 +191,7 @@ fun RegisterScreen(
                     )
                 }
                 
-                // 邮箱输入框
+                // Email Input
                 Column(modifier = Modifier.padding(bottom = 16.dp)) {
                     Text(
                         text = "Email",
@@ -212,7 +217,7 @@ fun RegisterScreen(
                     )
                 }
                 
-                // 密码输入框
+                // Password Input
                 Column(modifier = Modifier.padding(bottom = 16.dp)) {
                     Text(
                         text = "Password",
@@ -230,17 +235,22 @@ fun RegisterScreen(
                         },
                         placeholder = { Text("••••••••") },
                         leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Password") },
-                        visualTransformation = PasswordVisualTransformation(),
+                        trailingIcon = {
+                            val image = if (passwordVisible)
+                                Icons.Filled.VisibilityOff
+                            else Icons.Filled.Visibility
+                            val description = if (passwordVisible) "Hide password" else "Show password"
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(imageVector = image, description)
+                            }
+                        },
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         modifier = Modifier
                             .fillMaxWidth()
                             .onFocusChanged { focusState ->
                                 if (focusState.isFocused) {
                                     showPasswordCriteria = true
                                 }
-                                // Optionally, you can set showPasswordCriteria = false when focus is lost
-                                // else if (!focusState.isFocused && password.isEmpty()) {
-                                // showPasswordCriteria = false
-                                // }
                             },
                         singleLine = true,
                         shape = RoundedCornerShape(8.dp),
@@ -255,7 +265,7 @@ fun RegisterScreen(
                     }
                 }
                 
-                // 确认密码输入框
+                // Confirm Password Input
                 Column(modifier = Modifier.padding(bottom = 16.dp)) {
                     Text(
                         text = "Confirm Password",
@@ -270,7 +280,16 @@ fun RegisterScreen(
                         onValueChange = { confirmPassword = it },
                         placeholder = { Text("••••••••") },
                         leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Confirm Password") },
-                        visualTransformation = PasswordVisualTransformation(),
+                        trailingIcon = {
+                            val image = if (confirmPasswordVisible)
+                                Icons.Filled.VisibilityOff
+                            else Icons.Filled.Visibility
+                            val description = if (confirmPasswordVisible) "Hide password" else "Show password"
+                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                                Icon(imageVector = image, description)
+                            }
+                        },
+                        visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         modifier = Modifier
                             .fillMaxWidth(),
                         singleLine = true,
@@ -282,7 +301,7 @@ fun RegisterScreen(
                     )
                 }
                 
-                // 同意条款选项
+                // Agree to the terms option
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -302,7 +321,7 @@ fun RegisterScreen(
                         )
                     )
                     
-                    // 将文本放在一个可以换行的Column中
+                    // Put the text in a Column where line breaks are allowed
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
@@ -337,7 +356,7 @@ fun RegisterScreen(
                 }
                 }
                 
-                // 注册按钮
+                // Registration button
                 Button(
                     onClick = {
                         if (password != confirmPassword) {
@@ -358,13 +377,12 @@ fun RegisterScreen(
                                         if (task.isSuccessful) {
                                             // Registration success
                                             Log.d("RegisterScreen", "createUserWithEmail:success")
-                                            // 显示注册成功的Toast
                                             Toast.makeText(
                                                 context, 
                                                 "Registered Successfully!",
                                                 Toast.LENGTH_SHORT
                                             ).show()
-                                            // 跳转到登录页面
+                                            // To Login page
                                             onNavigateToLogin()
                                         } else {
                                             // If sign in fails, display a message to the user.
@@ -402,7 +420,7 @@ fun RegisterScreen(
                     }
                 }
 
-                // 显示错误信息
+                // Display error message
                 errorMessage?.let {
                     Text(
                         text = it,
@@ -412,7 +430,7 @@ fun RegisterScreen(
                     )
                 }
 
-                // 登录链接
+                // sign up link
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
