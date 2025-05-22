@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -66,6 +67,12 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation ("io.coil-kt:coil-compose:2.4.0")
 
+    // Google Generative AI (Gemini API)
+    implementation("com.google.ai.client.generativeai:generativeai:0.2.2")
+
+    // Firebase Authentication
+    implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

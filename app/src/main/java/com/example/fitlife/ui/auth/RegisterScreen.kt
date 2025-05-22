@@ -1,5 +1,6 @@
 package com.example.fitlife.ui.auth
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,6 +27,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fitlife.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterScreen(
@@ -39,8 +44,12 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var agreeToTerms by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     
     val scrollState = rememberScrollState()
+    val coroutineScope = rememberCoroutineScope()
+    val auth: FirebaseAuth = Firebase.auth
 
     Box(
         modifier = Modifier
@@ -282,25 +291,70 @@ fun RegisterScreen(
                 
                 // 注册按钮
                 Button(
-                    onClick = onRegisterSuccess,
+                    onClick = {
+                        if (password != confirmPassword) {
+                            errorMessage = "Passwords do not match."
+                            return@Button
+                        }
+                        if (!agreeToTerms) {
+                            errorMessage = "You must agree to the terms and conditions."
+                            return@Button
+                        }
+                        errorMessage = null // Clear previous errors
+                        isLoading = true
+                        coroutineScope.launch {
+                            try {
+                                auth.createUserWithEmailAndPassword(email, password)
+                                    .addOnCompleteListener { task ->
+                                        isLoading = false
+                                        if (task.isSuccessful) {
+                                            // Registration success
+                                            Log.d("RegisterScreen", "createUserWithEmail:success")
+                                            onRegisterSuccess()
+                                        } else {
+                                            // If sign in fails, display a message to the user.
+                                            Log.w("RegisterScreen", "createUserWithEmail:failure", task.exception)
+                                            errorMessage = task.exception?.message ?: "Registration failed."
+                                        }
+                                    }
+                            } catch (e: Exception) {
+                                isLoading = false
+                                errorMessage = e.message ?: "An unexpected error occurred."
+                                Log.e("RegisterScreen", "Registration error", e)
+                            }
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
+                        .height(50.dp),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2563EB)
+                        containerColor = Color(0xFF2563EB),
+                        contentColor = Color.White
                     ),
-                    enabled = fullName.isNotEmpty() && email.isNotEmpty() && 
-                             password.isNotEmpty() && confirmPassword.isNotEmpty() && 
-                             password == confirmPassword && agreeToTerms
+                    enabled = !isLoading && agreeToTerms && email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank() && fullName.isNotBlank()
                 ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text("Create Account", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+
+                // 显示错误信息
+                errorMessage?.let {
                     Text(
-                        text = "Sign Up",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 8.dp),
+                        textAlign = TextAlign.Center
                     )
                 }
-                
+
                 // 登录链接
                 Row(
                     modifier = Modifier
