@@ -35,6 +35,8 @@ import android.util.Log
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.Image
 
 
 data class Message(
@@ -265,29 +267,23 @@ fun AICoachHeader() {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // AI avatar
+                // AI avatar - 使用自定义图片替换通用图标
                 Box(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
                         .background(Color.White)
-                        .padding(4.dp),
+                        .padding(2.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Box(
+                    Image(
+                        painter = painterResource(id = R.drawable.ai_coach_avatar),
+                        contentDescription = "AI Coach Avatar",
                         modifier = Modifier
                             .fillMaxSize()
-                            .clip(CircleShape)
-                            .background(Color(0xFFEBF5FF)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_person),
-                            contentDescription = "AI Avatar",
-                            modifier = Modifier.size(40.dp),
-                            tint = Color(0xFF3B82F6)
-                        )
-                    }
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
                 }
                 
                 // AI introduction
