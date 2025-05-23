@@ -4,7 +4,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 /**
- * Retrofit 客户端单例，用来构建 ItunesApiService
+ * Retrofit Client Singleton
  */
 object ItunesClient {
 
