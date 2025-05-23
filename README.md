@@ -77,6 +77,18 @@ To ensure all developers can use the Google login feature (especially during deb
 
 Connect your Android device or start an emulator in Android Studio, then click the Run button.
 
+Network Access Note:
+
+The exercise recommendation feature (on the Home screen) relies on a third-party API (https://exercisedb-api.vercel.app). This service is occasionally blocked on certain institutional networks, including Monash University WiFi.
+
+If you encounter issues where exercise cards fail to load or pagination does not work:
+
+Please switch to your mobile hotspot or a home WiFi network
+
+Do not use Monash campus WiFi when testing this feature
+
+This issue only affects the external exercise API. All other app features remain functional under university networks.
+
 ## Data Storage
 
 - **Local Data**: The app uses a Room database to store workout records, user preferences (like fitness tags), calendar events, etc., locally on the user's device.
