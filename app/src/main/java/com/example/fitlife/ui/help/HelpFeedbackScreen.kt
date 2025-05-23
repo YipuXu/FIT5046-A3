@@ -236,9 +236,9 @@ private fun FaqSection() {
         )
 
         // Example FAQ Items (add more as needed)
-        FaqItem(question = "How do I track my workouts?", answer = "Go to the Home screen and tap the '+' button to start logging your activity.")
-        FaqItem(question = "How can I change my fitness goals?", answer = "Navigate to Profile > Edit Profile > Fitness Goal to update your objectives.")
-        FaqItem(question = "Where can I see my progress?", answer = "Your progress statistics are available on the Profile screen and detailed history can be viewed in the Calendar section.")
+        FaqItem(question = "How do I track my workouts?", answer = "前往个人资料页（Profile），点击"查看全部"（View All）即可查看所有锻炼记录。您也可以在主页通过"+"按钮记录新的锻炼。")
+        FaqItem(question = "How can I change my fitness goals?", answer = "进入个人资料页（Profile）> 点击"编辑"（Edit）按钮 > 选择"健身目标"（Fitness Goal）选项，然后从列表中选择您的新目标。系统会自动为您调整推荐计划。")
+        FaqItem(question = "Where can I see my progress?", answer = "您可以在个人资料页面（Profile）查看统计数据（锻炼天数、连续锻炼天数和总训练次数）以及主页（Home）的周健身仪表盘（当周锻炼次数，当周锻炼时间，当周消耗卡路里数），详细的锻炼历史记录可以在日历页面（Calendar）或点击"查看全部"（View All）按钮访问。")
     }
 }
 
