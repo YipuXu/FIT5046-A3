@@ -12,7 +12,20 @@
           "package_name": "com.example.fitlife"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "735710334901-7bv6au9o38ref7cr650r3gkf39nth2ks.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.fitlife",
+            "certificate_hash": "6628b9fcbfd08f0db0ff46821dc164c11f51ea8c"
+          }
+        },
+        {
+          "client_id": "735710334901-1ak9pnf9hqetcsouc5sf2p67st5274oa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDR36pEGldIYbYyZvbjFShuvckr32kTBuI"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "735710334901-1ak9pnf9hqetcsouc5sf2p67st5274oa.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
