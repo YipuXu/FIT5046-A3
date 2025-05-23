@@ -829,7 +829,7 @@ fun PlaceItem(place: FitnessPlace) {
                         color = Color(0xFF1F2937),
                         maxLines = 1,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false)
+                        modifier = Modifier.weight(1f)
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
