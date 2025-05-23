@@ -42,23 +42,23 @@ fun AccessibilityScreen(
     val coroutineScope = rememberCoroutineScope()
     val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
     
-    // 从DataStore获取设置
+    // Get settings from DataStore
     val highContrastEnabled by accessibilityPreferences.highContrastMode.collectAsState(initial = false)
     val colorBlindModeEnabled by accessibilityPreferences.colorBlindMode.collectAsState(initial = false)
     val zoomEnabled by accessibilityPreferences.zoomFunction.collectAsState(initial = false)
     val screenReaderEnabled by accessibilityPreferences.screenReader.collectAsState(initial = false)
     val keyboardControlEnabled by accessibilityPreferences.keyboardControl.collectAsState(initial = false)
     
-    // 对话框状态
+    // Dialog State
     var showScreenReaderDialog by remember { mutableStateOf(false) }
     var showKeyboardControlDialog by remember { mutableStateOf(false) }
 
-    // 检查TalkBack服务是否启用
+    // Check if TalkBack service is enabled
     val isTalkBackEnabled = remember(context) {
         isTalkBackEnabled(context)
     }
     
-    // 检查键盘控制服务是否启用
+    // Check if the keyboard control service is enabled
     val isKeyboardAccessibilityEnabled = remember(context) {
         isKeyboardAccessibilityEnabled(context)
     }
@@ -98,7 +98,7 @@ fun AccessibilityScreen(
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 使用AccessibilityUtils中的组件
+            // Using components in AccessibilityUtils
             AccessibilityUtils.AccessibleSettingsItem(
                 title = "High Contrast Mode",
                 trailingContent = {

@@ -59,14 +59,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.FlowRow
 import com.example.fitlife.utils.ResourceUtils
-import com.example.fitlife.ui.components.BottomNavBar // 添加导入
+import com.example.fitlife.ui.components.BottomNavBar
 
-import android.net.Uri // 导入 Uri
-import androidx.activity.compose.rememberLauncherForActivityResult // 导入 rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts // 导入 ActivityResultContracts
-import coil.compose.AsyncImage // 导入 AsyncImage
-import kotlinx.coroutines.launch // 导入 launch
-import androidx.compose.foundation.BorderStroke // 导入 BorderStroke
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.platform.LocalContext
 import android.content.Context
 import android.content.SharedPreferences
@@ -92,7 +92,7 @@ fun ProfileEditScreen(
     onBackClick: () -> Unit = {},
     initialFitnessTags: List<String> = listOf("Strength Training", "Cardio"),
     onFitnessTagsSelected: (List<String>) -> Unit = {},
-    // 添加导航回调
+
     onNavigateToHome: () -> Unit,
     onNavigateToCalendar: () -> Unit,
     onNavigateToMap: () -> Unit,
@@ -336,13 +336,12 @@ fun ProfileEditScreen(
             }
         }
 
-        // 底部导航栏放在Box的底部，覆盖在Column之上
         BottomNavBar(
-            currentRoute = "profile", // 编辑页高亮Profile图标
+            currentRoute = "profile",
             onNavigateToHome = onNavigateToHome,
             onNavigateToCalendar = onNavigateToCalendar,
             onNavigateToMap = onNavigateToMap,
-            onNavigateToProfile = onNavigateToProfile, // 点击Profile图标返回ProfileScreen
+            onNavigateToProfile = onNavigateToProfile, // Click the Profile icon to return to the ProfileScreen
             modifier = Modifier.align(Alignment.BottomCenter)
         )
         // SnackbarHost to display snackbar messages
@@ -370,25 +369,25 @@ fun ProfileEditScreen(
             onDismiss = { showBasicInfoDialog = false },
             onSave = { name ->
                 nameValue = name
-                
-                // 保存到两个数据源
+
+                // Saving to two data sources
                 coroutineScope.launch {
-                    // 更新本地数据库 - 只更新名字，保留原有的邮箱
+                    // Update local database - only update the name, keep the original email address
                     firebaseUid?.let { uid ->
-                        // 更新本地数据库
+                        // Update the local database
                         userDao.updateBasicInfo(uid, name, emailValue)
                         user = userDao.getUserByFirebaseUidSync(uid)
                         
-                        // 更新Firebase用户信息 - 只更新名字
+                        // Update Firebase user information - Update only the name
                         try {
                             val firebaseUser = FirebaseAuth.getInstance().currentUser
                             if (firebaseUser != null) {
-                                // 创建用户资料更新请求对象
+                                // Create a user profile update request object
                                 val profileUpdates = UserProfileChangeRequest.Builder()
                                     .setDisplayName(name)
                                     .build()
                                     
-                                // 执行更新
+                                // Performing Updates
                                 withContext(Dispatchers.IO) {
                                     firebaseUser.updateProfile(profileUpdates).await()
                                 }
@@ -415,23 +414,21 @@ fun ProfileEditScreen(
             onSave = { height, weight ->
                 heightValue = height
                 weightValue = weight
-                // 保存到Firestore和本地数据库
+                // Saving to Firestore and local database
                 coroutineScope.launch {
                     try {
-                        // 首先保存到Firestore
+                        // First save to Firestore
                         val success = firebaseUserRepository.updateHeightWeight(height, weight)
                         
                         if (success) {
-                            // 如果Firestore保存成功，也更新本地数据库保持一致性
+                            // If Firestore saves successfully, also update the local database to maintain consistency
                             firebaseUid?.let { uid ->
                                 userDao.updateHeightWeight(uid, height, weight)
                                 user = userDao.getUserByFirebaseUidSync(uid)
                             }
-                            
-                            // 显示成功消息
+
                             snackbarHostState.showSnackbar("Height and weight updated successfully")
                         } else {
-                            // 如果保存失败，显示错误消息
                             snackbarHostState.showSnackbar("Failed to update height and weight")
                         }
                     } catch (e: Exception) {
@@ -454,7 +451,7 @@ fun ProfileEditScreen(
             iconTint = Color(0xFF10B981),
             onOptionSelected = { option ->
                 fitnessGoal = option
-                // 保存到数据库
+                // Save to database
                 coroutineScope.launch {
                     firebaseUid?.let { uid ->
                         userDao.updateFitnessGoal(uid, option)
@@ -476,7 +473,7 @@ fun ProfileEditScreen(
             iconTint = Color(0xFF9061F9),
             onOptionSelected = { option ->
                 workoutFrequency = option
-                // 保存到数据库
+                // Save to database
                 coroutineScope.launch {
                     firebaseUid?.let { uid ->
                         userDao.updateWorkoutFrequency(uid, option)
@@ -498,7 +495,7 @@ fun ProfileEditScreen(
             iconTint = Color(0xFFFF6B00),
             onConfirm = { selected ->
                 selectedFitnessTags = selected
-                // 保存到数据库，将列表转换为逗号分隔的字符串
+                // Save to database, convert list to comma separated string
                 coroutineScope.launch {
                     firebaseUid?.let { uid ->
                         val tagsString = selected.joinToString(",")
@@ -1543,17 +1540,17 @@ private fun MultiSelectDialog(
     onConfirm: (List<String>) -> Unit,
     onDismiss: () -> Unit
 ) {
-    // 使用mutableStateListOf来创建可变状态列表以支持UI更新
+    // Use mutableStateListOf to create a mutable state list to support UI updates
     val tempSelected = remember { mutableStateListOf<String>() }
-    // 最大选择数量限制为2个
+    // The maximum number of selections is 2
     val maxSelections = 2
-    // 用于显示最大选择限制的消息
+    // A message to display the maximum selection limit
     var showMaxSelectionsMessage by remember { mutableStateOf(false) }
     
-    // 初始化选中项
+    // Initialize selected items
     LaunchedEffect(selectedOptions) {
         tempSelected.clear()
-        // 确保初始选择不超过最大限制
+        // Make sure the initial selection does not exceed the maximum limit
         tempSelected.addAll(selectedOptions.take(maxSelections))
     }
     
@@ -1578,14 +1575,14 @@ private fun MultiSelectDialog(
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                // 显示最大选择限制提示
+                // Show maximum selection limit hint
                 Text(
                     text = "Select up to ${maxSelections} tags",
                     fontSize = 14.sp,
                     color = Color(0xFF6B7280)
                 )
                 
-                // 如果显示选择限制消息，则显示提示
+                // If a selection restriction message is displayed, show a hint
                 if (showMaxSelectionsMessage) {
                     Text(
                         text = "You can select maximum ${maxSelections} tags",
@@ -1620,7 +1617,7 @@ private fun MultiSelectDialog(
                                             tempSelected.add(option)
                                             showMaxSelectionsMessage = false
                                         } else {
-                                            // 显示最大选择限制消息
+                                            // Display maximum selection limit message
                                             showMaxSelectionsMessage = true
                                         }
                                     }
