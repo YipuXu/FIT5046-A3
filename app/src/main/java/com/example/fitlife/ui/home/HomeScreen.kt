@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.fitlife.ui.components.BottomNavBar
 import androidx.compose.material3.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,14 +29,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import com.example.fitlife.R
 import com.example.fitlife.MyApplication
 import com.example.fitlife.data.model.User
+import com.example.fitlife.data.model.Workout
 import com.example.fitlife.data.repository.FirebaseUserRepository
+import com.example.fitlife.ui.theme.AccessibilityUtils
 import android.net.Uri
 import coil.compose.AsyncImage
 import android.util.Log
 import java.io.File
+import kotlin.math.roundToInt
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,12 +60,21 @@ fun HomeScreen(
 ) {
     val context = LocalContext.current
     val userDao = remember { (context.applicationContext as MyApplication).database.userDao() }
+    val workoutDao = remember { (context.applicationContext as MyApplication).database.workoutDao() }
     val firebaseUserRepository = remember { FirebaseUserRepository() }
     val firebaseUser by firebaseUserRepository.currentUser.collectAsState()
     val firebaseDisplayName = firebaseUser?.displayName
     val firebaseUid = firebaseUser?.uid
 
     var user by remember { mutableStateOf<User?>(null) }
+
+    val workouts by remember(firebaseUid) {
+        if (firebaseUid != null) {
+            workoutDao.getAllOrderByDateDesc(firebaseUid)
+        } else {
+            workoutDao.getAllOrderByDateDesc()
+        }
+    }.collectAsState(initial = emptyList())
 
     LaunchedEffect(firebaseUid) {
         if (firebaseUid != null) {
@@ -105,16 +124,19 @@ fun HomeScreen(
                 avatarUri = user?.avatarUri?.let { Uri.parse(it) },
                 onAvatarClick = { onNavigateToProfileEdit() }
             )
+            
+            FitnessDashboard(workouts = workouts)
+            
             Button(
                 onClick = onNavigateToRecord,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF2563EB),
-                    contentColor   = Color.White
+                    contentColor = Color.White
                 )
-
             ) {
                 Text("Record Training")
             }
@@ -122,6 +144,149 @@ fun HomeScreen(
             ExerciseRecommendation()
         }
 
+    }
+}
+
+@Composable
+fun FitnessDashboard(workouts: List<Workout>) {
+    val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
+    
+    val calendar = Calendar.getInstance()
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    val currentDate = dateFormat.format(calendar.time)
+    calendar.add(Calendar.DAY_OF_YEAR, -7)
+    val oneWeekAgo = dateFormat.format(calendar.time)
+    
+    val recentWorkouts = workouts.filter { workout ->
+        try {
+            val workoutDate = workout.date
+            workoutDate >= oneWeekAgo && workoutDate <= currentDate
+        } catch (e: Exception) {
+            false
+        }
+    }
+    
+    val totalWorkouts = recentWorkouts.size
+    
+    val totalDurationMinutes = recentWorkouts.sumOf { it.duration }
+    val totalDurationHours = (totalDurationMinutes / 60.0 * 10).roundToInt() / 10.0
+    
+    val totalCalories = recentWorkouts.sumOf { it.calories }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = AccessibilityUtils.getAccessibleColor(
+                normalColor = Color(0xFF2563EB),
+                highContrastColor = Color.White
+            )
+        ),
+        border = if (isHighContrastMode) BorderStroke(2.dp, Color.Black) else null
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "This week's fitness overview",
+                color = AccessibilityUtils.getAccessibleColor(
+                    normalColor = Color.White,
+                    highContrastColor = Color.Black
+                ),
+                fontWeight = if (isHighContrastMode) FontWeight.Bold else FontWeight.Medium,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .padding(bottom = 16.dp)
+                    .fillMaxWidth(),
+                textAlign = TextAlign.Start
+            )
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                DashboardItem(
+                    label = "Trainings done",
+                    value = "$totalWorkouts",
+                    modifier = Modifier.weight(1f)
+                )
+                
+                Box(
+                    modifier = Modifier
+                        .height(30.dp)
+                        .width(1.dp)
+                        .background(
+                            AccessibilityUtils.getAccessibleColor(
+                                normalColor = Color.White.copy(alpha = 0.3f),
+                                highContrastColor = Color.Black
+                            )
+                        )
+                )
+                
+                DashboardItem(
+                    label = "Total duration",
+                    value = "$totalDurationHours h",
+                    modifier = Modifier.weight(1f)
+                )
+
+                Box(
+                    modifier = Modifier
+                        .height(30.dp)
+                        .width(1.dp)
+                        .background(
+                            AccessibilityUtils.getAccessibleColor(
+                                normalColor = Color.White.copy(alpha = 0.3f),
+                                highContrastColor = Color.Black
+                            )
+                        )
+                )
+                
+                DashboardItem(
+                    label = "Burn calories",
+                    value = "$totalCalories kcal",
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun DashboardItem(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
+    
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.padding(horizontal = 8.dp)
+    ) {
+        Text(
+            text = value,
+            color = AccessibilityUtils.getAccessibleColor(
+                normalColor = Color.White,
+                highContrastColor = Color.Black
+            ),
+            fontWeight = if (isHighContrastMode) FontWeight.ExtraBold else FontWeight.Bold,
+            fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+            textAlign = TextAlign.Center
+        )
+        
+        Text(
+            text = label,
+            color = AccessibilityUtils.getAccessibleColor(
+                normalColor = Color.White.copy(alpha = 0.8f),
+                highContrastColor = Color.Black.copy(alpha = 0.8f)
+            ),
+            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 4.dp)
+        )
     }
 }
 
