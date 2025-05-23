@@ -24,14 +24,13 @@ fun ExerciseCard(
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            // 1. 名称
             Text(
                 text = exercise.name,
                 style = MaterialTheme.typography.titleMedium
             )
             Spacer(Modifier.height(4.dp))
 
-            // 2. 主要肌肉 & 器械
+            // Major Muscles & Equipment
             Text(
                 text = "Target: ${exercise.targetMuscles.joinToString()}",
                 style = MaterialTheme.typography.bodySmall
@@ -42,7 +41,7 @@ fun ExerciseCard(
             )
             Spacer(Modifier.height(4.dp))
 
-            // 3. 次要肌肉（如果有）
+            // Secondary muscles
             if (exercise.secondaryMuscles.isNotEmpty()) {
                 Text(
                     text = "Secondary: ${exercise.secondaryMuscles.joinToString()}",
@@ -51,7 +50,7 @@ fun ExerciseCard(
                 Spacer(Modifier.height(4.dp))
             }
 
-            // 4. 步骤说明
+            // steps
             Text(
                 text = "Instructions:",
                 style = MaterialTheme.typography.labelLarge
