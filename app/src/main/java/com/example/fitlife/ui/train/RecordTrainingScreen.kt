@@ -2,6 +2,7 @@ package com.example.fitlife.ui.train
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -104,7 +105,7 @@ fun RecordTrainingScreen(
                         .clip(CircleShape)
                         .background(Color(0xFFF3F4F6))
                         .clickable {
-                            onNavigateToProfile()
+                            onNavigateToHome()
                         },
                     contentAlignment = Alignment.Center
                 ) {
@@ -398,12 +399,18 @@ fun RecordTrainingScreen(
                         return@Button
                     }
 
-                    caloriesBurned = estimateCalories(trainingType, duration, intensity)
-                    
-                    if (isFromCalendarPlan) {
-                        showDialog = true
-                    } else {
-                        showDialog = true
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val result = estimateCaloriesWithUserData(
+                            trainingType,
+                            duration,
+                            intensity,
+                            firebaseUid ?: "",
+                            context
+                        )
+                        withContext(Dispatchers.Main) {
+                            caloriesBurned = result
+                            showDialog = true
+                        }
                     }
                 }
                 ,modifier = Modifier
@@ -422,7 +429,7 @@ fun RecordTrainingScreen(
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
                     title = { Text("Confirm Workout") },
-                    text = { Text("You will burn $caloriesBurned calories.") },
+                    text = { Text("You burned $caloriesBurned calories.") },
                     confirmButton = {
                         TextButton(
                             onClick = {
@@ -475,8 +482,20 @@ fun RecordTrainingScreen(
         }
     }
 }
-fun estimateCalories(type: String, duration: Int, intensity: String): Int {
-    val baseRate = when (type) {
+suspend fun estimateCaloriesWithUserData(
+    type: String,
+    duration: Int,
+    intensity: String,
+    firebaseUid: String,
+    context: Context
+): Int {
+    val dao = (context.applicationContext as MyApplication).database.userDao()
+    val user = dao.getUserByFirebaseUidSync(firebaseUid)
+
+    val weight = user?.weight?.toFloatOrNull() ?: return 0
+    val durationHours = duration / 60.0
+
+    val baseMET = when (type) {
         "Strength Training" -> 6.0
         "Cardio" -> 8.0
         "Yoga" -> 3.0
@@ -500,6 +519,7 @@ fun estimateCalories(type: String, duration: Int, intensity: String): Int {
         else -> 1.0
     }
 
-    return (baseRate * duration * intensityFactor).toInt()
+    return (baseMET * intensityFactor * weight * durationHours).toInt()
 }
+
 
