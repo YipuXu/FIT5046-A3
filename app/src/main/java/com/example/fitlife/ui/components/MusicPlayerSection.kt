@@ -71,7 +71,7 @@ fun MusicPlayerSection(
             IconButton(onClick = { onPlay(track.previewUrl) }) {
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "播放",
+                    contentDescription = "play",
                     tint = Color(0xFF1976D2),
                     modifier = Modifier.size(32.dp)
                 )

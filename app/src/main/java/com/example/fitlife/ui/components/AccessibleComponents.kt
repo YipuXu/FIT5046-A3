@@ -73,7 +73,7 @@ fun AccessibleCard(
             )
             
             AccessibleButton(
-                text = "了解更多",
+                text = "learn more",
                 onClick = onClick,
                 modifier = Modifier
                     .align(Alignment.End)
