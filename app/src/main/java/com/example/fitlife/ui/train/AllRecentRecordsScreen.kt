@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -17,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.example.fitlife.R
 import com.example.fitlife.data.model.Workout
 import com.example.fitlife.MyApplication
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,10 +41,15 @@ fun AllRecentRecordsScreen(
     val context = LocalContext.current
     val workoutDao = (context.applicationContext as MyApplication).database.workoutDao()
     val allWorkouts by workoutDao.getAllOrderByDateDesc().collectAsState(initial = emptyList())
+    val coroutineScope = rememberCoroutineScope()
 
     // State for the workout detail dialog
     var showDialog by remember { mutableStateOf(false) }
     var selectedWorkout by remember { mutableStateOf<Workout?>(null) }
+    
+    // 删除确认对话框状态
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var workoutToDelete by remember { mutableStateOf<Workout?>(null) }
 
     Scaffold(
         topBar = {
@@ -93,7 +101,7 @@ fun AllRecentRecordsScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { // Make the item clickable
+                                    .clickable { // 点击整个项目查看详情
                                         selectedWorkout = workout
                                         showDialog = true
                                     }
@@ -132,7 +140,24 @@ fun AllRecentRecordsScreen(
                                         modifier = Modifier.padding(top = 4.dp)
                                     )
                                 }
-                                // Right arrow
+                                
+                                // 删除按钮
+                                IconButton(
+                                    onClick = {
+                                        // 设置要删除的记录并显示确认对话框
+                                        workoutToDelete = workout
+                                        showDeleteConfirmDialog = true
+                                    },
+                                    modifier = Modifier.padding(start = 8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete record",
+                                        tint = Color(0xFFE53935) // 红色
+                                    )
+                                }
+                                
+                                // 查看详情箭头
                                 Icon(
                                     imageVector = Icons.Default.KeyboardArrowRight,
                                     contentDescription = "View details",
@@ -144,6 +169,45 @@ fun AllRecentRecordsScreen(
                 }
             }
         }
+    }
+
+    // 删除确认对话框
+    if (showDeleteConfirmDialog && workoutToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            title = { Text("删除记录") },
+            text = { 
+                Text(
+                    "确定要删除这条${workoutToDelete!!.type}记录吗？\n" +
+                    "日期: ${workoutToDelete!!.date}\n" +
+                    "时长: ${workoutToDelete!!.duration}分钟"
+                ) 
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            // 从Room数据库删除记录
+                            workoutToDelete?.let { workout ->
+                                workoutDao.deleteWorkout(workout)
+                            }
+                        }
+                        showDeleteConfirmDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)) // 红色确认按钮
+                ) {
+                    Text("删除")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showDeleteConfirmDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9E9E9E)) // 灰色取消按钮
+                ) {
+                    Text("取消")
+                }
+            }
+        )
     }
 
     // Workout detail dialog

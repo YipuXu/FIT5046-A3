@@ -51,10 +51,16 @@ fun AccessibilityScreen(
     
     // 对话框状态
     var showScreenReaderDialog by remember { mutableStateOf(false) }
+    var showKeyboardControlDialog by remember { mutableStateOf(false) }
 
     // 检查TalkBack服务是否启用
     val isTalkBackEnabled = remember(context) {
         isTalkBackEnabled(context)
+    }
+    
+    // 检查键盘控制服务是否启用
+    val isKeyboardAccessibilityEnabled = remember(context) {
+        isKeyboardAccessibilityEnabled(context)
     }
 
     Box(
@@ -108,20 +114,6 @@ fun AccessibilityScreen(
             )
 
             AccessibilityUtils.AccessibleSettingsItem(
-                title = "Color Blind Mode",
-                trailingContent = {
-                    AccessibilityUtils.AccessibleSwitch(
-                checked = colorBlindModeEnabled,
-                        onCheckedChange = { 
-                            coroutineScope.launch {
-                                accessibilityPreferences.saveColorBlindMode(it)
-                            }
-                        }
-                    )
-                }
-            )
-
-            AccessibilityUtils.AccessibleSettingsItem(
                 title = "Zoom Function",
                 trailingContent = {
                     AccessibilityUtils.AccessibleSwitch(
@@ -129,6 +121,20 @@ fun AccessibilityScreen(
                         onCheckedChange = { 
                             coroutineScope.launch {
                                 accessibilityPreferences.saveZoomFunction(it)
+                            }
+                        }
+                    )
+                }
+            )
+
+            AccessibilityUtils.AccessibleSettingsItem(
+                title = "Color Blind Mode",
+                trailingContent = {
+                    AccessibilityUtils.AccessibleSwitch(
+                checked = colorBlindModeEnabled,
+                        onCheckedChange = { 
+                            coroutineScope.launch {
+                                accessibilityPreferences.saveColorBlindMode(it)
                             }
                         }
                     )
@@ -160,9 +166,15 @@ fun AccessibilityScreen(
                 trailingContent = {
                     AccessibilityUtils.AccessibleSwitch(
                 checked = keyboardControlEnabled,
-                        onCheckedChange = { 
-                            coroutineScope.launch {
-                                accessibilityPreferences.saveKeyboardControl(it)
+                        onCheckedChange = { newValue -> 
+                            if (newValue && !isKeyboardAccessibilityEnabled) {
+                                // 如果用户试图启用键盘控制但系统键盘辅助功能未开启，显示对话框
+                                showKeyboardControlDialog = true
+                            } else {
+                                // 其他情况正常保存设置
+                                coroutineScope.launch {
+                                    accessibilityPreferences.saveKeyboardControl(newValue)
+                                }
                             }
                         }
                     )
@@ -230,6 +242,65 @@ fun AccessibilityScreen(
                 )
             )
         }
+        
+        // 键盘控制设置对话框
+        if (showKeyboardControlDialog) {
+            AlertDialog(
+                onDismissRequest = { showKeyboardControlDialog = false },
+                icon = {},  // 空图标
+                title = { 
+                    Text(
+                        text = "Enable Keyboard Control",
+                        fontWeight = if (isHighContrastMode) FontWeight.ExtraBold else FontWeight.Bold
+                    ) 
+                },
+                text = { 
+                    Text(
+                        text = "Keyboard control requires Android's accessibility services like Switch Access or Voice Access to be enabled. Click \"Go to Settings\" to open the system accessibility settings page where you can enable these services."
+                    ) 
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            // 打开系统无障碍设置
+                            openAccessibilitySettings(context)
+                            showKeyboardControlDialog = false
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF2196F3) // 蓝色按钮
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Go to Settings")
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = { showKeyboardControlDialog = false },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE0E0E0) // 灰色按钮
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Cancel", color = Color.Black)
+                    }
+                },
+                containerColor = AccessibilityUtils.getFullyAccessibleColor(
+                    normalColor = MaterialTheme.colorScheme.surface,
+                    highContrastColor = Color.White
+                ),
+                titleContentColor = AccessibilityUtils.getFullyAccessibleColor(
+                    normalColor = MaterialTheme.colorScheme.onSurface,
+                    highContrastColor = Color.Black
+                ),
+                textContentColor = AccessibilityUtils.getFullyAccessibleColor(
+                    normalColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    highContrastColor = Color.Black
+                )
+            )
+        }
     }
 }
 
@@ -245,6 +316,23 @@ private fun isTalkBackEnabled(context: Context): Boolean {
     return enabledServices.any { 
         it.resolveInfo.serviceInfo.packageName.contains("talkback", ignoreCase = true) ||
         it.resolveInfo.serviceInfo.name.contains("talkback", ignoreCase = true)
+    }
+}
+
+/**
+ * 检查键盘辅助功能服务是否启用（如Switch Access或Voice Access）
+ */
+private fun isKeyboardAccessibilityEnabled(context: Context): Boolean {
+    val accessibilityManager = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+    val enabledServices = accessibilityManager.getEnabledAccessibilityServiceList(
+        AccessibilityServiceInfo.FEEDBACK_GENERIC
+    )
+    
+    return enabledServices.any { 
+        it.resolveInfo.serviceInfo.packageName.contains("switchaccess", ignoreCase = true) ||
+        it.resolveInfo.serviceInfo.packageName.contains("voiceaccess", ignoreCase = true) ||
+        it.resolveInfo.serviceInfo.name.contains("switchaccess", ignoreCase = true) ||
+        it.resolveInfo.serviceInfo.name.contains("voiceaccess", ignoreCase = true)
     }
 }
 
