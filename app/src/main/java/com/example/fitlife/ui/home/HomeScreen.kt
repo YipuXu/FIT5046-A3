@@ -1,5 +1,7 @@
 package com.example.fitlife.ui.home
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,9 +20,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import com.example.fitlife.R
+import com.example.fitlife.MyApplication
+import com.example.fitlife.data.model.User
+import com.example.fitlife.data.repository.FirebaseUserRepository
+import android.net.Uri
+import coil.compose.AsyncImage
+import android.util.Log
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,8 +45,32 @@ fun HomeScreen(
     onNavigateToCalendar: () -> Unit,
     onNavigateToMap: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    onNavigateToRecord: () -> Unit
+    onNavigateToRecord: () -> Unit,
+    onNavigateToProfileEdit: () -> Unit
 ) {
+    val context = LocalContext.current
+    val userDao = remember { (context.applicationContext as MyApplication).database.userDao() }
+    val firebaseUserRepository = remember { FirebaseUserRepository() }
+    val firebaseUser by firebaseUserRepository.currentUser.collectAsState()
+    val firebaseDisplayName = firebaseUser?.displayName
+    val firebaseUid = firebaseUser?.uid
+
+    var user by remember { mutableStateOf<User?>(null) }
+
+    LaunchedEffect(firebaseUid) {
+        if (firebaseUid != null) {
+            try {
+                val existingUser = userDao.getUserByFirebaseUidSync(firebaseUid)
+                if (existingUser != null) {
+                    user = existingUser
+                    Log.d("HomeScreen", "Loaded user data for UID: $firebaseUid")
+                }
+            } catch (e: Exception) {
+                Log.e("HomeScreen", "Error loading user data: ${e.message}")
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -61,7 +100,11 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            WelcomeSection()
+            WelcomeSection(
+                userName = firebaseDisplayName ?: user?.name ?: "User",
+                avatarUri = user?.avatarUri?.let { Uri.parse(it) },
+                onAvatarClick = { onNavigateToProfileEdit() }
+            )
             Button(
                 onClick = onNavigateToRecord,
                 modifier = Modifier
@@ -81,8 +124,15 @@ fun HomeScreen(
 
     }
 }
+
 @Composable
-fun WelcomeSection(userName: String = "User") {
+fun WelcomeSection(
+    userName: String = "User",
+    avatarUri: Uri? = null,
+    onAvatarClick: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -107,8 +157,52 @@ fun WelcomeSection(userName: String = "User") {
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
+                .background(Color(0xFFE5E7EB))
                 .border(1.dp, Color.LightGray, CircleShape)
-        )
+                .clickable { onAvatarClick() },  
+            contentAlignment = Alignment.Center
+        ) {
+            if (avatarUri != null) {
+                val isFileUri = avatarUri.scheme == "file" && 
+                    avatarUri.path?.contains(context.filesDir.path) == true
+                
+                val fileExists = if (isFileUri) {
+                    try {
+                        val file = File(avatarUri.path!!)
+                        file.exists()
+                    } catch (e: Exception) {
+                        false
+                    }
+                } else {
+                    true 
+                }
+                
+                if (fileExists) {
+                    AsyncImage(
+                        model = avatarUri,
+                        contentDescription = "Profile Photo",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        error = painterResource(id = R.drawable.profile_photo),
+                        placeholder = painterResource(id = R.drawable.profile_photo)
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.profile_photo),
+                        contentDescription = "Default Profile Photo",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.profile_photo),
+                    contentDescription = "Default Profile Photo",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
     }
 }
 

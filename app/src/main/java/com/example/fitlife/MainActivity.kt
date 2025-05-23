@@ -78,7 +78,8 @@ class MainActivity : ComponentActivity() {
                                     onNavigateToCalendar = { currentScreen.value = "calendar" },
                                     onNavigateToMap = { currentScreen.value = "map" },
                                     onNavigateToProfile = { currentScreen.value = "profile" },
-                                    onNavigateToRecord = { currentScreen.value = "record" }
+                                    onNavigateToRecord = { currentScreen.value = "record" },
+                                    onNavigateToProfileEdit = { currentScreen.value = "profileEdit" }
                                 )
                             }
                             "calendar" -> {
