@@ -1,4 +1,3 @@
-// 文件路径：app/src/main/java/com/example/fitlife/ui/home/MusicViewModel.kt
 package com.example.fitlife.ui.home
 
 import android.util.Log
@@ -11,16 +10,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 /**
- * 用来从 iTunes Search API 拉取数据并暴露给 UI 的 ViewModel
+ * A ViewModel that pulls data from the iTunes Search API and exposes it to the UI
  */
 class MusicViewModel : ViewModel() {
 
-    // 当前要展示的 Track（如果没有，就为 null）
     private val _currentTrack = MutableStateFlow<Track?>(null)
     val currentTrack: StateFlow<Track?> = _currentTrack
 
     /**
-     * 按关键词搜索音乐，并把第一条结果发到 _currentTrack
+     * Search for music and send the first result to _currentTrack
      */
     fun search(term: String) {
         viewModelScope.launch {

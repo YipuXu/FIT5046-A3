@@ -90,7 +90,7 @@ fun WelcomeSection(userName: String = "User") {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // 左侧欢迎文本
+        // Welcome text on the left
         Column {
             Text(
                 text = "Hello, $userName",
@@ -103,7 +103,6 @@ fun WelcomeSection(userName: String = "User") {
             )
         }
 
-        // 右侧头像区域（暂时留空白 + 边框）
         Box(
             modifier = Modifier
                 .size(48.dp)
