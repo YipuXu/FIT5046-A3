@@ -85,6 +85,7 @@ import com.example.fitlife.data.repository.FirebaseUserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import kotlinx.coroutines.tasks.await
+import android.util.Log
 
 @Composable
 fun ProfileEditScreen(
@@ -118,25 +119,10 @@ fun ProfileEditScreen(
     val firebaseUser by firebaseUserRepository.currentUser.collectAsState()
     val firebaseDisplayName = firebaseUser?.displayName
     val firebaseEmail = firebaseUser?.email
+    val firebaseUid = firebaseUser?.uid
     
     // 从数据库获取用户信息
     var user by remember { mutableStateOf<User?>(null) }
-    
-    // 加载用户信息
-    LaunchedEffect(key1 = true) {
-        // 尝试获取用户
-        val existingUser = userDao.getUserByIdSync(0)
-        
-        if (existingUser == null) {
-            // 如果用户不存在，创建一个新用户
-            val newUser = User(id = 0)
-            userDao.insertUser(newUser)
-            user = newUser
-        } else {
-            // 如果用户存在，获取用户信息
-            user = existingUser
-        }
-    }
     
     // 动态状态，基于用户对象
     var nameValue by remember { mutableStateOf("") } 
@@ -148,27 +134,65 @@ fun ProfileEditScreen(
     var selectedFitnessTags by remember { mutableStateOf(initialFitnessTags) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     
-    // 当用户加载完成后，更新所有状态 - 优先使用Firebase，然后是本地数据库
-    LaunchedEffect(key1 = user, key2 = firebaseUser) {
-        // 名称和邮箱优先使用Firebase的数据
-        nameValue = firebaseDisplayName ?: user?.name ?: "Xiao Ming"
-        emailValue = firebaseEmail ?: user?.email ?: "xiaoming@example.com"
-        
-        // 其他信息使用本地数据库
-        user?.let { loadedUser ->
-            heightValue = loadedUser.height
-            weightValue = loadedUser.weight
-            fitnessGoal = loadedUser.fitnessGoal
-            workoutFrequency = loadedUser.workoutFrequency
-            selectedFitnessTags = loadedUser.fitnessTags.split(",").filter { it.isNotEmpty() }
-            selectedImageUri = loadedUser.avatarUri?.let { Uri.parse(it) }
+    // 根据Firebase UID获取或创建用户数据
+    LaunchedEffect(firebaseUid) {
+        if (firebaseUid != null) {
+            try {
+                // 尝试获取用户数据
+                val existingUser = userDao.getUserByFirebaseUidSync(firebaseUid)
+                
+                if (existingUser == null) {
+                    // 用户不存在，创建新用户
+                    val newUser = User(
+                        firebaseUid = firebaseUid,
+                        name = firebaseDisplayName ?: "User",
+                        email = firebaseEmail ?: "user@example.com"
+                    )
+                    userDao.insertUser(newUser)
+                    user = newUser
+                    Log.d("ProfileEditScreen", "Created new user record for UID: $firebaseUid")
+                } else {
+                    // 用户存在，使用现有数据
+                    user = existingUser
+                    Log.d("ProfileEditScreen", "Found existing user record for UID: $firebaseUid")
+                }
+                
+                // 更新状态值
+                user?.let { loadedUser ->
+                    nameValue = firebaseDisplayName ?: loadedUser.name
+                    emailValue = firebaseEmail ?: loadedUser.email
+                    fitnessGoal = loadedUser.fitnessGoal
+                    workoutFrequency = loadedUser.workoutFrequency
+                    selectedFitnessTags = loadedUser.fitnessTags.split(",").filter { it.isNotEmpty() }
+                    selectedImageUri = loadedUser.avatarUri?.let { Uri.parse(it) }
+                }
+                
+                // 从Firestore获取身高体重数据
+                val heightWeight = firebaseUserRepository.getHeightWeight()
+                if (heightWeight != null) {
+                    heightValue = heightWeight.first
+                    weightValue = heightWeight.second
+                    Log.d("ProfileEditScreen", "Height/weight loaded from Firestore: $heightValue/$weightValue")
+                } else {
+                    // 如果Firestore没有数据，使用Room的默认值或写入Firestore
+                    user?.let { loadedUser ->
+                        heightValue = loadedUser.height
+                        weightValue = loadedUser.weight
+                        // 将Room中的数据同步到Firestore
+                        firebaseUserRepository.updateHeightWeight(heightValue, weightValue)
+                        Log.d("ProfileEditScreen", "Synced height/weight to Firestore: $heightValue/$weightValue")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ProfileEditScreen", "Error loading user data: ${e.message}")
+            }
         }
     }
     
     // Activity result launcher for picking images from gallery
     val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
         uri: Uri? ->
-        if (uri != null) {
+        if (uri != null && firebaseUid != null) {
             coroutineScope.launch {
                 // 将图片复制到应用内部存储
                 val savedUri = saveImageToInternalStorage(context, uri)
@@ -178,8 +202,8 @@ fun ProfileEditScreen(
                 showProfilePhotoDialog = false // Close dialog after selecting
                 
                 // 保存URI到Room数据库
-                userDao.updateAvatar(0, savedUri.toString())
-                user = userDao.getUserByIdSync(0)
+                userDao.updateAvatar(firebaseUid, savedUri.toString())
+                user = userDao.getUserByFirebaseUidSync(firebaseUid)
                 
                 snackbarHostState.showSnackbar("Upload successful!")
             }
@@ -350,27 +374,30 @@ fun ProfileEditScreen(
                 // 保存到两个数据源
                 coroutineScope.launch {
                     // 更新本地数据库 - 只更新名字，保留原有的邮箱
-                    userDao.updateBasicInfo(0, name, emailValue)
-                    user = userDao.getUserByIdSync(0)
-                    
-                    // 更新Firebase用户信息 - 只更新名字
-                    try {
-                        val firebaseUser = FirebaseAuth.getInstance().currentUser
-                        if (firebaseUser != null) {
-                            // 创建用户资料更新请求对象
-                            val profileUpdates = UserProfileChangeRequest.Builder()
-                                .setDisplayName(name)
-                                .build()
+                    firebaseUid?.let { uid ->
+                        // 更新本地数据库
+                        userDao.updateBasicInfo(uid, name, emailValue)
+                        user = userDao.getUserByFirebaseUidSync(uid)
+                        
+                        // 更新Firebase用户信息 - 只更新名字
+                        try {
+                            val firebaseUser = FirebaseAuth.getInstance().currentUser
+                            if (firebaseUser != null) {
+                                // 创建用户资料更新请求对象
+                                val profileUpdates = UserProfileChangeRequest.Builder()
+                                    .setDisplayName(name)
+                                    .build()
+                                    
+                                // 执行更新
+                                withContext(Dispatchers.IO) {
+                                    firebaseUser.updateProfile(profileUpdates).await()
+                                }
                                 
-                            // 执行更新
-                            withContext(Dispatchers.IO) {
-                                firebaseUser.updateProfile(profileUpdates).await()
+                                snackbarHostState.showSnackbar("Profile updated successfully!")
                             }
-                            
-                            snackbarHostState.showSnackbar("Profile updated successfully!")
+                        } catch (e: Exception) {
+                            snackbarHostState.showSnackbar("Failed to update profile: ${e.message}")
                         }
-                    } catch (e: Exception) {
-                        snackbarHostState.showSnackbar("Failed to update profile: ${e.message}")
                     }
                     
                     showBasicInfoDialog = false
@@ -388,11 +415,31 @@ fun ProfileEditScreen(
             onSave = { height, weight ->
                 heightValue = height
                 weightValue = weight
-                // 保存到数据库
+                // 保存到Firestore和本地数据库
                 coroutineScope.launch {
-                    userDao.updateHeightWeight(0, height, weight)
-                    user = userDao.getUserByIdSync(0)
-                showHeightWeightDialog = false
+                    try {
+                        // 首先保存到Firestore
+                        val success = firebaseUserRepository.updateHeightWeight(height, weight)
+                        
+                        if (success) {
+                            // 如果Firestore保存成功，也更新本地数据库保持一致性
+                            firebaseUid?.let { uid ->
+                                userDao.updateHeightWeight(uid, height, weight)
+                                user = userDao.getUserByFirebaseUidSync(uid)
+                            }
+                            
+                            // 显示成功消息
+                            snackbarHostState.showSnackbar("Height and weight updated successfully")
+                        } else {
+                            // 如果保存失败，显示错误消息
+                            snackbarHostState.showSnackbar("Failed to update height and weight")
+                        }
+                    } catch (e: Exception) {
+                        Log.e("ProfileEditScreen", "Error updating height/weight: ${e.message}")
+                        snackbarHostState.showSnackbar("Error updating data: ${e.message}")
+                    } finally {
+                        showHeightWeightDialog = false
+                    }
                 }
             }
         )
@@ -409,9 +456,11 @@ fun ProfileEditScreen(
                 fitnessGoal = option
                 // 保存到数据库
                 coroutineScope.launch {
-                    userDao.updateFitnessGoal(0, option)
-                    user = userDao.getUserByIdSync(0)
-                showFitnessGoalDialog = false
+                    firebaseUid?.let { uid ->
+                        userDao.updateFitnessGoal(uid, option)
+                        user = userDao.getUserByFirebaseUidSync(uid)
+                        showFitnessGoalDialog = false
+                    }
                 }
             },
             onDismiss = { showFitnessGoalDialog = false }
@@ -429,9 +478,11 @@ fun ProfileEditScreen(
                 workoutFrequency = option
                 // 保存到数据库
                 coroutineScope.launch {
-                    userDao.updateWorkoutFrequency(0, option)
-                    user = userDao.getUserByIdSync(0)
-                showWorkoutFrequencyDialog = false
+                    firebaseUid?.let { uid ->
+                        userDao.updateWorkoutFrequency(uid, option)
+                        user = userDao.getUserByFirebaseUidSync(uid)
+                        showWorkoutFrequencyDialog = false
+                    }
                 }
             },
             onDismiss = { showWorkoutFrequencyDialog = false }
@@ -449,10 +500,12 @@ fun ProfileEditScreen(
                 selectedFitnessTags = selected
                 // 保存到数据库，将列表转换为逗号分隔的字符串
                 coroutineScope.launch {
-                    val tagsString = selected.joinToString(",")
-                    userDao.updateFitnessTags(0, tagsString)
-                    user = userDao.getUserByIdSync(0)
-                showFitnessTagsDialog = false
+                    firebaseUid?.let { uid ->
+                        val tagsString = selected.joinToString(",")
+                        userDao.updateFitnessTags(uid, tagsString)
+                        user = userDao.getUserByFirebaseUidSync(uid)
+                        showFitnessTagsDialog = false
+                    }
                 }
             },
             onDismiss = { 

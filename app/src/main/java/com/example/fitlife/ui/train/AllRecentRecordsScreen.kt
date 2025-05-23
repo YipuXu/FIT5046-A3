@@ -31,6 +31,7 @@ import com.example.fitlife.R
 import com.example.fitlife.data.model.Workout
 import com.example.fitlife.MyApplication
 import kotlinx.coroutines.launch
+import com.example.fitlife.data.repository.FirebaseUserRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,7 +41,23 @@ fun AllRecentRecordsScreen(
 ) {
     val context = LocalContext.current
     val workoutDao = (context.applicationContext as MyApplication).database.workoutDao()
-    val allWorkouts by workoutDao.getAllOrderByDateDesc().collectAsState(initial = emptyList())
+    
+    // 创建Firebase用户仓库
+    val firebaseUserRepository = remember { FirebaseUserRepository() }
+    
+    // 获取Firebase当前用户信息
+    val firebaseUser by firebaseUserRepository.currentUser.collectAsState()
+    val firebaseUid = firebaseUser?.uid
+    
+    // 使用用户ID获取该用户的训练记录
+    val allWorkouts by remember(firebaseUid) {
+        if (firebaseUid != null) {
+            workoutDao.getAllOrderByDateDesc(firebaseUid)
+        } else {
+            workoutDao.getAllOrderByDateDesc()
+        }
+    }.collectAsState(initial = emptyList())
+    
     val coroutineScope = rememberCoroutineScope()
 
     // State for the workout detail dialog

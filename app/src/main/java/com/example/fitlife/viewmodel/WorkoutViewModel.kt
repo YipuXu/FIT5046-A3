@@ -12,15 +12,20 @@ import kotlinx.coroutines.withContext
 
 class WorkoutViewModel(application: Application) : AndroidViewModel(application) {
     private val repo = WorkoutRepository(application)
-    fun getAllWorkouts(onResult: (List<Workout>) -> Unit) {
+    
+    // 获取训练记录时需要传入用户ID
+    fun getAllWorkouts(firebaseUid: String, onResult: (List<Workout>) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
-            val all = repo.getAllWorkouts()
+            val all = repo.getAllWorkouts(firebaseUid)
             withContext(Dispatchers.Main) {
                 onResult(all)
             }
         }
     }
-    suspend fun getAllWorkouts(): List<Workout> = repo.getAllWorkouts()
+    
+    // 添加默认参数，使现有代码兼容
+    suspend fun getAllWorkouts(firebaseUid: String = ""): List<Workout> = repo.getAllWorkouts(firebaseUid)
+    
     fun insertWorkout(workout: Workout) = viewModelScope.launch(Dispatchers.IO) {
         repo.insert(workout)
     }

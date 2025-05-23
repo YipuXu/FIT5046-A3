@@ -42,10 +42,6 @@ import com.example.fitlife.MyApplication
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import com.example.fitlife.data.model.Workout
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import android.net.Uri
 import coil.compose.AsyncImage
 import com.example.fitlife.data.model.User
@@ -57,6 +53,10 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import com.example.fitlife.data.repository.FirebaseUserRepository
+import android.util.Log
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,29 +83,81 @@ fun ProfileScreen(
     // 获取Firebase当前用户信息
     val firebaseUser by firebaseUserRepository.currentUser.collectAsState()
     val firebaseDisplayName = firebaseUser?.displayName
+    val firebaseUid = firebaseUser?.uid
     
-    // 从数据库获取用户信息
-    val userFlow = remember { userDao.getUserById(0) }
-    val user by userFlow.collectAsState(initial = null)
+    // 用户数据状态 - 保留变量，因为它在其他地方被使用
+    var user by remember { mutableStateOf<User?>(null) }
+    
+    // 根据Firebase UID获取或创建用户数据
+    LaunchedEffect(firebaseUid) {
+        if (firebaseUid != null) {
+            try {
+                // 尝试获取用户数据
+                val existingUser = userDao.getUserByFirebaseUidSync(firebaseUid)
+                
+                if (existingUser == null) {
+                    // 用户不存在，创建新用户
+                    val newUser = User(
+                        firebaseUid = firebaseUid,
+                        name = firebaseDisplayName ?: "User",
+                        email = firebaseUser?.email ?: "user@example.com"
+                    )
+                    userDao.insertUser(newUser)
+                    user = newUser
+                    Log.d("ProfileScreen", "Created new user record for UID: $firebaseUid")
+                } else {
+                    // 用户存在，使用现有数据
+                    user = existingUser
+                    Log.d("ProfileScreen", "Found existing user record for UID: $firebaseUid")
+                }
+            } catch (e: Exception) {
+                Log.e("ProfileScreen", "Error getting user data: ${e.message}")
+            }
+        }
+    }
     
     // 从数据库获取最近的锻炼记录
-    val latestWorkouts by workoutDao.getLatestTwoWorkouts().collectAsState(initial = emptyList())
+    val latestWorkouts by remember(firebaseUid) {
+        if (firebaseUid != null) {
+            workoutDao.getLatestTwoWorkouts(firebaseUid)
+        } else {
+            workoutDao.getLatestTwoWorkouts()
+        }
+    }.collectAsState(initial = emptyList())
     
     // 获取不同日期的健身记录数量
-    val workoutDaysCount by workoutDao.getUniqueWorkoutDaysCount().collectAsState(initial = 0)
+    val workoutDaysCount by remember(firebaseUid) {
+        if (firebaseUid != null) {
+            workoutDao.getUniqueWorkoutDaysCount(firebaseUid)
+        } else {
+            workoutDao.getUniqueWorkoutDaysCount()
+        }
+    }.collectAsState(initial = 0)
     
     // 获取所有训练记录的数量
-    val totalWorkoutsCount by workoutDao.getAllOrderByDateDesc().collectAsState(initial = emptyList())
+    val totalWorkoutsCount by remember(firebaseUid) {
+        if (firebaseUid != null) {
+            workoutDao.getAllOrderByDateDesc(firebaseUid)
+        } else {
+            workoutDao.getAllOrderByDateDesc()
+        }
+    }.collectAsState(initial = emptyList())
     
     // 获取所有训练日期并计算连续天数
-    val allWorkoutDates by workoutDao.getAllWorkoutDatesDesc().collectAsState(initial = emptyList())
+    val allWorkoutDates by remember(firebaseUid) {
+        if (firebaseUid != null) {
+            workoutDao.getAllWorkoutDatesDesc(firebaseUid)
+        } else {
+            workoutDao.getAllWorkoutDatesDesc()
+        }
+    }.collectAsState(initial = emptyList())
     val streakDays = remember(allWorkoutDates) {
         calculateStreakDays(allWorkoutDates)
     }
 
     // 计算健身标签列表（从逗号分隔的字符串转换为列表）
     val fitnessTags = remember(user) {
-        user?.fitnessTags?.split(",") ?: listOf("Strength Training", "Cardio")
+        user?.fitnessTags?.split(",")?.filter { it.isNotEmpty() } ?: listOf("Strength Training", "Cardio")
     }
 
     // State for the workout detail dialog
@@ -538,7 +590,7 @@ private fun UserInfoCard(
                     // Fitness tags below username and edit button
                     if (fitnessTags.isNotEmpty()) {
                         LazyRow(
-                            modifier = Modifier.padding(top = 4.dp),
+                            modifier = Modifier.padding(top = 2.dp),
                             horizontalArrangement = Arrangement.Start,
                             contentPadding = PaddingValues(end = 8.dp)
                         ) {

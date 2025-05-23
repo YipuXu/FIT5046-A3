@@ -52,6 +52,9 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import com.example.fitlife.data.repository.FirebaseUserRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun LoginScreen(
@@ -92,6 +95,7 @@ fun LoginScreen(
     val coroutineScope = rememberCoroutineScope()
     val auth: FirebaseAuth = Firebase.auth
     val scrollState = rememberScrollState()
+    val firebaseUserRepository = remember { FirebaseUserRepository() }
 
     // Google Sign-In
     val webClientId = "735710334901-1ak9pnf9hqetcsouc5sf2p67st5274oa.apps.googleusercontent.com"
@@ -379,12 +383,29 @@ fun LoginScreen(
                                         isLoading = false
                                         if (task.isSuccessful) {
                                             Log.d("LoginScreen", "signInWithEmail:success")
-                                            Toast.makeText(
-                                                context,
-                                                "Login successful!",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            onLoginSuccess()
+                                            // 登录成功后刷新用户信息
+                                            coroutineScope.launch(Dispatchers.IO) {
+                                                try {
+                                                    // 刷新Firebase用户信息
+                                                    firebaseUserRepository.refreshCurrentUser()
+                                                    
+                                                    // 获取最新的用户UID并记录到日志
+                                                    val uid = firebaseUserRepository.getCurrentUserId()
+                                                    Log.d("LoginScreen", "User logged in with UID: $uid")
+                                                    
+                                                    // 成功刷新后通知登录成功
+                                                    withContext(Dispatchers.Main) {
+                                                        Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
+                                                        onLoginSuccess()
+                                                    }
+                                                } catch (e: Exception) {
+                                                    Log.e("LoginScreen", "Error refreshing user: ${e.message}")
+                                                    withContext(Dispatchers.Main) {
+                                                        Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
+                                                        onLoginSuccess()
+                                                    }
+                                                }
+                                            }
                                         } else {
                                             Log.w("LoginScreen", "signInWithEmail:failure", task.exception)
                                             errorMessage = task.exception?.message ?: "Authentication failed"
@@ -514,10 +535,22 @@ private fun firebaseAuthWithGoogle(
 ) {
     onLoadingChange(true)
     val credential = GoogleAuthProvider.getCredential(idToken, null)
+    val firebaseUserRepository = FirebaseUserRepository()
+    
     coroutineScope.launch {
         try {
             auth.signInWithCredential(credential).await()
             Log.d("LoginScreen", "Firebase signInWithCredential success")
+            
+            // 刷新Firebase用户信息
+            try {
+                firebaseUserRepository.refreshCurrentUser()
+                val uid = firebaseUserRepository.getCurrentUserId()
+                Log.d("LoginScreen", "User logged in with UID: $uid")
+            } catch (e: Exception) {
+                Log.e("LoginScreen", "Error refreshing user after Google login: ${e.message}")
+            }
+            
             onLoginSuccess()
         } catch (e: Exception) {
             Log.w("LoginScreen", "Firebase signInWithCredential failed", e)

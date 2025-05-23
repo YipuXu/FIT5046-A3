@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "users")
 data class User(
     @PrimaryKey
-    val id: Int = 0, // 只使用一个用户，ID固定为0
+    val firebaseUid: String, // 使用Firebase UID作为主键
     var name: String = "Xiao Ming", // 默认名称
     var email: String = "xiaoming@example.com", // 默认邮箱
     var avatarUri: String? = null, // 头像URI，可以为空

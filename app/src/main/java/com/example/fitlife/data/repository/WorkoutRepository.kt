@@ -10,7 +10,7 @@ class WorkoutRepository(application: Application) {
     private val dao: WorkoutDao =
         WorkoutDatabase.getDatabase(application).workoutDao()
 
-    suspend fun getAllWorkouts(): List<Workout> = dao.getAll()
+    suspend fun getAllWorkouts(firebaseUid: String): List<Workout> = dao.getAll(firebaseUid)
     suspend fun insert(workout: Workout) = dao.insertWorkout(workout)
     suspend fun delete(workout: Workout) = dao.deleteWorkout(workout)
     suspend fun update(workout: Workout) = dao.updateWorkout(workout)

@@ -18,7 +18,7 @@ import com.example.fitlife.data.model.User
         FitnessEvent::class,
         User::class
     ],
-    version = 3,
+    version = 5,
     exportSchema = false
 )
 abstract class WorkoutDatabase : RoomDatabase() {

@@ -44,6 +44,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import androidx.compose.runtime.saveable.rememberSaveable
 import kotlinx.coroutines.CoroutineScope
+import android.content.Context
 
 // 密码验证状态数据类，与RegisterScreen相同
 data class PasswordValidationState(
@@ -79,7 +80,7 @@ sealed class PasswordChangeState {
 fun ChangePasswordScreen(
     onBackClick: () -> Unit = {},
     onChangePassword: (current: String, new: String) -> Unit = { _, _ -> },
-    onLogout: () -> Unit = {}  // 添加登出回调函数
+    onLogout: (Context) -> Unit = {}  // 修改登出回调函数，接收Context参数
 ) {
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
@@ -118,13 +119,13 @@ fun ChangePasswordScreen(
                 FirebaseAuth.getInstance().signOut()
                 Log.d("ChangePasswordScreen", "User logged out successfully")
                 
-                // 调用登出回调函数，处理UI导航
-                onLogout()
+                // 调用登出回调函数，处理UI导航，并传入context
+                onLogout(context)
             } catch (e: Exception) {
                 Log.e("ChangePasswordScreen", "Error during logout: ${e.message}")
                 
                 // 即使发生错误也尝试执行登出回调
-                onLogout()
+                onLogout(context)
             }
         }
     }

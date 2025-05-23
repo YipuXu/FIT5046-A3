@@ -28,14 +28,23 @@ import com.example.fitlife.ui.train.AllRecentRecordsScreen
 import com.example.fitlife.utils.DatabaseHelper
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import com.example.fitlife.data.repository.FirebaseUserRepository
+import androidx.compose.material3.ExperimentalMaterial3Api
+import android.content.Context
 
 class MainActivity : ComponentActivity() {
     // 添加可访问的属性
     var planEventToDeleteId = mutableStateOf<Long?>(null)
         private set
         
+    // 创建Firebase用户仓库
+    private lateinit var firebaseUserRepository: FirebaseUserRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // 初始化Firebase用户仓库
+        firebaseUserRepository = FirebaseUserRepository()
         
         // 初始化用户数据
         lifecycleScope.launch {
@@ -142,7 +151,9 @@ class MainActivity : ComponentActivity() {
                                 // Display settings page
                                 SettingsScreen(
                                     onBackClick = { currentScreen.value = "profile" },
-                                    onLogout = { 
+                                    onLogout = { contextParam -> 
+                                        // 使用FirebaseUserRepository的signOut方法完全清除认证状态
+                                        firebaseUserRepository.signOut(contextParam)
                                         isLoggedIn.value = false
                                         currentScreen.value = "login"
                                     },
@@ -174,8 +185,9 @@ class MainActivity : ComponentActivity() {
                                         println("Changing password from $current to $new")
                                         currentScreen.value = "settings" // Navigate back after attempting change
                                     },
-                                    onLogout = {
-                                        // 登出操作并跳转到登录页面
+                                    onLogout = { contextParam ->
+                                        // 使用FirebaseUserRepository的signOut方法完全清除认证状态
+                                        firebaseUserRepository.signOut(contextParam)
                                         isLoggedIn.value = false
                                         currentScreen.value = "login"
                                     }

@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.fitlife.data.repository.FirebaseUserRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,6 +80,13 @@ fun RecordTrainingScreen(
     val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     var showDialog by remember { mutableStateOf(false) }
     var caloriesBurned by remember { mutableStateOf(0) }
+
+    // 创建Firebase用户仓库以获取当前用户ID
+    val firebaseUserRepository = remember { FirebaseUserRepository() }
+    
+    // 获取当前用户ID
+    val firebaseUser by firebaseUserRepository.currentUser.collectAsState()
+    val firebaseUid = firebaseUser?.uid
 
     Scaffold(
         topBar = {
@@ -420,6 +428,10 @@ fun RecordTrainingScreen(
                             onClick = {
                                 showDialog = false
                                 val dao = (context.applicationContext as MyApplication).database.workoutDao()
+                                
+                                // 获取当前用户ID，如果未登录则使用空字符串（应该不会发生这种情况）
+                                val currentUid = firebaseUid ?: ""
+                                
                                 val workout = Workout(
                                     type = trainingType,
                                     duration = duration,
@@ -427,7 +439,8 @@ fun RecordTrainingScreen(
                                     intensity = intensity,
                                     notes = notes.text,
                                     date = selectedDate,
-                                    time = selectedTime
+                                    time = selectedTime,
+                                    firebaseUid = currentUid // 添加用户ID到训练记录
                                 )
 
                                 CoroutineScope(Dispatchers.IO).launch {

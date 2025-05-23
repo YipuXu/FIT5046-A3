@@ -2,6 +2,7 @@ package com.example.fitlife.utils
 
 import android.content.Context
 import com.example.fitlife.data.model.User
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -20,22 +21,28 @@ class DatabaseHelper {
                     val application = context.applicationContext as com.example.fitlife.MyApplication
                     val userDao = application.database.userDao()
                     
-                    // 检查是否存在用户
-                    val existingUser = userDao.getUserByIdSync(0)
+                    // 获取当前Firebase用户ID
+                    val firebaseUser = FirebaseAuth.getInstance().currentUser
+                    val firebaseUid = firebaseUser?.uid
                     
-                    if (existingUser == null) {
-                        // 如果不存在用户，创建默认用户
-                        val defaultUser = User(
-                            id = 0,
-                            name = "Xiao Ming",
-                            email = "xiaoming@example.com",
-                            height = "178",
-                            weight = "70",
-                            fitnessGoal = "Muscle Gain & Fat Loss",
-                            workoutFrequency = "4-5 Times Weekly",
-                            fitnessTags = "Strength Training,Cardio"
-                        )
-                        userDao.insertUser(defaultUser)
+                    if (firebaseUid != null) {
+                        // 检查是否存在用户
+                        val existingUser = userDao.getUserByFirebaseUidSync(firebaseUid)
+                        
+                        if (existingUser == null) {
+                            // 如果不存在用户，创建默认用户
+                            val defaultUser = User(
+                                firebaseUid = firebaseUid,
+                                name = firebaseUser.displayName ?: "User",
+                                email = firebaseUser.email ?: "user@example.com",
+                                height = "178",
+                                weight = "70",
+                                fitnessGoal = "Muscle Gain & Fat Loss",
+                                workoutFrequency = "4-5 Times Weekly",
+                                fitnessTags = "Strength Training,Cardio"
+                            )
+                            userDao.insertUser(defaultUser)
+                        }
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
