@@ -1,7 +1,7 @@
 package com.example.fitlife.data.repository
 
 import android.app.Application
-import com.example.fitlife.data.database.WorkoutDatabase // 确保这是你数据库类的正确名称
+import com.example.fitlife.data.database.WorkoutDatabase
 import com.example.fitlife.data.dao.FitnessEventDao
 import com.example.fitlife.data.model.FitnessEvent
 import kotlinx.coroutines.flow.Flow

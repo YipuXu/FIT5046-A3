@@ -1,4 +1,4 @@
-package com.example.fitlife.data.database // 或者你 WorkoutDatabase 所在的包
+package com.example.fitlife.data.database
 
 import android.content.Context
 import androidx.room.Database

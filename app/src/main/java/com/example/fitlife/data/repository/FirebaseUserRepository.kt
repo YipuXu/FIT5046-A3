@@ -15,31 +15,31 @@ import kotlinx.coroutines.withContext
 import com.google.firebase.firestore.SetOptions
 
 /**
- * 用于处理Firebase用户相关操作的仓库
+ * A repository for handling Firebase user-related operations
  */
 class FirebaseUserRepository {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
     
-    // 用户数据StateFlow
+    // User Data StateFlow
     private val _currentUser = MutableStateFlow<FirebaseUser?>(auth.currentUser)
     val currentUser: StateFlow<FirebaseUser?> = _currentUser.asStateFlow()
     
-    // 用户基本信息
+    // User basic information
     private val _userProfile = MutableStateFlow<Map<String, Any>?>(null)
     val userProfile: StateFlow<Map<String, Any>?> = _userProfile.asStateFlow()
     
     init {
-        // 监听用户登录状态变化
+        // Monitor user login status changes
         auth.addAuthStateListener { firebaseAuth ->
             _currentUser.value = firebaseAuth.currentUser
             Log.d("FirebaseUserRepository", "Auth state changed: user=${firebaseAuth.currentUser?.uid}")
             
-            // 当用户状态变化时，重置资料流
+            // When the user status changes, reset the data flow
             if (firebaseAuth.currentUser == null) {
                 _userProfile.value = null
             } else {
-                // 加载用户资料
+                // Loading user profile
                 firebaseAuth.currentUser?.uid?.let { uid ->
                     loadUserProfile(uid)
                 }
@@ -48,47 +48,47 @@ class FirebaseUserRepository {
     }
     
     /**
-     * 获取当前登录用户的显示名称
-     * @return 用户名，如果未登录或无显示名则返回null
+     * Get the display name of the currently logged in user
+     * @return Username, or null if not logged in or no display name
      */
     fun getCurrentUserDisplayName(): String? {
         return auth.currentUser?.displayName
     }
     
     /**
-     * 获取当前登录用户的邮箱
-     * @return 用户邮箱，如果未登录则返回null
+     * Get the email address of the currently logged in user
+     * @return the user's email address, or null if not logged in
      */
     fun getCurrentUserEmail(): String? {
         return auth.currentUser?.email
     }
     
     /**
-     * 获取当前登录用户的UID
-     * @return 用户UID，如果未登录则返回null
+     * Get the UID of the currently logged in user
+     * @return User UID, or null if not logged in
      */
     fun getCurrentUserId(): String? {
         return auth.currentUser?.uid
     }
     
     /**
-     * 检查用户是否已登录
-     * @return 是否已登录
+     * Check if the user is logged in
+     * @return whether the user is logged in
      */
     fun isUserLoggedIn(): Boolean {
         return auth.currentUser != null
     }
     
     /**
-     * 刷新当前用户信息
-     * 确保获取最新的Firebase用户数据
+     * Refresh current user information
+     * Ensure to obtain the latest Firebase user data
      */
     suspend fun refreshCurrentUser() {
         try {
             auth.currentUser?.reload()?.await()
             _currentUser.value = auth.currentUser
             
-            // 刷新用户资料
+            // Refresh User Profile
             auth.currentUser?.uid?.let { uid ->
                 loadUserProfile(uid)
             }
@@ -100,7 +100,7 @@ class FirebaseUserRepository {
     }
     
     /**
-     * 加载用户资料
+     * Loading user profile
      */
     private fun loadUserProfile(uid: String) {
         firestore.collection("users")
@@ -122,10 +122,10 @@ class FirebaseUserRepository {
     }
     
     /**
-     * 更新用户身高体重
-     * @param height 身高(cm)
-     * @param weight 体重(kg)
-     * @return 是否更新成功
+     * Update user height and weight
+     * @param height height (cm)
+     * @param weight weight (kg)
+     * @return whether the update was successful
      */
     suspend fun updateHeightWeight(height: String, weight: String): Boolean {
         val userId = getCurrentUserId() ?: return false
@@ -138,13 +138,13 @@ class FirebaseUserRepository {
             )
             
             withContext(Dispatchers.IO) {
-                // 使用merge操作，只更新指定字段
+                // Use the merge operation to update only the specified fields
                 firestore.collection("users")
                     .document(userId)
                     .set(userData, SetOptions.merge())
                     .await()
                 
-                // 刷新本地用户资料
+                // Refresh local user profile
                 loadUserProfile(userId)
             }
             
@@ -157,8 +157,8 @@ class FirebaseUserRepository {
     }
     
     /**
-     * 获取用户身高体重
-     * @return Pair<String, String>? 包含身高和体重的Pair，如果不存在则返回null
+     * Get the user's height and weight
+     * @return Pair<String, String>? A Pair containing height and weight, or null if it does not exist
      */
     suspend fun getHeightWeight(): Pair<String, String>? {
         val userId = getCurrentUserId() ?: return null
@@ -185,19 +185,19 @@ class FirebaseUserRepository {
     }
     
     /**
-     * 完全退出登录
-     * 清除Firebase认证状态和缓存
+     * Completely log out
+     * Clear Firebase authentication status and cache
      */
     fun signOut(context: Context) {
         try {
-            // 清除Firebase认证
+            // Clear Firebase Authentication
             auth.signOut()
             
-            // 重置用户流
+            // Reset User Flow
             _currentUser.value = null
             _userProfile.value = null
             
-            // 清除WebView缓存以防止认证令牌持久化
+            // Clear WebView cache to prevent authentication token persistence
             android.webkit.CookieManager.getInstance().removeAllCookies(null)
             android.webkit.CookieManager.getInstance().flush()
             
