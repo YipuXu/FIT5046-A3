@@ -81,6 +81,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import java.util.UUID
 import android.provider.MediaStore
+import com.example.fitlife.data.repository.FirebaseUserRepository
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
+import kotlinx.coroutines.tasks.await
 
 @Composable
 fun ProfileEditScreen(
@@ -107,6 +111,14 @@ fun ProfileEditScreen(
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     
+    // 创建Firebase用户仓库
+    val firebaseUserRepository = remember { FirebaseUserRepository() }
+    
+    // 获取Firebase当前用户信息
+    val firebaseUser by firebaseUserRepository.currentUser.collectAsState()
+    val firebaseDisplayName = firebaseUser?.displayName
+    val firebaseEmail = firebaseUser?.email
+    
     // 从数据库获取用户信息
     var user by remember { mutableStateOf<User?>(null) }
     
@@ -127,8 +139,8 @@ fun ProfileEditScreen(
     }
     
     // 动态状态，基于用户对象
-    var nameValue by remember { mutableStateOf("Xiao Ming") } 
-    var emailValue by remember { mutableStateOf("xiaoming@example.com") }
+    var nameValue by remember { mutableStateOf("") } 
+    var emailValue by remember { mutableStateOf("") }
     var heightValue by remember { mutableStateOf("178") }
     var weightValue by remember { mutableStateOf("70") }
     var fitnessGoal by remember { mutableStateOf("Muscle Gain & Fat Loss") }
@@ -136,16 +148,19 @@ fun ProfileEditScreen(
     var selectedFitnessTags by remember { mutableStateOf(initialFitnessTags) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     
-    // 当用户加载完成后，更新所有状态
-    LaunchedEffect(key1 = user) {
+    // 当用户加载完成后，更新所有状态 - 优先使用Firebase，然后是本地数据库
+    LaunchedEffect(key1 = user, key2 = firebaseUser) {
+        // 名称和邮箱优先使用Firebase的数据
+        nameValue = firebaseDisplayName ?: user?.name ?: "Xiao Ming"
+        emailValue = firebaseEmail ?: user?.email ?: "xiaoming@example.com"
+        
+        // 其他信息使用本地数据库
         user?.let { loadedUser ->
-            nameValue = loadedUser.name
-            emailValue = loadedUser.email
             heightValue = loadedUser.height
             weightValue = loadedUser.weight
             fitnessGoal = loadedUser.fitnessGoal
             workoutFrequency = loadedUser.workoutFrequency
-            selectedFitnessTags = loadedUser.fitnessTags.split(",")
+            selectedFitnessTags = loadedUser.fitnessTags.split(",").filter { it.isNotEmpty() }
             selectedImageUri = loadedUser.avatarUri?.let { Uri.parse(it) }
         }
     }
@@ -326,17 +341,38 @@ fun ProfileEditScreen(
     
     // Basic Info Edit Dialog
     if (showBasicInfoDialog) {
-        BasicInfoEditDialog(
+        NameEditDialog(
             initialName = nameValue,
-            initialEmail = emailValue,
             onDismiss = { showBasicInfoDialog = false },
-            onSave = { name, email ->
+            onSave = { name ->
                 nameValue = name
-                emailValue = email
-                // 保存到数据库
+                
+                // 保存到两个数据源
                 coroutineScope.launch {
-                    userDao.updateBasicInfo(0, name, email)
+                    // 更新本地数据库 - 只更新名字，保留原有的邮箱
+                    userDao.updateBasicInfo(0, name, emailValue)
                     user = userDao.getUserByIdSync(0)
+                    
+                    // 更新Firebase用户信息 - 只更新名字
+                    try {
+                        val firebaseUser = FirebaseAuth.getInstance().currentUser
+                        if (firebaseUser != null) {
+                            // 创建用户资料更新请求对象
+                            val profileUpdates = UserProfileChangeRequest.Builder()
+                                .setDisplayName(name)
+                                .build()
+                                
+                            // 执行更新
+                            withContext(Dispatchers.IO) {
+                                firebaseUser.updateProfile(profileUpdates).await()
+                            }
+                            
+                            snackbarHostState.showSnackbar("Profile updated successfully!")
+                        }
+                    } catch (e: Exception) {
+                        snackbarHostState.showSnackbar("Failed to update profile: ${e.message}")
+                    }
+                    
                     showBasicInfoDialog = false
                 }
             }
@@ -356,7 +392,7 @@ fun ProfileEditScreen(
                 coroutineScope.launch {
                     userDao.updateHeightWeight(0, height, weight)
                     user = userDao.getUserByIdSync(0)
-                    showHeightWeightDialog = false
+                showHeightWeightDialog = false
                 }
             }
         )
@@ -375,7 +411,7 @@ fun ProfileEditScreen(
                 coroutineScope.launch {
                     userDao.updateFitnessGoal(0, option)
                     user = userDao.getUserByIdSync(0)
-                    showFitnessGoalDialog = false
+                showFitnessGoalDialog = false
                 }
             },
             onDismiss = { showFitnessGoalDialog = false }
@@ -395,7 +431,7 @@ fun ProfileEditScreen(
                 coroutineScope.launch {
                     userDao.updateWorkoutFrequency(0, option)
                     user = userDao.getUserByIdSync(0)
-                    showWorkoutFrequencyDialog = false
+                showWorkoutFrequencyDialog = false
                 }
             },
             onDismiss = { showWorkoutFrequencyDialog = false }
@@ -416,7 +452,7 @@ fun ProfileEditScreen(
                     val tagsString = selected.joinToString(",")
                     userDao.updateFitnessTags(0, tagsString)
                     user = userDao.getUserByIdSync(0)
-                    showFitnessTagsDialog = false
+                showFitnessTagsDialog = false
                 }
             },
             onDismiss = { 
@@ -512,12 +548,12 @@ private fun UserProfileCard(
                         placeholder = painterResource(id = R.drawable.profile_photo) // Placeholder while loading
                     )
                 } else {
-                    Image(
-                        painter = painterResource(id = R.drawable.profile_photo),
+                Image(
+                    painter = painterResource(id = R.drawable.profile_photo),
                         contentDescription = "Profile Avatar",
                         modifier = Modifier.fillMaxSize(), // Changed from size(72.dp)
-                        contentScale = ContentScale.Crop
-                    )
+                    contentScale = ContentScale.Crop
+                )
                 }
                 // Small "add" icon overlay
                 Box(
@@ -539,7 +575,7 @@ private fun UserProfileCard(
                     )
                 }
             }
-
+            
             Spacer(modifier = Modifier.width(16.dp))
 
             // User Info
@@ -555,15 +591,13 @@ private fun UserProfileCard(
                     color = Color(0xFF1F2937)
                 )
                 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = email,
-                        fontSize = 14.sp,
-                        color = Color(0xFF6B7280)
-                    )
-                }
+                // 保留邮箱显示，但不允许编辑
+                Text(
+                    text = email,
+                    fontSize = 14.sp,
+                    color = Color(0xFF6B7280),
+                    modifier = Modifier.padding(top = 2.dp)
+                )
             }
             
             // Arrow right
@@ -996,9 +1030,9 @@ private fun ProfilePhotoDialog(
                         )
                     }
                 }
-
+                
                 Spacer(modifier = Modifier.height(16.dp))
-
+                
                 // Buttons
                 Button(
                     onClick = onUploadPhoto, // This will now trigger the gallery picker
@@ -1006,7 +1040,7 @@ private fun ProfilePhotoDialog(
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6)) // Blue background
                 ) {
                     Text("Upload New Photo", color = Color.White)
-                }
+                    }
                 Spacer(modifier = Modifier.height(8.dp))
                 // Removed OutlinedButton for Take Photo
                 Spacer(modifier = Modifier.height(8.dp))
@@ -1138,14 +1172,12 @@ private fun PasswordChangeDialog(
 }
 
 @Composable
-private fun BasicInfoEditDialog(
+private fun NameEditDialog(
     initialName: String,
-    initialEmail: String,
     onDismiss: () -> Unit,
-    onSave: (String, String) -> Unit
+    onSave: (String) -> Unit
 ) {
     var name by remember { mutableStateOf(initialName) }
-    var email by remember { mutableStateOf(initialEmail) }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -1160,7 +1192,7 @@ private fun BasicInfoEditDialog(
                     .padding(24.dp)
             ) {
                 Text(
-                    text = "Edit Basic Information",
+                    text = "Edit Name",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1F2937)
@@ -1173,17 +1205,6 @@ private fun BasicInfoEditDialog(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Name") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                // Email field
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -1203,7 +1224,7 @@ private fun BasicInfoEditDialog(
                     Spacer(modifier = Modifier.width(8.dp))
                     
                     Button(
-                        onClick = { onSave(name, email) },
+                        onClick = { onSave(name) },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF3B82F6)
                         )

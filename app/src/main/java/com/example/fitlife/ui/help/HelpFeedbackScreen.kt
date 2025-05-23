@@ -1,8 +1,6 @@
 package com.example.fitlife.ui.help
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,12 +25,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.example.fitlife.R
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
-import com.example.fitlife.utils.EmailSender
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.util.Date
 
 @Composable
 fun HelpFeedbackScreen(
@@ -84,7 +82,7 @@ fun HelpFeedbackScreen(
                         isLoading = true
                         
                         coroutineScope.launch {
-                            EmailSender.sendFeedbackEmail(
+                            saveFeedbackToFirestore(
                                 context = context,
                                 feedback = feedbackText,
                                 onSuccess = {
@@ -141,6 +139,37 @@ fun HelpFeedbackScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+}
+
+/**
+ * 将反馈保存到Firestore数据库
+ */
+suspend fun saveFeedbackToFirestore(
+    context: Context,
+    feedback: String,
+    onSuccess: () -> Unit,
+    onError: (String) -> Unit
+) {
+    try {
+        val db = FirebaseFirestore.getInstance()
+        
+        // 创建反馈数据
+        val feedbackData = hashMapOf(
+            "content" to feedback,
+            "timestamp" to Date(),
+            "status" to "new"
+        )
+        
+        // 保存到Firestore
+        db.collection("feedback")
+            .add(feedbackData)
+            .await()
+            
+        onSuccess()
+        
+    } catch (e: Exception) {
+        onError("Submission failed: ${e.message}")
     }
 }
 

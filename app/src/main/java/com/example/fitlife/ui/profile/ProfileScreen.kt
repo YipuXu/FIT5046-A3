@@ -70,8 +70,7 @@ fun ProfileScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToCalendar: () -> Unit,
     selectedFitnessTags: List<String>,
-    onFitnessTagsUpdated: (List<String>) -> Unit,
-    plansDoneCount: Int = 8
+    onFitnessTagsUpdated: (List<String>) -> Unit
 ) {
     val context = LocalContext.current
     val workoutDao = remember { (context.applicationContext as MyApplication).database.workoutDao() }
@@ -94,6 +93,9 @@ fun ProfileScreen(
     
     // 获取不同日期的健身记录数量
     val workoutDaysCount by workoutDao.getUniqueWorkoutDaysCount().collectAsState(initial = 0)
+    
+    // 获取所有训练记录的数量
+    val totalWorkoutsCount by workoutDao.getAllOrderByDateDesc().collectAsState(initial = emptyList())
     
     // 获取所有训练日期并计算连续天数
     val allWorkoutDates by workoutDao.getAllWorkoutDatesDesc().collectAsState(initial = emptyList())
@@ -133,9 +135,9 @@ fun ProfileScreen(
                     selectedWorkout = workout
                     showDialog = true
                 },
-                plansDoneCount = plansDoneCount,
-                workoutDaysCount = workoutDaysCount, // 传递不同日期的健身记录数量
-                streakDays = streakDays // 传递连续训练天数
+                totalWorkoutsCount = totalWorkoutsCount.size,
+                workoutDaysCount = workoutDaysCount,
+                streakDays = streakDays
             )
         }
         
@@ -236,14 +238,14 @@ private fun calculateStreakDays(dates: List<String>): Int {
     if (dates.isEmpty()) return 0
     
     try {
-        // 尝试解析日期，忽略格式不正确的日期
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        val validDates = mutableListOf<LocalDate>()
+        // 使用SimpleDateFormat而不是DateTimeFormatter，以支持API Level 24
+        val simpleDateFormat = java.text.SimpleDateFormat("yyyy-MM-dd")
+        val validDates = mutableListOf<java.util.Date>()
         
         for (dateStr in dates) {
             try {
                 if (dateStr != "Select Date") {
-                    validDates.add(LocalDate.parse(dateStr, formatter))
+                    validDates.add(simpleDateFormat.parse(dateStr))
                 }
             } catch (e: Exception) {
                 // 忽略无法解析的日期
@@ -262,7 +264,13 @@ private fun calculateStreakDays(dates: List<String>): Int {
         
         for (i in 1 until sortedDates.size) {
             val currentDate = sortedDates[i]
-            val daysBetween = ChronoUnit.DAYS.between(currentDate, previousDate)
+            
+            // 计算两个日期相差的毫秒数
+            val diffInMillis = previousDate.time - currentDate.time
+            // 一天的毫秒数
+            val dayInMillis = 24 * 60 * 60 * 1000L
+            // 计算相差的天数
+            val daysBetween = diffInMillis / dayInMillis
             
             if (daysBetween == 1L) {
                 // 两个日期相差1天，连续
@@ -292,7 +300,7 @@ private fun ProfileContent(
     firebaseDisplayName: String?,
     latestWorkouts: List<Workout>,
     onWorkoutClick: (Workout) -> Unit,
-    plansDoneCount: Int = 8,
+    totalWorkoutsCount: Int = 0,
     workoutDaysCount: Int = 0,
     streakDays: Int = 0
 ) {
@@ -348,9 +356,9 @@ private fun ProfileContent(
             fitnessTags = selectedFitnessTags,
             user = user,
             firebaseDisplayName = firebaseDisplayName,
-            plansDoneCount = plansDoneCount,
+            totalWorkoutsCount = totalWorkoutsCount,
             workoutDaysCount = workoutDaysCount,
-            streakDays = streakDays, // 传递实际的连续训练天数
+            streakDays = streakDays,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
@@ -379,7 +387,7 @@ private fun UserInfoCard(
     fitnessTags: List<String>,
     user: User?,
     firebaseDisplayName: String?,
-    plansDoneCount: Int = 8,
+    totalWorkoutsCount: Int = 0,
     workoutDaysCount: Int = 0,
     streakDays: Int = 0,
     modifier: Modifier = Modifier
@@ -593,10 +601,10 @@ private fun UserInfoCard(
                         )
                 )
                 
-                // Completed plans
+                // 完成训练的数量
                 StatItem(
-                    count = plansDoneCount.toString(), 
-                    label = "Plans Done",
+                    count = totalWorkoutsCount.toString(), 
+                    label = "Trainings Done",
                     modifier = Modifier.weight(1f),
                     alignment = Alignment.CenterHorizontally
                 )

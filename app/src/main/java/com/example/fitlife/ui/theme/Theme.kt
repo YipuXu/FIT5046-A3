@@ -186,7 +186,7 @@ fun FitLifeTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-    
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
@@ -208,10 +208,10 @@ fun FitLifeTheme(
         LocalDensity provides scaledDensity,
         LocalAccessibilitySettings provides accessibilitySettings
     ) {
-        MaterialTheme(
-            colorScheme = colorScheme,
-            typography = Typography,
-            content = content
-        )
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content
+    )
     }
 }

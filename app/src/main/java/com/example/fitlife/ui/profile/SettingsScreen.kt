@@ -119,7 +119,7 @@ fun SettingsScreen(
                         normalColor = Color.White,
                         highContrastColor = Color.White
                     )
-                )
+                        )
                 
                 // Accessibility
                 SettingsItemUnified(
@@ -298,12 +298,12 @@ private fun SettingsItemUnified(
                         modifier = Modifier.size(24.dp)
                     )
                 } else {
-                    Icon(
-                        painter = painterResource(id = icon),
-                        contentDescription = null,
+                Icon(
+                    painter = painterResource(id = icon),
+                    contentDescription = null,
                         tint = if (isHighContrastMode) Color.White else Color(0xFF6B7280),
-                        modifier = Modifier.size(24.dp)
-                    )
+                    modifier = Modifier.size(24.dp)
+                )
                 }
             }
             

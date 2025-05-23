@@ -117,8 +117,7 @@ class MainActivity : ComponentActivity() {
                                     onFitnessTagsUpdated = { tags ->
                                         Log.d("MainActivity", "Update tags: ${tags.joinToString()}")
                                         selectedFitnessTags.value = tags
-                                    },
-                                    plansDoneCount = if (isPlanDone.value) 9 else 8 // 如果计划已完成，显示9，否则显示8
+                                    }
                                 )
                             }
                             "profileEdit" -> {
