@@ -43,7 +43,7 @@ fun MusicPlayerScreen(
                             setOnCompletionListener { release() }
                         }
                     } catch (e: Exception) {
-                        Log.e("MusicPlayer", "播放失败", e)
+                        Log.e("MusicPlayer", "Play failed", e)
                     }
                 }
             )
