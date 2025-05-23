@@ -3,14 +3,14 @@ package com.example.fitlife.utils
 import com.example.fitlife.R
 
 /**
- * 资源工具类，提供获取资源ID的公共方法
+ * Resource tool class, providing a public method for obtaining resource IDs
  */
 object ResourceUtils {
     /**
-     * 安全获取资源ID的方法
-     * @param name 资源名称
-     * @param defaultId 默认资源ID，当找不到资源时返回
-     * @return 资源ID
+     * Method to safely obtain resource ID
+     * @param name resource name
+     * @param defaultId default resource ID, returned when resource cannot be found
+     * @return resource ID
      */
     fun getResourceId(name: String, defaultId: Int): Int {
         return try {

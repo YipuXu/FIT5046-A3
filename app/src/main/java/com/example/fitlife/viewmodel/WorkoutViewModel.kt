@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 class WorkoutViewModel(application: Application) : AndroidViewModel(application) {
     private val repo = WorkoutRepository(application)
     
-    // 获取训练记录时需要传入用户ID
+    // The user ID needs to be passed in when obtaining training records
     fun getAllWorkouts(firebaseUid: String, onResult: (List<Workout>) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             val all = repo.getAllWorkouts(firebaseUid)
@@ -23,7 +23,7 @@ class WorkoutViewModel(application: Application) : AndroidViewModel(application)
         }
     }
     
-    // 添加默认参数，使现有代码兼容
+    // Add default parameters to make existing code compatible
     suspend fun getAllWorkouts(firebaseUid: String = ""): List<Workout> = repo.getAllWorkouts(firebaseUid)
     
     fun insertWorkout(workout: Workout) = viewModelScope.launch(Dispatchers.IO) {

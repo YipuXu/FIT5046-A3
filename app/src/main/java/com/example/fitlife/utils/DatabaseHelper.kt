@@ -7,13 +7,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * 数据库辅助工具类，用于处理数据库相关操作
+ * Database auxiliary tool class, used to handle database related operations
  */
 class DatabaseHelper {
     companion object {
         /**
-         * 初始化用户数据
-         * 如果用户不存在，则创建默认用户
+         * Initialize user data
+         * If the user does not exist, create a default user
          */
         suspend fun initializeUserData(context: Context) {
             withContext(Dispatchers.IO) {
@@ -21,16 +21,16 @@ class DatabaseHelper {
                     val application = context.applicationContext as com.example.fitlife.MyApplication
                     val userDao = application.database.userDao()
                     
-                    // 获取当前Firebase用户ID
+                    // Get the current Firebase user ID
                     val firebaseUser = FirebaseAuth.getInstance().currentUser
                     val firebaseUid = firebaseUser?.uid
                     
                     if (firebaseUid != null) {
-                        // 检查是否存在用户
+                        // Check if user exists
                         val existingUser = userDao.getUserByFirebaseUidSync(firebaseUid)
                         
                         if (existingUser == null) {
-                            // 如果不存在用户，创建默认用户
+                            // If the user does not exist, create a default user
                             val defaultUser = User(
                                 firebaseUid = firebaseUid,
                                 name = firebaseUser.displayName ?: "User",
