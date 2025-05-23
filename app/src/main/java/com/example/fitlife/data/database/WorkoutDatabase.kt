@@ -1,4 +1,4 @@
-package com.example.fitlife.data.database // 或者你 WorkoutDatabase 所在的包
+package com.example.fitlife.data.database
 
 import android.content.Context
 import androidx.room.Database
@@ -18,7 +18,7 @@ import com.example.fitlife.data.model.User
         FitnessEvent::class,
         User::class
     ],
-    version = 3,
+    version = 5,
     exportSchema = false
 )
 abstract class WorkoutDatabase : RoomDatabase() {

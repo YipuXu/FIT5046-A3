@@ -1,4 +1,3 @@
-// 文件路径：app/src/main/java/com/example/fitlife/ui/home/MusicPlayerScreen.kt
 package com.example.fitlife.ui.home
 
 import android.media.MediaPlayer
@@ -13,31 +12,30 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fitlife.ui.components.MusicPlayerSection
 
 /**
- * 音乐播放器屏幕：搜索一首默认歌曲，展示 MusicPlayerSection
+ * Music player screen: searching for a default song, showing MusicPlayerSection
  */
 @Composable
 fun MusicPlayerScreen(
     viewModel: MusicViewModel = viewModel()
 ) {
-    // 启动时执行一次搜索
+    // Perform a search on startup
     LaunchedEffect(Unit) {
         viewModel.search("workout anthem")
     }
 
-    // 订阅当前 Track
     val track by viewModel.currentTrack.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         if (track == null) {
-            // 数据尚未加载，显示加载中
+            // shows loading
             CircularProgressIndicator()
         } else {
-            // 数据加载完成，展示播放器
+            // display player
             MusicPlayerSection(
                 track = track!!,
                 onPlay = { previewUrl ->
                     try {
-                        // 简单播放 30 秒试听
+                        // play 30 seconds to listen
                         MediaPlayer().apply {
                             setDataSource(previewUrl)
                             prepare()
@@ -45,7 +43,7 @@ fun MusicPlayerScreen(
                             setOnCompletionListener { release() }
                         }
                     } catch (e: Exception) {
-                        Log.e("MusicPlayer", "播放失败", e)
+                        Log.e("MusicPlayer", "Play failed", e)
                     }
                 }
             )

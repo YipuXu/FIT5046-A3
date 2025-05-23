@@ -19,11 +19,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 
 /**
- * 音乐播放器卡片组件，仅展示封面、曲名、歌手和播放按钮
+ * Music player card component
  *
- * @param track 要展示的歌曲信息
- * @param onPlay 点击播放时回调，传入 previewUrl
- * @param modifier 外部修饰符
+ * @param track The song information to be displayed
+ * @param onPlay Callback when clicking to play, pass in previewUrl
+ * @param modifier External modifier
  */
 @Composable
 fun MusicPlayerSection(
@@ -44,7 +44,7 @@ fun MusicPlayerSection(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 封面图
+            // Cover image
             AsyncImage(
                 model = track.artworkUrl100,
                 contentDescription = track.trackName,
@@ -54,7 +54,7 @@ fun MusicPlayerSection(
                 contentScale = ContentScale.Crop
             )
 
-            // 歌曲信息
+            // Song information
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = track.trackName,
@@ -67,11 +67,11 @@ fun MusicPlayerSection(
                 )
             }
 
-            // 播放按钮
+            // Play Button
             IconButton(onClick = { onPlay(track.previewUrl) }) {
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "播放",
+                    contentDescription = "play",
                     tint = Color(0xFF1976D2),
                     modifier = Modifier.size(32.dp)
                 )

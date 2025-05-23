@@ -5,8 +5,20 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WorkoutDao {
-    @Query("SELECT * FROM workout_table")
-    suspend fun getAll(): List<Workout>
+    @Query("SELECT * FROM workout_table WHERE firebaseUid = :firebaseUid")
+    suspend fun getAll(firebaseUid: String): List<Workout>
+
+    @Query("SELECT * FROM workout_table WHERE firebaseUid = :firebaseUid ORDER BY date DESC, time DESC")
+    fun getAllOrderByDateDesc(firebaseUid: String): Flow<List<Workout>>
+
+    @Query("SELECT * FROM workout_table WHERE firebaseUid = :firebaseUid ORDER BY date DESC, time DESC LIMIT 2")
+    fun getLatestTwoWorkouts(firebaseUid: String): Flow<List<Workout>>
+
+    @Query("SELECT COUNT(DISTINCT date) FROM workout_table WHERE firebaseUid = :firebaseUid")
+    fun getUniqueWorkoutDaysCount(firebaseUid: String): Flow<Int>
+
+    @Query("SELECT DISTINCT date FROM workout_table WHERE firebaseUid = :firebaseUid ORDER BY date DESC")
+    fun getAllWorkoutDatesDesc(firebaseUid: String): Flow<List<String>>
 
     @Query("SELECT * FROM workout_table ORDER BY date DESC, time DESC")
     fun getAllOrderByDateDesc(): Flow<List<Workout>>

@@ -9,13 +9,12 @@ class MyApplication : Application() {
     lateinit var database: WorkoutDatabase
         private set
     
-    // 添加辅助功能偏好设置实例
     lateinit var accessibilityPreferences: AccessibilityPreferences
         private set
 
     override fun onCreate() {
         super.onCreate()
-        // 初始化数据库
+
         database = Room.databaseBuilder(
             applicationContext,
             WorkoutDatabase::class.java,
@@ -23,8 +22,7 @@ class MyApplication : Application() {
         )
         .fallbackToDestructiveMigration()
         .build()
-        
-        // 初始化辅助功能偏好设置
+
         accessibilityPreferences = AccessibilityPreferences(applicationContext)
     }
 }

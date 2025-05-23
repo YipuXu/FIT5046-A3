@@ -23,20 +23,20 @@ import androidx.compose.ui.unit.Density
 import androidx.core.view.WindowCompat
 import com.example.fitlife.data.preferences.AccessibilityPreferences
 
-// 高对比度模式下的颜色方案 - 增强对比度
+// High contrast mode color scheme - enhanced contrast
 private val HighContrastLightColorScheme = lightColorScheme(
-    primary = Color(0xFF0000FF), // 深蓝色
+    primary = Color(0xFF0000FF), // Dark blue
     onPrimary = Color.White,
-    secondary = Color(0xFF000000), // 黑色
+    secondary = Color(0xFF000000), // Black
     onSecondary = Color.White,
     background = Color.White,
     onBackground = Color.Black,
     surface = Color.White,
     onSurface = Color.Black,
-    error = Color(0xFFFF0000), // 红色
+    error = Color(0xFFFF0000), // Red
     onError = Color.White,
     
-    // 增加更多高对比度的颜色定义
+    // Add more high contrast color definitions
     primaryContainer = Color(0xFF0000FF),
     onPrimaryContainer = Color.White,
     secondaryContainer = Color(0xFF000000),
@@ -50,18 +50,18 @@ private val HighContrastLightColorScheme = lightColorScheme(
 )
 
 private val HighContrastDarkColorScheme = darkColorScheme(
-    primary = Color(0xFF00BFFF), // 亮蓝色
+    primary = Color(0xFF00BFFF), // Bright blue
     onPrimary = Color.Black,
-    secondary = Color(0xFFFFFFFF), // 白色
+    secondary = Color(0xFFFFFFFF), // White
     onSecondary = Color.Black,
     background = Color.Black,
     onBackground = Color.White,
     surface = Color.Black,
     onSurface = Color.White,
-    error = Color(0xFFFF6B6B), // 亮红色
+    error = Color(0xFFFF6B6B), // Bright red
     onError = Color.Black,
     
-    // 增加更多高对比度的颜色定义
+    // Add more high contrast color definitions
     primaryContainer = Color(0xFF00BFFF),
     onPrimaryContainer = Color.Black,
     secondaryContainer = Color(0xFFFFFFFF),
@@ -74,11 +74,11 @@ private val HighContrastDarkColorScheme = darkColorScheme(
     outlineVariant = Color(0xFFCCCCCC)
 )
 
-// 色盲模式的颜色方案 (红绿色盲友好)
+// Color blind mode color scheme (Red-Green color blindness friendly)
 private val ColorBlindLightColorScheme = lightColorScheme(
-    primary = Color(0xFF0072B2), // 蓝色 - 替代绿色
-    secondary = Color(0xFFE69F00), // 橙色 - 替代红色
-    tertiary = Color(0xFF56B4E9), // 天蓝色
+    primary = Color(0xFF0072B2), // Blue - replaces green
+    secondary = Color(0xFFE69F00), // Orange - replaces red
+    tertiary = Color(0xFF56B4E9), // Sky blue
     background = Color.White,
     onBackground = Color(0xFF000000),
     surface = Color.White,
@@ -86,19 +86,19 @@ private val ColorBlindLightColorScheme = lightColorScheme(
     onPrimary = Color.White,
     onSecondary = Color.Black,
     onTertiary = Color.Black,
-    error = Color(0xFF9467BD), // 紫色 - 替代红色作为错误色
+    error = Color(0xFF9467BD), // Purple - replaces red for error color
     onError = Color.White,
-    primaryContainer = Color(0xFFD0E7F7), // 浅蓝色
-    secondaryContainer = Color(0xFFFFF0D0), // 浅橙色
-    tertiaryContainer = Color(0xFFD9F0FB), // 浅天蓝色
-    errorContainer = Color(0xFFE9DBEE), // 浅紫色
+    primaryContainer = Color(0xFFD0E7F7), // Light blue
+    secondaryContainer = Color(0xFFFFF0D0), // Light orange
+    tertiaryContainer = Color(0xFFD9F0FB), // Light sky blue
+    errorContainer = Color(0xFFE9DBEE), // Light purple
     onErrorContainer = Color(0xFF9467BD)
 )
 
 private val ColorBlindDarkColorScheme = darkColorScheme(
-    primary = Color(0xFF00ADD8), // 亮蓝色
-    secondary = Color(0xFFFFB74D), // 亮橙色
-    tertiary = Color(0xFF80DEEA), // 亮天蓝色
+    primary = Color(0xFF00ADD8), // Bright blue
+    secondary = Color(0xFFFFB74D), // Bright orange
+    tertiary = Color(0xFF80DEEA), // Bright sky blue
     background = Color(0xFF121212),
     onBackground = Color(0xFFFFFFFF),
     surface = Color(0xFF121212),
@@ -106,16 +106,16 @@ private val ColorBlindDarkColorScheme = darkColorScheme(
     onPrimary = Color.Black,
     onSecondary = Color.Black,
     onTertiary = Color.Black,
-    error = Color(0xFFD0A9DF), // 浅紫色 - 替代红色
+    error = Color(0xFFD0A9DF), // Light purple - replaces red
     onError = Color.Black,
-    primaryContainer = Color(0xFF004080), // 深蓝色
-    secondaryContainer = Color(0xFFC87800), // 深橙色
-    tertiaryContainer = Color(0xFF0097A7), // 深蓝绿色
-    errorContainer = Color(0xFF7E4E9B), // 深紫色
-    onErrorContainer = Color(0xFFE9DBEE) // 浅紫色
+    primaryContainer = Color(0xFF004080), // Dark blue
+    secondaryContainer = Color(0xFFC87800), // Dark orange
+    tertiaryContainer = Color(0xFF0097A7), // Dark teal
+    errorContainer = Color(0xFF7E4E9B), // Dark purple
+    onErrorContainer = Color(0xFFE9DBEE) // Light purple
 )
 
-// 默认颜色方案
+// Default color scheme
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
     secondary = PurpleGrey80,
@@ -138,7 +138,7 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
-// 本地组合项，用于存储辅助功能设置
+// Local composition item for storing accessibility settings
 data class AccessibilitySettings(
     val highContrastMode: Boolean = false,
     val colorBlindMode: Boolean = false,
@@ -161,7 +161,7 @@ fun FitLifeTheme(
     val context = LocalContext.current
     val accessibilityPreferences = AccessibilityPreferences(context)
     
-    // 收集辅助功能设置
+    // Collect accessibility settings
     val highContrastMode by accessibilityPreferences.highContrastMode.collectAsState(initial = false)
     val colorBlindMode by accessibilityPreferences.colorBlindMode.collectAsState(initial = false)
     val zoomFunction by accessibilityPreferences.zoomFunction.collectAsState(initial = false)
@@ -176,7 +176,7 @@ fun FitLifeTheme(
         keyboardControl = keyboardControl
     )
     
-    // 基于辅助功能设置确定颜色方案
+    // Determine color scheme based on accessibility settings
     val colorScheme = when {
         highContrastMode -> if (darkTheme) HighContrastDarkColorScheme else HighContrastLightColorScheme
         colorBlindMode -> if (darkTheme) ColorBlindDarkColorScheme else ColorBlindLightColorScheme
@@ -196,7 +196,7 @@ fun FitLifeTheme(
         }
     }
     
-    // 处理缩放功能
+    // Handle zoom function
     val density = LocalDensity.current
     val fontScale = if (zoomFunction) 1.3f else 1.0f
     val scaledDensity = Density(

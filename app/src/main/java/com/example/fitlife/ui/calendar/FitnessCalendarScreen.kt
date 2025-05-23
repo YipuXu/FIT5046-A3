@@ -92,19 +92,19 @@ fun FitnessCalendarScreen(
         }
     }
     
-    // 检查是否有需要删除的计划ID
+    // Check if there is a plan ID that needs to be deleted
     val mainActivity = context as? MainActivity
     val eventIdToDelete by mainActivity?.planEventToDeleteId ?: remember { mutableStateOf<Long?>(null) }
     
-    // 当事件ID发生变化时，执行删除操作
+    // When the event ID changes, perform the delete operation
     LaunchedEffect(eventIdToDelete) {
         if (eventIdToDelete != null) {
-            // 找到对应的事件并删除
+            // Find the corresponding event and delete it
             val allEvents = viewModel.eventsForSelectedDate.value
             val eventToDelete = allEvents.find { it.id == eventIdToDelete }
             eventToDelete?.let {
                 viewModel.deleteEvent(it)
-                // 重置ID
+                // Reset ID
                 mainActivity?.planEventToDeleteId?.value = null
             }
         }
@@ -124,10 +124,8 @@ fun FitnessCalendarScreen(
                         .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // 添加左侧Spacer以平衡右侧按钮
                     Spacer(modifier = Modifier.width(32.dp))
 
-                    // 标题
                     Text(
                         text = "Fitness Calendar",
                         fontSize = 18.sp, 
@@ -137,11 +135,10 @@ fun FitnessCalendarScreen(
                         color = Color(0xFF1F2937)
                     )
 
-                    // 右侧占位，保持布局平衡
                     Box(
                         modifier = Modifier.size(32.dp)
                     ) {
-                        // 空Box，仅用于保持视觉平衡
+                        // Empty Box, only used to maintain visual balance
                     }
                 }
             },
@@ -173,7 +170,7 @@ fun FitnessCalendarScreen(
             ) {
                 Spacer(Modifier.height(8.dp))
 
-                // 日历视图用卡片包裹
+                // Calendar view wrapped with card
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -211,7 +208,7 @@ fun FitnessCalendarScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                // 事件列表标题
+                // Event List Title
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -373,7 +370,6 @@ fun EventCard(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 添加图标
             Box(
                 modifier = Modifier
                     .size(40.dp)

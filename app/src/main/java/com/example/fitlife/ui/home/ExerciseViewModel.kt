@@ -40,7 +40,6 @@ class ExerciseViewModel : ViewModel() {
         }
     }
 
-    /** 只保留下一页 */
     fun loadNextPage() {
         val nextOffset = (currentOffset + pageSize)
             .coerceAtMost((totalExercises - 1) / pageSize * pageSize)

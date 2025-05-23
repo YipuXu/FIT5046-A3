@@ -21,14 +21,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 
-/**
- * 辅助功能实用工具类
- * 提供与辅助功能相关的扩展函数和组合函数
- */
 object AccessibilityUtils {
     
     /**
-     * 检查高对比度模式是否启用
+     * Check if high contrast mode is enabled
      */
     @Composable
     @ReadOnlyComposable
@@ -37,7 +33,7 @@ object AccessibilityUtils {
     }
     
     /**
-     * 检查色盲模式是否启用
+     * Check if colorblind mode is enabled
      */
     @Composable
     @ReadOnlyComposable
@@ -46,10 +42,10 @@ object AccessibilityUtils {
     }
     
     /**
-     * 获取适用于高对比度模式的颜色
-     * @param normalColor 正常模式下的颜色
-     * @param highContrastColor 高对比度模式下的颜色
-     * @return 根据当前模式返回适当的颜色
+     * Get the color for high contrast mode
+     * @param normalColor The color in normal mode
+     * @param highContrastColor The color in high contrast mode
+     * @return Returns the appropriate color based on the current mode
      */
     @Composable
     @ReadOnlyComposable
@@ -58,11 +54,11 @@ object AccessibilityUtils {
     }
     
     /**
-     * 获取适配色盲模式的颜色
-     * 主要针对红绿色盲(Deuteranopia)进行优化
-     * 
-     * @param normalColor 正常模式下的颜色
-     * @return 根据当前模式返回适合色盲用户的颜色
+     * Get the color suitable for color blindness mode
+     * Mainly optimized for red and green color blindness (Deuteranopia)
+     *
+     * @param normalColor The color in normal mode
+     * @return Returns the color suitable for color blind users according to the current mode
      */
     @Composable
     @ReadOnlyComposable
@@ -71,36 +67,36 @@ object AccessibilityUtils {
             return normalColor
         }
         
-        // 分解颜色的RGB值
+        // Decompose the RGB values of a color
         val red = normalColor.red
         val green = normalColor.green
         val blue = normalColor.blue
-        
-        // 红绿色盲友好色彩优化
-        // 1. 避免同时使用红色和绿色
-        // 2. 针对红绿色盲，增强蓝色通道的差异
-        // 3. 常见替代组合：蓝/黄, 蓝/橙, 黑/白
+
+        // Red-green color blindness friendly color optimization
+        // 1. Avoid using red and green at the same time
+        // 2. For red-green color blindness, enhance the difference of blue channel
+        // 3. Common alternative combinations: blue/yellow, blue/orange, black/white
         
         return when {
-            // 如果原色是红色系 (#FF0000 到 #FF5050)
+            // If the primary color is red (#FF0000 to #FF5050)
             red > 0.7f && green < 0.4f && blue < 0.4f -> {
-                Color(0xFF0072B2) // 替换为蓝色
+                Color(0xFF0072B2) // Replace with blue
             }
-            // 如果原色是绿色系 (#00FF00 到 #50FF50)
+            // If the primary color is green (#00FF00 to #50FF50)
             green > 0.7f && red < 0.4f && blue < 0.4f -> {
-                Color(0xFFE69F00) // 替换为橙/黄色
+                Color(0xFFE69F00) // Replaced with orange/yellow
             }
-            // 粉色系转为紫蓝色
+            // Pink turns to purple-blue
             red > 0.7f && blue > 0.7f && green < 0.4f -> {
-                Color(0xFF56B4E9) // 蓝色
+                Color(0xFF56B4E9) // blue
             }
-            // 如果是接近白色或黑色的颜色，不进行转换
+            // If the color is close to white or black, no conversion is performed
             (red > 0.9f && green > 0.9f && blue > 0.9f) || (red < 0.1f && green < 0.1f && blue < 0.1f) -> {
                 normalColor
             }
-            // 其他颜色略微调整以提高可区分度
+            // Other colors slightly adjusted to improve distinguishability
             else -> {
-                // 增加蓝黄对比度
+                // Increase blue-yellow contrast
                 val newRed = red * 0.8f
                 val newGreen = green * 0.9f
                 val newBlue = blue * 1.1f.coerceAtMost(1.0f)
@@ -111,10 +107,10 @@ object AccessibilityUtils {
     }
     
     /**
-     * 获取同时适配高对比度和色盲模式的颜色
-     * @param normalColor 正常模式下的颜色
-     * @param highContrastColor 高对比度模式下的颜色
-     * @return 根据当前的辅助功能设置返回合适的颜色
+     * Get the color that is suitable for both high contrast and color blindness modes
+     * @param normalColor The color in normal mode
+     * @param highContrastColor The color in high contrast mode
+     * @return Returns the appropriate color based on the current accessibility settings
      */
     @Composable
     @ReadOnlyComposable
@@ -127,9 +123,9 @@ object AccessibilityUtils {
     }
     
     /**
-     * 为文本提供高对比度样式
-     * @param normalStyle 正常模式下的文本样式
-     * @return 根据当前辅助功能设置调整的文本样式
+     * Provides high contrast style for text
+     * @param normalStyle Text style in normal mode
+     * @return Text style adjusted according to current accessibility settings
      */
     @Composable
     fun getAccessibleTextStyle(normalStyle: TextStyle): TextStyle {
@@ -145,8 +141,8 @@ object AccessibilityUtils {
     }
     
     /**
-     * Modifier扩展函数，为组件添加高对比度边框
-     * 仅在高对比度模式下添加明显的边框
+     * Modifier extension function, add high contrast border to the component
+     * Only add obvious border in high contrast mode
      */
     fun Modifier.highContrastBorder(shape: Shape): Modifier = composed {
         if (isHighContrastModeEnabled()) {
@@ -158,10 +154,10 @@ object AccessibilityUtils {
     }
     
     /**
-     * 获取适用于高对比度模式的文本组件
-     * @param text 显示的文本内容
-     * @param style 文本样式
-     * @param modifier 应用于Text的修饰符
+     * Get the text component for high contrast mode
+     * @param text The text content displayed
+     * @param style The text style
+     * @param modifier The modifier applied to the Text
      */
     @Composable
     fun AccessibleText(
@@ -187,7 +183,7 @@ object AccessibilityUtils {
     }
     
     /**
-     * 高对比度版本的卡片组件
+     * High contrast version of the card component
      */
     @Composable
     fun AccessibleCard(
@@ -220,7 +216,7 @@ object AccessibilityUtils {
     }
     
     /**
-     * 高对比度版本的设置项组件
+     * High contrast version of the settings widget
      */
     @Composable
     fun AccessibleSettingsItem(
@@ -270,7 +266,7 @@ object AccessibilityUtils {
     }
     
     /**
-     * 高对比度版本的开关组件
+     * High contrast version of switch assembly
      */
     @Composable
     fun AccessibleSwitch(
@@ -283,14 +279,14 @@ object AccessibilityUtils {
         
         val checkedTrackColor = when {
             isHighContrast -> Color.Black
-            isColorBlind -> Color(0xFF0072B2) // 蓝色，适合红绿色盲
-            else -> Color(0xFF34C759) // 默认绿色
+            isColorBlind -> Color(0xFF0072B2) // Blue, suitable for red and green color blindness
+            else -> Color(0xFF34C759) // Default green
         }
         
         val uncheckedTrackColor = when {
             isHighContrast -> Color.Gray
-            isColorBlind -> Color(0xFFCCCCCC) // 浅灰色，增强与蓝色对比
-            else -> Color(0xFFE5E5EA) // iOS默认灰色
+            isColorBlind -> Color(0xFFCCCCCC) // Light gray, to enhance contrast with blue
+            else -> Color(0xFFE5E5EA)
         }
         
         Switch(

@@ -59,14 +59,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.FlowRow
 import com.example.fitlife.utils.ResourceUtils
-import com.example.fitlife.ui.components.BottomNavBar // 添加导入
+import com.example.fitlife.ui.components.BottomNavBar
 
-import android.net.Uri // 导入 Uri
-import androidx.activity.compose.rememberLauncherForActivityResult // 导入 rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts // 导入 ActivityResultContracts
-import coil.compose.AsyncImage // 导入 AsyncImage
-import kotlinx.coroutines.launch // 导入 launch
-import androidx.compose.foundation.BorderStroke // 导入 BorderStroke
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.platform.LocalContext
 import android.content.Context
 import android.content.SharedPreferences
@@ -85,13 +85,14 @@ import com.example.fitlife.data.repository.FirebaseUserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import kotlinx.coroutines.tasks.await
+import android.util.Log
 
 @Composable
 fun ProfileEditScreen(
     onBackClick: () -> Unit = {},
     initialFitnessTags: List<String> = listOf("Strength Training", "Cardio"),
     onFitnessTagsSelected: (List<String>) -> Unit = {},
-    // 添加导航回调
+
     onNavigateToHome: () -> Unit,
     onNavigateToCalendar: () -> Unit,
     onNavigateToMap: () -> Unit,
@@ -106,39 +107,24 @@ fun ProfileEditScreen(
     var showWorkoutFrequencyDialog by remember { mutableStateOf(false) }
     var showFitnessTagsDialog by remember { mutableStateOf(false) }
     
-    // 获取数据库实例
+    // Get database instance
     val userDao = remember { (context.applicationContext as MyApplication).database.userDao() }
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     
-    // 创建Firebase用户仓库
+    // Create Firebase user repository
     val firebaseUserRepository = remember { FirebaseUserRepository() }
     
-    // 获取Firebase当前用户信息
+    // Get Firebase current user information
     val firebaseUser by firebaseUserRepository.currentUser.collectAsState()
     val firebaseDisplayName = firebaseUser?.displayName
     val firebaseEmail = firebaseUser?.email
+    val firebaseUid = firebaseUser?.uid
     
-    // 从数据库获取用户信息
+    // Get user information from database
     var user by remember { mutableStateOf<User?>(null) }
     
-    // 加载用户信息
-    LaunchedEffect(key1 = true) {
-        // 尝试获取用户
-        val existingUser = userDao.getUserByIdSync(0)
-        
-        if (existingUser == null) {
-            // 如果用户不存在，创建一个新用户
-            val newUser = User(id = 0)
-            userDao.insertUser(newUser)
-            user = newUser
-        } else {
-            // 如果用户存在，获取用户信息
-            user = existingUser
-        }
-    }
-    
-    // 动态状态，基于用户对象
+    // Dynamic states based on user object
     var nameValue by remember { mutableStateOf("") } 
     var emailValue by remember { mutableStateOf("") }
     var heightValue by remember { mutableStateOf("178") }
@@ -148,38 +134,76 @@ fun ProfileEditScreen(
     var selectedFitnessTags by remember { mutableStateOf(initialFitnessTags) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     
-    // 当用户加载完成后，更新所有状态 - 优先使用Firebase，然后是本地数据库
-    LaunchedEffect(key1 = user, key2 = firebaseUser) {
-        // 名称和邮箱优先使用Firebase的数据
-        nameValue = firebaseDisplayName ?: user?.name ?: "Xiao Ming"
-        emailValue = firebaseEmail ?: user?.email ?: "xiaoming@example.com"
-        
-        // 其他信息使用本地数据库
-        user?.let { loadedUser ->
-            heightValue = loadedUser.height
-            weightValue = loadedUser.weight
-            fitnessGoal = loadedUser.fitnessGoal
-            workoutFrequency = loadedUser.workoutFrequency
-            selectedFitnessTags = loadedUser.fitnessTags.split(",").filter { it.isNotEmpty() }
-            selectedImageUri = loadedUser.avatarUri?.let { Uri.parse(it) }
+    // Get or create user data based on Firebase UID
+    LaunchedEffect(firebaseUid) {
+        if (firebaseUid != null) {
+            try {
+                // Try to get user data
+                val existingUser = userDao.getUserByFirebaseUidSync(firebaseUid)
+                
+                if (existingUser == null) {
+                    // User doesn't exist, create new user
+                    val newUser = User(
+                        firebaseUid = firebaseUid,
+                        name = firebaseDisplayName ?: "User",
+                        email = firebaseEmail ?: "user@example.com"
+                    )
+                    userDao.insertUser(newUser)
+                    user = newUser
+                    Log.d("ProfileEditScreen", "Created new user record for UID: $firebaseUid")
+                } else {
+                    // User exists, use existing data
+                    user = existingUser
+                    Log.d("ProfileEditScreen", "Found existing user record for UID: $firebaseUid")
+                }
+                
+                // Update state values
+                user?.let { loadedUser ->
+                    nameValue = firebaseDisplayName ?: loadedUser.name
+                    emailValue = firebaseEmail ?: loadedUser.email
+                    fitnessGoal = loadedUser.fitnessGoal
+                    workoutFrequency = loadedUser.workoutFrequency
+                    selectedFitnessTags = loadedUser.fitnessTags.split(",").filter { it.isNotEmpty() }
+                    selectedImageUri = loadedUser.avatarUri?.let { Uri.parse(it) }
+                }
+                
+                // Get height and weight data from Firestore
+                val heightWeight = firebaseUserRepository.getHeightWeight()
+                if (heightWeight != null) {
+                    heightValue = heightWeight.first
+                    weightValue = heightWeight.second
+                    Log.d("ProfileEditScreen", "Height/weight loaded from Firestore: $heightValue/$weightValue")
+                } else {
+                    // If Firestore has no data, use Room default values or write to Firestore
+                    user?.let { loadedUser ->
+                        heightValue = loadedUser.height
+                        weightValue = loadedUser.weight
+                        // Sync Room data to Firestore
+                        firebaseUserRepository.updateHeightWeight(heightValue, weightValue)
+                        Log.d("ProfileEditScreen", "Synced height/weight to Firestore: $heightValue/$weightValue")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ProfileEditScreen", "Error loading user data: ${e.message}")
+            }
         }
     }
     
     // Activity result launcher for picking images from gallery
     val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
         uri: Uri? ->
-        if (uri != null) {
+        if (uri != null && firebaseUid != null) {
             coroutineScope.launch {
-                // 将图片复制到应用内部存储
+                // Copy image to app internal storage
                 val savedUri = saveImageToInternalStorage(context, uri)
                 
-                // 更新UI和数据库
+                // Update UI and database
                 selectedImageUri = savedUri
                 showProfilePhotoDialog = false // Close dialog after selecting
                 
-                // 保存URI到Room数据库
-                userDao.updateAvatar(0, savedUri.toString())
-                user = userDao.getUserByIdSync(0)
+                // Save URI to Room database
+                userDao.updateAvatar(firebaseUid, savedUri.toString())
+                user = userDao.getUserByFirebaseUidSync(firebaseUid)
                 
                 snackbarHostState.showSnackbar("Upload successful!")
             }
@@ -231,7 +255,7 @@ fun ProfileEditScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 56.dp) // 为底部导航栏留出空间
+                .padding(bottom = 56.dp) // Leave space for bottom navigation bar
         ) {
             // Top bar
             TopBar(onBackClick = onBackClick)
@@ -240,7 +264,7 @@ fun ProfileEditScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f) // 允许内容滚动
+                    .weight(1f) // Allow content to scroll
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp)
             ) {
@@ -312,13 +336,12 @@ fun ProfileEditScreen(
             }
         }
 
-        // 底部导航栏放在Box的底部，覆盖在Column之上
         BottomNavBar(
-            currentRoute = "profile", // 编辑页高亮Profile图标
+            currentRoute = "profile",
             onNavigateToHome = onNavigateToHome,
             onNavigateToCalendar = onNavigateToCalendar,
             onNavigateToMap = onNavigateToMap,
-            onNavigateToProfile = onNavigateToProfile, // 点击Profile图标返回ProfileScreen
+            onNavigateToProfile = onNavigateToProfile, // Click the Profile icon to return to the ProfileScreen
             modifier = Modifier.align(Alignment.BottomCenter)
         )
         // SnackbarHost to display snackbar messages
@@ -346,31 +369,34 @@ fun ProfileEditScreen(
             onDismiss = { showBasicInfoDialog = false },
             onSave = { name ->
                 nameValue = name
-                
-                // 保存到两个数据源
+
+                // Saving to two data sources
                 coroutineScope.launch {
-                    // 更新本地数据库 - 只更新名字，保留原有的邮箱
-                    userDao.updateBasicInfo(0, name, emailValue)
-                    user = userDao.getUserByIdSync(0)
-                    
-                    // 更新Firebase用户信息 - 只更新名字
-                    try {
-                        val firebaseUser = FirebaseAuth.getInstance().currentUser
-                        if (firebaseUser != null) {
-                            // 创建用户资料更新请求对象
-                            val profileUpdates = UserProfileChangeRequest.Builder()
-                                .setDisplayName(name)
-                                .build()
+                    // Update local database - only update the name, keep the original email address
+                    firebaseUid?.let { uid ->
+                        // Update the local database
+                        userDao.updateBasicInfo(uid, name, emailValue)
+                        user = userDao.getUserByFirebaseUidSync(uid)
+                        
+                        // Update Firebase user information - Update only the name
+                        try {
+                            val firebaseUser = FirebaseAuth.getInstance().currentUser
+                            if (firebaseUser != null) {
+                                // Create a user profile update request object
+                                val profileUpdates = UserProfileChangeRequest.Builder()
+                                    .setDisplayName(name)
+                                    .build()
+                                    
+                                // Performing Updates
+                                withContext(Dispatchers.IO) {
+                                    firebaseUser.updateProfile(profileUpdates).await()
+                                }
                                 
-                            // 执行更新
-                            withContext(Dispatchers.IO) {
-                                firebaseUser.updateProfile(profileUpdates).await()
+                                snackbarHostState.showSnackbar("Profile updated successfully!")
                             }
-                            
-                            snackbarHostState.showSnackbar("Profile updated successfully!")
+                        } catch (e: Exception) {
+                            snackbarHostState.showSnackbar("Failed to update profile: ${e.message}")
                         }
-                    } catch (e: Exception) {
-                        snackbarHostState.showSnackbar("Failed to update profile: ${e.message}")
                     }
                     
                     showBasicInfoDialog = false
@@ -388,11 +414,29 @@ fun ProfileEditScreen(
             onSave = { height, weight ->
                 heightValue = height
                 weightValue = weight
-                // 保存到数据库
+                // Saving to Firestore and local database
                 coroutineScope.launch {
-                    userDao.updateHeightWeight(0, height, weight)
-                    user = userDao.getUserByIdSync(0)
-                showHeightWeightDialog = false
+                    try {
+                        // First save to Firestore
+                        val success = firebaseUserRepository.updateHeightWeight(height, weight)
+                        
+                        if (success) {
+                            // If Firestore saves successfully, also update the local database to maintain consistency
+                            firebaseUid?.let { uid ->
+                                userDao.updateHeightWeight(uid, height, weight)
+                                user = userDao.getUserByFirebaseUidSync(uid)
+                            }
+
+                            snackbarHostState.showSnackbar("Height and weight updated successfully")
+                        } else {
+                            snackbarHostState.showSnackbar("Failed to update height and weight")
+                        }
+                    } catch (e: Exception) {
+                        Log.e("ProfileEditScreen", "Error updating height/weight: ${e.message}")
+                        snackbarHostState.showSnackbar("Error updating data: ${e.message}")
+                    } finally {
+                        showHeightWeightDialog = false
+                    }
                 }
             }
         )
@@ -407,11 +451,13 @@ fun ProfileEditScreen(
             iconTint = Color(0xFF10B981),
             onOptionSelected = { option ->
                 fitnessGoal = option
-                // 保存到数据库
+                // Save to database
                 coroutineScope.launch {
-                    userDao.updateFitnessGoal(0, option)
-                    user = userDao.getUserByIdSync(0)
-                showFitnessGoalDialog = false
+                    firebaseUid?.let { uid ->
+                        userDao.updateFitnessGoal(uid, option)
+                        user = userDao.getUserByFirebaseUidSync(uid)
+                        showFitnessGoalDialog = false
+                    }
                 }
             },
             onDismiss = { showFitnessGoalDialog = false }
@@ -427,11 +473,13 @@ fun ProfileEditScreen(
             iconTint = Color(0xFF9061F9),
             onOptionSelected = { option ->
                 workoutFrequency = option
-                // 保存到数据库
+                // Save to database
                 coroutineScope.launch {
-                    userDao.updateWorkoutFrequency(0, option)
-                    user = userDao.getUserByIdSync(0)
-                showWorkoutFrequencyDialog = false
+                    firebaseUid?.let { uid ->
+                        userDao.updateWorkoutFrequency(uid, option)
+                        user = userDao.getUserByFirebaseUidSync(uid)
+                        showWorkoutFrequencyDialog = false
+                    }
                 }
             },
             onDismiss = { showWorkoutFrequencyDialog = false }
@@ -447,12 +495,14 @@ fun ProfileEditScreen(
             iconTint = Color(0xFFFF6B00),
             onConfirm = { selected ->
                 selectedFitnessTags = selected
-                // 保存到数据库，将列表转换为逗号分隔的字符串
+                // Save to database, convert list to comma separated string
                 coroutineScope.launch {
-                    val tagsString = selected.joinToString(",")
-                    userDao.updateFitnessTags(0, tagsString)
-                    user = userDao.getUserByIdSync(0)
-                showFitnessTagsDialog = false
+                    firebaseUid?.let { uid ->
+                        val tagsString = selected.joinToString(",")
+                        userDao.updateFitnessTags(uid, tagsString)
+                        user = userDao.getUserByFirebaseUidSync(uid)
+                        showFitnessTagsDialog = false
+                    }
                 }
             },
             onDismiss = { 
@@ -1490,17 +1540,17 @@ private fun MultiSelectDialog(
     onConfirm: (List<String>) -> Unit,
     onDismiss: () -> Unit
 ) {
-    // 使用mutableStateListOf来创建可变状态列表以支持UI更新
+    // Use mutableStateListOf to create a mutable state list to support UI updates
     val tempSelected = remember { mutableStateListOf<String>() }
-    // 最大选择数量限制为2个
+    // The maximum number of selections is 2
     val maxSelections = 2
-    // 用于显示最大选择限制的消息
+    // A message to display the maximum selection limit
     var showMaxSelectionsMessage by remember { mutableStateOf(false) }
     
-    // 初始化选中项
+    // Initialize selected items
     LaunchedEffect(selectedOptions) {
         tempSelected.clear()
-        // 确保初始选择不超过最大限制
+        // Make sure the initial selection does not exceed the maximum limit
         tempSelected.addAll(selectedOptions.take(maxSelections))
     }
     
@@ -1525,14 +1575,14 @@ private fun MultiSelectDialog(
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
-                // 显示最大选择限制提示
+                // Show maximum selection limit hint
                 Text(
                     text = "Select up to ${maxSelections} tags",
                     fontSize = 14.sp,
                     color = Color(0xFF6B7280)
                 )
                 
-                // 如果显示选择限制消息，则显示提示
+                // If a selection restriction message is displayed, show a hint
                 if (showMaxSelectionsMessage) {
                     Text(
                         text = "You can select maximum ${maxSelections} tags",
@@ -1567,7 +1617,7 @@ private fun MultiSelectDialog(
                                             tempSelected.add(option)
                                             showMaxSelectionsMessage = false
                                         } else {
-                                            // 显示最大选择限制消息
+                                            // Display maximum selection limit message
                                             showMaxSelectionsMessage = true
                                         }
                                     }
@@ -1650,27 +1700,27 @@ private fun MultiSelectDialog(
     }
 }
 
-// 新增函数：保存图片到应用内部存储
+// New function: Save image to app internal storage
 private suspend fun saveImageToInternalStorage(context: Context, sourceUri: Uri): Uri = withContext(Dispatchers.IO) {
     try {
-        // 创建一个唯一文件名
+        // Create a unique filename
         val fileName = "profile_photo_${UUID.randomUUID()}.jpg"
         
-        // 创建目标文件
+        // Create target file
         val directory = File(context.filesDir, "profile_photos")
         if (!directory.exists()) {
             directory.mkdirs()
         }
         val destinationFile = File(directory, fileName)
         
-        // 从URI获取输入流并创建输出流
+        // Get input stream from URI and create output stream
         val inputStream = context.contentResolver.openInputStream(sourceUri)
         val outputStream = FileOutputStream(destinationFile)
         
-        // 复制文件
+        // Copy file
         inputStream?.use { input ->
             outputStream.use { output ->
-                val buffer = ByteArray(4 * 1024) // 4KB缓冲区
+                val buffer = ByteArray(4 * 1024) // 4KB buffer
                 var read: Int
                 while (input.read(buffer).also { read = it } != -1) {
                     output.write(buffer, 0, read)
@@ -1679,11 +1729,11 @@ private suspend fun saveImageToInternalStorage(context: Context, sourceUri: Uri)
             }
         }
         
-        // 创建并返回一个指向内部存储文件的URI
+        // Create and return URI pointing to internal storage file
         Uri.fromFile(destinationFile)
     } catch (e: Exception) {
         e.printStackTrace()
-        // 如果出现错误，返回原始URI
+        // If error occurs, return original URI
         sourceUri
     }
 } 

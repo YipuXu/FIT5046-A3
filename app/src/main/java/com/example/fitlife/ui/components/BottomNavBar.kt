@@ -31,11 +31,11 @@ fun BottomNavBar(
     onNavigateToProfile: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // 添加顶部边框的容器
+    // Container for the top border
     Box(
         modifier = modifier.fillMaxWidth()
     ) {
-        // 顶部边框线
+        // Top border line
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -45,11 +45,11 @@ fun BottomNavBar(
                 .zIndex(1f)
         )
         
-        // 导航栏
+        // Navigation bar
         NavigationBar(
             modifier = Modifier.fillMaxWidth(),
             containerColor = Color.White,
-            tonalElevation = 0.dp // 移除阴影，使用边框线代替
+            tonalElevation = 0.dp // Remove shadow, use border line instead
         ) {
             BottomNavItem(
                 icon = Icons.Default.Home,

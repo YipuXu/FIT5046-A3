@@ -44,8 +44,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import androidx.compose.runtime.saveable.rememberSaveable
 import kotlinx.coroutines.CoroutineScope
+import android.content.Context
 
-// 密码验证状态数据类，与RegisterScreen相同
+// Password verification status data class, same as RegisterScreen
 data class PasswordValidationState(
     val hasMinLength: Boolean = false,
     val hasUppercase: Boolean = false,
@@ -57,7 +58,7 @@ data class PasswordValidationState(
         get() = hasMinLength && hasUppercase && hasLowercase && hasNumber && hasSpecialChar
 }
 
-// 密码验证函数，与RegisterScreen相同
+// Password verification function, same as RegisterScreen
 fun validatePassword(password: String): PasswordValidationState {
     return PasswordValidationState(
         hasMinLength = password.length >= 12,
@@ -79,7 +80,7 @@ sealed class PasswordChangeState {
 fun ChangePasswordScreen(
     onBackClick: () -> Unit = {},
     onChangePassword: (current: String, new: String) -> Unit = { _, _ -> },
-    onLogout: () -> Unit = {}  // 添加登出回调函数
+    onLogout: (Context) -> Unit = {}  // Modify the logout callback function to receive the Context parameter
 ) {
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
@@ -87,12 +88,12 @@ fun ChangePasswordScreen(
     var passwordError by remember { mutableStateOf<String?>(null) }
     var passwordChangeState by remember { mutableStateOf<PasswordChangeState>(PasswordChangeState.Initial) }
     
-    // 密码可视性控制
+    // Password visibility control
     var currentPasswordVisible by rememberSaveable { mutableStateOf(false) }
     var newPasswordVisible by rememberSaveable { mutableStateOf(false) }
     var confirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
     
-    // 密码验证状态
+    // Password verification status
     var newPasswordValidationState by remember { mutableStateOf(PasswordValidationState()) }
     var showPasswordCriteria by remember { mutableStateOf(false) }
     
@@ -100,31 +101,31 @@ fun ChangePasswordScreen(
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
     
-    // 监视密码更改状态，当成功时显示Toast并延迟登出
+    // Monitor password change state, show Toast and delay logout when successful
     LaunchedEffect(passwordChangeState) {
         if (passwordChangeState is PasswordChangeState.Success) {
-            // 显示Toast消息
+            // Show Toast message
             Toast.makeText(
                 context,
                 "Password changed successfully!",
                 Toast.LENGTH_SHORT
             ).show()
             
-            // 延迟2秒后登出
+            // Logout after 2 seconds delay
             delay(2000)
             
-            // 执行登出操作
+            // Execute logout operation
             try {
                 FirebaseAuth.getInstance().signOut()
                 Log.d("ChangePasswordScreen", "User logged out successfully")
                 
-                // 调用登出回调函数，处理UI导航
-                onLogout()
+                // Call logout callback function, handle UI navigation, and pass context
+                onLogout(context)
             } catch (e: Exception) {
                 Log.e("ChangePasswordScreen", "Error during logout: ${e.message}")
                 
-                // 即使发生错误也尝试执行登出回调
-                onLogout()
+                // Try to execute logout callback even if error occurs
+                onLogout(context)
             }
         }
     }
@@ -237,7 +238,7 @@ fun ChangePasswordScreen(
                     )
                 )
                 
-                // 显示密码验证标准
+                // Display password validation criteria
                 if (showPasswordCriteria) {
                     PasswordCriteriaView(newPasswordValidationState)
                 }
@@ -291,7 +292,7 @@ fun ChangePasswordScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 显示密码修改状态 - 只保留错误消息，成功消息改为Toast
+            // Show password change state - only keep error message, success message changed to Toast
             if (passwordChangeState is PasswordChangeState.Error) {
                 Text(
                     text = (passwordChangeState as PasswordChangeState.Error).message,
@@ -312,7 +313,7 @@ fun ChangePasswordScreen(
                         passwordError = "New passwords do not match"
                     } else {
                         passwordError = null
-                        // 使用Firebase Auth更新密码
+                        // Update password using Firebase Auth
                         updatePasswordWithFirebase(
                             coroutineScope = coroutineScope,
                             currentPassword = currentPassword,
@@ -350,7 +351,7 @@ fun ChangePasswordScreen(
     }
 }
 
-// 使用Firebase Auth更新密码
+// Update password using Firebase Auth
 private fun updatePasswordWithFirebase(
     coroutineScope: CoroutineScope,
     currentPassword: String,
@@ -363,14 +364,14 @@ private fun updatePasswordWithFirebase(
             val user = FirebaseAuth.getInstance().currentUser
             
             if (user != null && user.email != null) {
-                // 重新验证用户身份
+                // Reauthenticate user
                 val credential = EmailAuthProvider.getCredential(user.email!!, currentPassword)
                 
                 try {
-                    // 重新验证用户
+                    // Reauthenticate user
                     user.reauthenticate(credential).await()
                     
-                    // 更新密码
+                    // Update Password
                     user.updatePassword(newPassword).await()
                     
                     onStateChange(PasswordChangeState.Success)

@@ -7,7 +7,7 @@ FitLife is a mobile fitness management application designed to help users track 
 FitLife offers the following core features:
 
 - **User Authentication**: Secure registration and login process.
-- **Home**: The app's starting page, providing quick access to common features like recording workouts, viewing exercise recommendations, and music playback.
+- **Home**: The app's starting page, providing quick access to common features like showing dashboard, editing profile, recording workouts, viewing exercise recommendations, and music playback.
 - **Map**: Integrates with Google Maps to show nearby fitness places, distinguished by color markers. Supports filtering by place type and searching based on the user's current location or a specified location (like Monash Clayton campus). Displays real photos and ratings of places.
 - **Fitness Calendar**: View and manage fitness plans. Users can add, view, and delete fitness events on specific dates. Supports calendar integration.
 - **Record Workout**: Detailed recording of each workout session, including type, duration, date, time, intensity, and notes. Supports quickly creating records from calendar plans and estimating calories burned.

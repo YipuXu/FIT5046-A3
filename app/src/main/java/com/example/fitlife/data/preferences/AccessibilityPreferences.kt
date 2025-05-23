@@ -9,16 +9,15 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-// 扩展Context类添加DataStore
+// Extend the Context class to add DataStore
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "accessibility_settings")
 
-/**
- * 辅助功能设置管理类
- * 用于存储和检索用户的辅助功能偏好
+/***
+ * Accessibility settings manager class
+ * Used to store and retrieve user accessibility preferences
  */
 class AccessibilityPreferences(private val context: Context) {
 
-    // 定义设置键
     companion object {
         val HIGH_CONTRAST_MODE = booleanPreferencesKey("high_contrast_mode")
         val COLOR_BLIND_MODE = booleanPreferencesKey("color_blind_mode")
@@ -27,65 +26,65 @@ class AccessibilityPreferences(private val context: Context) {
         val KEYBOARD_CONTROL = booleanPreferencesKey("keyboard_control")
     }
 
-    // 高对比度模式
+    // High contrast mode
     val highContrastMode: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
             preferences[HIGH_CONTRAST_MODE] ?: false
         }
 
-    // 色盲模式
+    // Colorblind mode
     val colorBlindMode: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
             preferences[COLOR_BLIND_MODE] ?: false
         }
 
-    // 缩放功能
+    // Zoom function
     val zoomFunction: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
             preferences[ZOOM_FUNCTION] ?: false
         }
 
-    // 屏幕阅读器
+    // Screen readers
     val screenReader: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
             preferences[SCREEN_READER] ?: false
         }
 
-    // 键盘控制
+    // Keyboard Control
     val keyboardControl: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
             preferences[KEYBOARD_CONTROL] ?: false
         }
 
-    // 保存高对比度模式设置
+    // Save high contrast mode settings
     suspend fun saveHighContrastMode(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[HIGH_CONTRAST_MODE] = enabled
         }
     }
 
-    // 保存色盲模式设置
+    // Save colorblind mode settings
     suspend fun saveColorBlindMode(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[COLOR_BLIND_MODE] = enabled
         }
     }
 
-    // 保存缩放功能设置
+    // Save zoom settings
     suspend fun saveZoomFunction(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[ZOOM_FUNCTION] = enabled
         }
     }
 
-    // 保存屏幕阅读器设置
+    // Save screen reader settings
     suspend fun saveScreenReader(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[SCREEN_READER] = enabled
         }
     }
 
-    // 保存键盘控制设置
+    // Save keyboard control settings
     suspend fun saveKeyboardControl(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[KEYBOARD_CONTROL] = enabled

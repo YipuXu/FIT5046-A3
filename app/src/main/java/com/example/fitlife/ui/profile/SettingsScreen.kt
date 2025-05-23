@@ -33,11 +33,13 @@ import com.example.fitlife.ui.theme.AccessibilityUtils
 import com.example.fitlife.ui.components.AccessibleHeading
 import com.example.fitlife.ui.components.AccessibleButton
 import com.example.fitlife.ui.theme.AccessibilityUtils.highContrastBorder
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun SettingsScreen(
     onBackClick: () -> Unit = {},
-    onLogout: () -> Unit = {},
+    onLogout: (Context) -> Unit = {},
     onProfileClick: () -> Unit = {},
     onAboutUsClick: () -> Unit = {},
     onHelpFeedbackClick: () -> Unit = {},
@@ -47,6 +49,7 @@ fun SettingsScreen(
     onAccessibilityClick: () -> Unit = {}
 ) {
     val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
+    val context = LocalContext.current
     
     Box(
         modifier = Modifier
@@ -110,7 +113,7 @@ fun SettingsScreen(
                 
                 // Change password
                 SettingsItemUnified(
-                    icon = R.drawable.profile_photo, // 替换为实际的锁图标
+                    icon = R.drawable.profile_photo, // Replace with actual lock icon
                     title = "Change Password",
                     onClick = onChangePasswordClick,
                     useVectorIcon = true,
@@ -123,7 +126,7 @@ fun SettingsScreen(
                 
                 // Accessibility
                 SettingsItemUnified(
-                    icon = R.drawable.profile_photo, // 占位图标
+                    icon = R.drawable.profile_photo, // Placeholder icon
                     title = "Accessibility",
                     onClick = onAccessibilityClick,
                     useVectorIcon = true,
@@ -166,7 +169,7 @@ fun SettingsScreen(
                     .padding(16.dp)
             ) {
                 Button(
-                    onClick = onLogout,
+                    onClick = { onLogout(context) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)

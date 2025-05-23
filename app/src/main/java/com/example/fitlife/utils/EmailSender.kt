@@ -17,11 +17,11 @@ class EmailSender {
         private const val TAG = "EmailSender"
 
         /**
-         * 使用SendGrid API在后台发送反馈邮件
-         * @param context 上下文
-         * @param feedback 用户反馈内容
-         * @param onSuccess 发送成功回调
-         * @param onError 发送失败回调
+         * Use SendGrid API to send feedback emails in the background
+         * @param context context
+         * @param feedback user feedback content
+         * @param onSuccess send success callback
+         * @param onError send failure callback
          */
         suspend fun sendFeedbackEmail(
             context: Context, 

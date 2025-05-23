@@ -308,11 +308,11 @@ fun RegisterScreen(
                         .fillMaxWidth()
                         .padding(bottom = 24.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween // 两端对齐
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.offset(x = (-12).dp) // 通过负偏移量去除 Checkbox 左侧的默认空白
+                        modifier = Modifier.offset(x = (-12).dp) // Remove the default whitespace on the left side of the Checkbox with a negative offset
                     ) {
                     Checkbox(
                         checked = agreeToTerms,
@@ -375,7 +375,7 @@ fun RegisterScreen(
                                 auth.createUserWithEmailAndPassword(email, password)
                                     .addOnCompleteListener { task ->
                                         if (task.isSuccessful) {
-                                            // 注册成功后，设置用户的显示名称
+                                            // After successful registration, set the user's display name
                                             val user = auth.currentUser
                                             val profileUpdates = UserProfileChangeRequest.Builder()
                                                 .setDisplayName(fullName)
@@ -385,23 +385,23 @@ fun RegisterScreen(
                                                 ?.addOnCompleteListener { profileTask ->
                                                     isLoading = false
                                                     if (profileTask.isSuccessful) {
-                                                        // 用户信息更新成功
+                                                        // User information updated successfully
                                                         Log.d("RegisterScreen", "User profile updated with name: $fullName")
                                                         Toast.makeText(
                                                             context, 
                                                             "Registered Successfully!",
                                                             Toast.LENGTH_SHORT
                                                         ).show()
-                                                        // 跳转到登录页面
+                                                        // Jump to the login page
                                                         onNavigateToLogin()
                                                     } else {
-                                                        // 用户信息更新失败
+                                                        // User information update failed
                                                         Log.w("RegisterScreen", "Failed to update user profile", profileTask.exception)
                                                         errorMessage = "Registration successful but failed to save user name."
                                                     }
                                                 }
                                         } else {
-                                            // 注册失败
+                                            // Registration failed
                                             isLoading = false
                                             Log.w("RegisterScreen", "createUserWithEmail:failure", task.exception)
                                             errorMessage = task.exception?.message ?: "Registration failed."

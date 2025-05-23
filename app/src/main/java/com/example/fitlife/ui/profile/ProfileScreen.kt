@@ -42,10 +42,6 @@ import com.example.fitlife.MyApplication
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import com.example.fitlife.data.model.Workout
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import android.net.Uri
 import coil.compose.AsyncImage
 import com.example.fitlife.data.model.User
@@ -57,6 +53,10 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import com.example.fitlife.data.repository.FirebaseUserRepository
+import android.util.Log
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,35 +77,87 @@ fun ProfileScreen(
     val userDao = remember { (context.applicationContext as MyApplication).database.userDao() }
     val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
     
-    // 创建Firebase用户仓库
+    // Create Firebase user repository
     val firebaseUserRepository = remember { FirebaseUserRepository() }
     
-    // 获取Firebase当前用户信息
+    // Get Firebase current user information
     val firebaseUser by firebaseUserRepository.currentUser.collectAsState()
     val firebaseDisplayName = firebaseUser?.displayName
+    val firebaseUid = firebaseUser?.uid
     
-    // 从数据库获取用户信息
-    val userFlow = remember { userDao.getUserById(0) }
-    val user by userFlow.collectAsState(initial = null)
+    // User data state - keep variable as it's used elsewhere
+    var user by remember { mutableStateOf<User?>(null) }
     
-    // 从数据库获取最近的锻炼记录
-    val latestWorkouts by workoutDao.getLatestTwoWorkouts().collectAsState(initial = emptyList())
+    // Get or create user data based on Firebase UID
+    LaunchedEffect(firebaseUid) {
+        if (firebaseUid != null) {
+            try {
+                // Try to get user data
+                val existingUser = userDao.getUserByFirebaseUidSync(firebaseUid)
+                
+                if (existingUser == null) {
+                    // User doesn't exist, create new user
+                    val newUser = User(
+                        firebaseUid = firebaseUid,
+                        name = firebaseDisplayName ?: "User",
+                        email = firebaseUser?.email ?: "user@example.com"
+                    )
+                    userDao.insertUser(newUser)
+                    user = newUser
+                    Log.d("ProfileScreen", "Created new user record for UID: $firebaseUid")
+                } else {
+                    // User exists, use existing data
+                    user = existingUser
+                    Log.d("ProfileScreen", "Found existing user record for UID: $firebaseUid")
+                }
+            } catch (e: Exception) {
+                Log.e("ProfileScreen", "Error getting user data: ${e.message}")
+            }
+        }
+    }
     
-    // 获取不同日期的健身记录数量
-    val workoutDaysCount by workoutDao.getUniqueWorkoutDaysCount().collectAsState(initial = 0)
+    // Get recent workout records from database
+    val latestWorkouts by remember(firebaseUid) {
+        if (firebaseUid != null) {
+            workoutDao.getLatestTwoWorkouts(firebaseUid)
+        } else {
+            workoutDao.getLatestTwoWorkouts()
+        }
+    }.collectAsState(initial = emptyList())
     
-    // 获取所有训练记录的数量
-    val totalWorkoutsCount by workoutDao.getAllOrderByDateDesc().collectAsState(initial = emptyList())
+    // Get count of unique workout dates
+    val workoutDaysCount by remember(firebaseUid) {
+        if (firebaseUid != null) {
+            workoutDao.getUniqueWorkoutDaysCount(firebaseUid)
+        } else {
+            workoutDao.getUniqueWorkoutDaysCount()
+        }
+    }.collectAsState(initial = 0)
     
-    // 获取所有训练日期并计算连续天数
-    val allWorkoutDates by workoutDao.getAllWorkoutDatesDesc().collectAsState(initial = emptyList())
+    // Get count of all workout records
+    val totalWorkoutsCount by remember(firebaseUid) {
+        if (firebaseUid != null) {
+            workoutDao.getAllOrderByDateDesc(firebaseUid)
+        } else {
+            workoutDao.getAllOrderByDateDesc()
+        }
+    }.collectAsState(initial = emptyList())
+    
+    // Get all workout dates and calculate streak days
+    val allWorkoutDates by remember(firebaseUid) {
+        if (firebaseUid != null) {
+            workoutDao.getAllWorkoutDatesDesc(firebaseUid)
+        } else {
+            workoutDao.getAllWorkoutDatesDesc()
+        }
+    }.collectAsState(initial = emptyList())
     val streakDays = remember(allWorkoutDates) {
         calculateStreakDays(allWorkoutDates)
     }
 
-    // 计算健身标签列表（从逗号分隔的字符串转换为列表）
+    // Calculate fitness tags list (convert from comma-separated string to list)
     val fitnessTags = remember(user) {
-        user?.fitnessTags?.split(",") ?: listOf("Strength Training", "Cardio")
+        user?.fitnessTags?.split(",")?.filter { it.isNotEmpty() } ?: listOf("Strength Training", "Cardio")
     }
 
     // State for the workout detail dialog
@@ -121,7 +173,7 @@ fun ProfileScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // 个人资料内容
+            // Profile content
             ProfileContent(
                 onViewAllHistory = onViewAllHistory,
                 onEditProfileClick = { onEditProfileClick(fitnessTags) },
@@ -141,7 +193,7 @@ fun ProfileScreen(
             )
         }
         
-        // 底部导航
+        // Bottom navigation
         BottomNavBar(
             currentRoute = "profile",
             onNavigateToHome = onNavigateToHome,
@@ -165,7 +217,7 @@ fun ProfileScreen(
             },
             text = {
                 Column {
-                    // 使用AccessibleText组件
+                    // Use AccessibleText component
                     val baseStyle = MaterialTheme.typography.bodyMedium
                     
                     AccessibilityUtils.AccessibleText(
@@ -233,12 +285,12 @@ fun ProfileScreen(
     }
 }
 
-// 计算连续训练天数的函数
+// Calculate consecutive training days
 private fun calculateStreakDays(dates: List<String>): Int {
     if (dates.isEmpty()) return 0
     
     try {
-        // 使用SimpleDateFormat而不是DateTimeFormatter，以支持API Level 24
+        // Use SimpleDateFormat instead of DateTimeFormatter to support API Level 24
         val simpleDateFormat = java.text.SimpleDateFormat("yyyy-MM-dd")
         val validDates = mutableListOf<java.util.Date>()
         
@@ -248,36 +300,36 @@ private fun calculateStreakDays(dates: List<String>): Int {
                     validDates.add(simpleDateFormat.parse(dateStr))
                 }
             } catch (e: Exception) {
-                // 忽略无法解析的日期
+                // Ignore unparseable dates
                 continue
             }
         }
         
         if (validDates.isEmpty()) return 0
         
-        // 按日期降序排序（最新日期在前）
+        // Sort dates in descending order (latest date first)
         val sortedDates = validDates.sortedDescending()
         
-        // 从最新的日期开始检查连续天数
+        // Start checking streak from the latest date
         var currentStreak = 1
         var previousDate = sortedDates[0]
         
         for (i in 1 until sortedDates.size) {
             val currentDate = sortedDates[i]
             
-            // 计算两个日期相差的毫秒数
+            // Calculate the difference in milliseconds between two dates
             val diffInMillis = previousDate.time - currentDate.time
-            // 一天的毫秒数
+            // Milliseconds in a day
             val dayInMillis = 24 * 60 * 60 * 1000L
-            // 计算相差的天数
+            // Calculate the difference in days
             val daysBetween = diffInMillis / dayInMillis
             
             if (daysBetween == 1L) {
-                // 两个日期相差1天，连续
+                // Two dates are 1 day apart, consecutive
                 currentStreak++
                 previousDate = currentDate
             } else {
-                // 连续中断
+                // Streak interrupted
                 break
             }
         }
@@ -309,33 +361,33 @@ private fun ProfileContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 80.dp) // 为底部导航栏留出空间
+            .padding(bottom = 80.dp) // Leave space for bottom navigation bar
     ) {
-        // 顶部栏 (标题和设置按钮)
+        // Top bar (title and settings button)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 添加左侧Spacer以平衡右侧设置按钮
+            // Add left Spacer to balance right settings button
             Spacer(modifier = Modifier.width(32.dp))
 
-            // 标题
+            // Title
             Text(
                 text = "Profile",
                 fontSize = 18.sp, 
                 fontWeight = if (isHighContrastMode) FontWeight.ExtraBold else FontWeight.Bold,
                 modifier = Modifier
-                    .weight(1f), // 占据中间可用空间
-                textAlign = TextAlign.Center, // 文本在其空间内居中
+                    .weight(1f), // Take up available space
+                textAlign = TextAlign.Center, // Text centered within space
                 color = if (isHighContrastMode) Color.Black else Color(0xFF1F2937)
             )
 
-            // 设置按钮
+            // Settings button
             Box(
                 modifier = Modifier
-                    .size(32.dp) // 保持尺寸与左侧Spacer一致
+                    .size(32.dp) // Keep size consistent with left Spacer
                     .clip(CircleShape)
                     .background(if (isHighContrastMode) Color.Black else Color(0xFFF3F4F6))
                     .clickable { onSettingsClick() },
@@ -350,7 +402,7 @@ private fun ProfileContent(
             }
         }
         
-        // 用户信息卡片
+        // User info card
         UserInfoCard(
             onEditClick = onEditProfileClick,
             fitnessTags = selectedFitnessTags,
@@ -362,17 +414,17 @@ private fun ProfileContent(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        // 最近记录部分
+        // Recent records section
         RecentHistorySection(
             onViewAll = onViewAllHistory,
             latestWorkouts = latestWorkouts,
             onWorkoutClick = onWorkoutClick
         )
 
-        // AI教练部分
+        // AI coach section
         AICoachSection(onStartChat = onAICoachClick)
 
-        // 占位符 - 修复weight()调用问题
+        // Placeholder - Fix weight() call issue
         Spacer(
             modifier = Modifier
                 .fillMaxWidth()
@@ -392,20 +444,20 @@ private fun UserInfoCard(
     streakDays: Int = 0,
     modifier: Modifier = Modifier
 ) {
-    // 优先使用Firebase的displayName，如果为空则使用数据库中的用户名，再没有则使用默认名
+    // Prefer Firebase's displayName, if empty use database user name, then default
     val username = firebaseDisplayName ?: user?.name ?: "Xiao Ming"
     val context = LocalContext.current
     
-    // 修改头像URI的处理方式
+    // Modify avatar URI handling
     val avatarUri = remember(user) {
         user?.avatarUri?.let { uriString ->
             try {
-                // 尝试解析URI
+                // Try to parse URI
                 val uri = Uri.parse(uriString)
                 
-                // 检查URI是否指向内部存储
+                // Check if URI points to internal storage
                 if (uri.scheme == "file" && uri.path?.contains(context.filesDir.path) == true) {
-                    // 检查文件是否存在
+                    // Check if file exists
                     val file = File(uri.path!!)
                     if (file.exists()) {
                         uri
@@ -413,7 +465,7 @@ private fun UserInfoCard(
                         null
                     }
                 } else {
-                    // 对于content://或其他URI，直接返回
+                    // For content:// or other URIs, return directly
                     uri
                 }
             } catch (e: Exception) {
@@ -449,7 +501,7 @@ private fun UserInfoCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Avatar - 使用AsyncImage加载从数据库获取的头像
+                // Avatar - Use AsyncImage to load avatar from database
                 Box(
                     modifier = Modifier
                         .size(80.dp)
@@ -538,7 +590,7 @@ private fun UserInfoCard(
                     // Fitness tags below username and edit button
                     if (fitnessTags.isNotEmpty()) {
                         LazyRow(
-                            modifier = Modifier.padding(top = 4.dp),
+                            modifier = Modifier.padding(top = 2.dp),
                             horizontalArrangement = Arrangement.Start,
                             contentPadding = PaddingValues(end = 8.dp)
                         ) {
@@ -580,7 +632,7 @@ private fun UserInfoCard(
                         )
                 )
                 
-                // 连续天数 - 使用计算的值
+                // Streak days - Use calculated value
                 StatItem(
                     count = streakDays.toString(), 
                     label = "Streak Days",
@@ -601,7 +653,7 @@ private fun UserInfoCard(
                         )
                 )
                 
-                // 完成训练的数量
+                // Count of completed workouts
                 StatItem(
                     count = totalWorkoutsCount.toString(), 
                     label = "Trainings Done",
@@ -711,7 +763,7 @@ private fun RecentHistorySection(onViewAll: () -> Unit, latestWorkouts: List<Wor
 
         // History records list - each record as a separate card
         latestWorkouts.forEach { workout ->
-            // 使用自定义卡片而不是AccessibleCard，以确保背景始终为白色
+            // Use custom card instead of AccessibleCard to ensure background is always white
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -725,7 +777,7 @@ private fun RecentHistorySection(onViewAll: () -> Unit, latestWorkouts: List<Wor
                     },
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                    containerColor = Color.White // 确保背景始终为白色
+                    containerColor = Color.White // Ensure background is always white
             ),
             elevation = CardDefaults.cardElevation(
                     defaultElevation = if (isHighContrastMode) 4.dp else 0.dp
@@ -733,7 +785,7 @@ private fun RecentHistorySection(onViewAll: () -> Unit, latestWorkouts: List<Wor
                 onClick = { onWorkoutClick(workout) }
         ) {
             HistoryItem(
-                    icon = R.drawable.ic_workout, // 使用默认图标
+                    icon = R.drawable.ic_workout, // Use default icon
                     title = workout.type,
                     time = "${workout.date} · ${workout.duration} min",
                     calories = "${workout.calories} kcal",
@@ -876,13 +928,13 @@ private fun HistoryItem(
                 text = title,
                 fontSize = 16.sp,
                 fontWeight = if (isHighContrastMode) FontWeight.Bold else FontWeight.Medium,
-                color = Color.Black // 确保始终使用黑色文字以获得最大对比度
+                color = Color.Black // Ensure always use black text for maximum contrast
             )
 
             Text(
                 text = "$time · $calories",
                 fontSize = 14.sp,
-                color = Color.Black, // 确保始终使用黑色文字以获得最大对比度
+                color = Color.Black, // Ensure always use black text for maximum contrast
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
