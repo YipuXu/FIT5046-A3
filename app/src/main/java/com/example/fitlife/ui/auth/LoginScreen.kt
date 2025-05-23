@@ -69,7 +69,7 @@ fun LoginScreen(
     
     var email by remember { mutableStateOf(savedEmail) }
     var password by remember { mutableStateOf("") }
-    var rememberMe by remember { mutableStateOf(savedEmail.isNotEmpty()) } // 如果有保存的邮箱，默认勾选"记住我"
+    var rememberMe by remember { mutableStateOf(savedEmail.isNotEmpty()) } // If there is a saved email, "Remember me" is checked by default
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     
@@ -298,7 +298,7 @@ fun LoginScreen(
                         .fillMaxWidth()
                         .padding(bottom = 24.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween // 两端对齐
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     // Left: Remember Me option
                     Row(
@@ -383,17 +383,17 @@ fun LoginScreen(
                                         isLoading = false
                                         if (task.isSuccessful) {
                                             Log.d("LoginScreen", "signInWithEmail:success")
-                                            // 登录成功后刷新用户信息
+                                            // Refresh user information after successful login
                                             coroutineScope.launch(Dispatchers.IO) {
                                                 try {
-                                                    // 刷新Firebase用户信息
+                                                    // Refresh Firebase user information
                                                     firebaseUserRepository.refreshCurrentUser()
                                                     
-                                                    // 获取最新的用户UID并记录到日志
+                                                    // Get the latest user UID and record it in the log
                                                     val uid = firebaseUserRepository.getCurrentUserId()
                                                     Log.d("LoginScreen", "User logged in with UID: $uid")
                                                     
-                                                    // 成功刷新后通知登录成功
+                                                    // After successful refresh, the login is successful.
                                                     withContext(Dispatchers.Main) {
                                                         Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
                                                         onLoginSuccess()
@@ -542,7 +542,7 @@ private fun firebaseAuthWithGoogle(
             auth.signInWithCredential(credential).await()
             Log.d("LoginScreen", "Firebase signInWithCredential success")
             
-            // 刷新Firebase用户信息
+            // Refresh Firebase user information
             try {
                 firebaseUserRepository.refreshCurrentUser()
                 val uid = firebaseUserRepository.getCurrentUserId()
