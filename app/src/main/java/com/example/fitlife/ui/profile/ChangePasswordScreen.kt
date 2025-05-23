@@ -101,30 +101,30 @@ fun ChangePasswordScreen(
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
     
-    // 监视密码更改状态，当成功时显示Toast并延迟登出
+    // Monitor password change state, show Toast and delay logout when successful
     LaunchedEffect(passwordChangeState) {
         if (passwordChangeState is PasswordChangeState.Success) {
-            // 显示Toast消息
+            // Show Toast message
             Toast.makeText(
                 context,
                 "Password changed successfully!",
                 Toast.LENGTH_SHORT
             ).show()
             
-            // 延迟2秒后登出
+            // Logout after 2 seconds delay
             delay(2000)
             
-            // 执行登出操作
+            // Execute logout operation
             try {
                 FirebaseAuth.getInstance().signOut()
                 Log.d("ChangePasswordScreen", "User logged out successfully")
                 
-                // 调用登出回调函数，处理UI导航，并传入context
+                // Call logout callback function, handle UI navigation, and pass context
                 onLogout(context)
             } catch (e: Exception) {
                 Log.e("ChangePasswordScreen", "Error during logout: ${e.message}")
                 
-                // 即使发生错误也尝试执行登出回调
+                // Try to execute logout callback even if error occurs
                 onLogout(context)
             }
         }
@@ -238,7 +238,7 @@ fun ChangePasswordScreen(
                     )
                 )
                 
-                // 显示密码验证标准
+                // Display password validation criteria
                 if (showPasswordCriteria) {
                     PasswordCriteriaView(newPasswordValidationState)
                 }
@@ -292,7 +292,7 @@ fun ChangePasswordScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 显示密码修改状态 - 只保留错误消息，成功消息改为Toast
+            // Show password change state - only keep error message, success message changed to Toast
             if (passwordChangeState is PasswordChangeState.Error) {
                 Text(
                     text = (passwordChangeState as PasswordChangeState.Error).message,

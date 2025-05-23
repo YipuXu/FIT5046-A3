@@ -107,24 +107,24 @@ fun ProfileEditScreen(
     var showWorkoutFrequencyDialog by remember { mutableStateOf(false) }
     var showFitnessTagsDialog by remember { mutableStateOf(false) }
     
-    // 获取数据库实例
+    // Get database instance
     val userDao = remember { (context.applicationContext as MyApplication).database.userDao() }
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     
-    // 创建Firebase用户仓库
+    // Create Firebase user repository
     val firebaseUserRepository = remember { FirebaseUserRepository() }
     
-    // 获取Firebase当前用户信息
+    // Get Firebase current user information
     val firebaseUser by firebaseUserRepository.currentUser.collectAsState()
     val firebaseDisplayName = firebaseUser?.displayName
     val firebaseEmail = firebaseUser?.email
     val firebaseUid = firebaseUser?.uid
     
-    // 从数据库获取用户信息
+    // Get user information from database
     var user by remember { mutableStateOf<User?>(null) }
     
-    // 动态状态，基于用户对象
+    // Dynamic states based on user object
     var nameValue by remember { mutableStateOf("") } 
     var emailValue by remember { mutableStateOf("") }
     var heightValue by remember { mutableStateOf("178") }
@@ -134,15 +134,15 @@ fun ProfileEditScreen(
     var selectedFitnessTags by remember { mutableStateOf(initialFitnessTags) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     
-    // 根据Firebase UID获取或创建用户数据
+    // Get or create user data based on Firebase UID
     LaunchedEffect(firebaseUid) {
         if (firebaseUid != null) {
             try {
-                // 尝试获取用户数据
+                // Try to get user data
                 val existingUser = userDao.getUserByFirebaseUidSync(firebaseUid)
                 
                 if (existingUser == null) {
-                    // 用户不存在，创建新用户
+                    // User doesn't exist, create new user
                     val newUser = User(
                         firebaseUid = firebaseUid,
                         name = firebaseDisplayName ?: "User",
@@ -152,12 +152,12 @@ fun ProfileEditScreen(
                     user = newUser
                     Log.d("ProfileEditScreen", "Created new user record for UID: $firebaseUid")
                 } else {
-                    // 用户存在，使用现有数据
+                    // User exists, use existing data
                     user = existingUser
                     Log.d("ProfileEditScreen", "Found existing user record for UID: $firebaseUid")
                 }
                 
-                // 更新状态值
+                // Update state values
                 user?.let { loadedUser ->
                     nameValue = firebaseDisplayName ?: loadedUser.name
                     emailValue = firebaseEmail ?: loadedUser.email
@@ -167,18 +167,18 @@ fun ProfileEditScreen(
                     selectedImageUri = loadedUser.avatarUri?.let { Uri.parse(it) }
                 }
                 
-                // 从Firestore获取身高体重数据
+                // Get height and weight data from Firestore
                 val heightWeight = firebaseUserRepository.getHeightWeight()
                 if (heightWeight != null) {
                     heightValue = heightWeight.first
                     weightValue = heightWeight.second
                     Log.d("ProfileEditScreen", "Height/weight loaded from Firestore: $heightValue/$weightValue")
                 } else {
-                    // 如果Firestore没有数据，使用Room的默认值或写入Firestore
+                    // If Firestore has no data, use Room default values or write to Firestore
                     user?.let { loadedUser ->
                         heightValue = loadedUser.height
                         weightValue = loadedUser.weight
-                        // 将Room中的数据同步到Firestore
+                        // Sync Room data to Firestore
                         firebaseUserRepository.updateHeightWeight(heightValue, weightValue)
                         Log.d("ProfileEditScreen", "Synced height/weight to Firestore: $heightValue/$weightValue")
                     }
@@ -194,14 +194,14 @@ fun ProfileEditScreen(
         uri: Uri? ->
         if (uri != null && firebaseUid != null) {
             coroutineScope.launch {
-                // 将图片复制到应用内部存储
+                // Copy image to app internal storage
                 val savedUri = saveImageToInternalStorage(context, uri)
                 
-                // 更新UI和数据库
+                // Update UI and database
                 selectedImageUri = savedUri
                 showProfilePhotoDialog = false // Close dialog after selecting
                 
-                // 保存URI到Room数据库
+                // Save URI to Room database
                 userDao.updateAvatar(firebaseUid, savedUri.toString())
                 user = userDao.getUserByFirebaseUidSync(firebaseUid)
                 
@@ -255,7 +255,7 @@ fun ProfileEditScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 56.dp) // 为底部导航栏留出空间
+                .padding(bottom = 56.dp) // Leave space for bottom navigation bar
         ) {
             // Top bar
             TopBar(onBackClick = onBackClick)
@@ -264,7 +264,7 @@ fun ProfileEditScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f) // 允许内容滚动
+                    .weight(1f) // Allow content to scroll
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 16.dp)
             ) {
@@ -1703,27 +1703,27 @@ private fun MultiSelectDialog(
     }
 }
 
-// 新增函数：保存图片到应用内部存储
+// New function: Save image to app internal storage
 private suspend fun saveImageToInternalStorage(context: Context, sourceUri: Uri): Uri = withContext(Dispatchers.IO) {
     try {
-        // 创建一个唯一文件名
+        // Create a unique filename
         val fileName = "profile_photo_${UUID.randomUUID()}.jpg"
         
-        // 创建目标文件
+        // Create target file
         val directory = File(context.filesDir, "profile_photos")
         if (!directory.exists()) {
             directory.mkdirs()
         }
         val destinationFile = File(directory, fileName)
         
-        // 从URI获取输入流并创建输出流
+        // Get input stream from URI and create output stream
         val inputStream = context.contentResolver.openInputStream(sourceUri)
         val outputStream = FileOutputStream(destinationFile)
         
-        // 复制文件
+        // Copy file
         inputStream?.use { input ->
             outputStream.use { output ->
-                val buffer = ByteArray(4 * 1024) // 4KB缓冲区
+                val buffer = ByteArray(4 * 1024) // 4KB buffer
                 var read: Int
                 while (input.read(buffer).also { read = it } != -1) {
                     output.write(buffer, 0, read)
@@ -1732,11 +1732,11 @@ private suspend fun saveImageToInternalStorage(context: Context, sourceUri: Uri)
             }
         }
         
-        // 创建并返回一个指向内部存储文件的URI
+        // Create and return URI pointing to internal storage file
         Uri.fromFile(destinationFile)
     } catch (e: Exception) {
         e.printStackTrace()
-        // 如果出现错误，返回原始URI
+        // If error occurs, return original URI
         sourceUri
     }
 } 

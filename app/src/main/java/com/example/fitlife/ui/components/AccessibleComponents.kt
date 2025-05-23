@@ -23,8 +23,8 @@ import com.example.fitlife.ui.theme.AccessibilityUtils
 import com.example.fitlife.ui.theme.AccessibilityUtils.highContrastBorder
 
 /**
- * 支持辅助功能的卡片组件
- * 在高对比度模式下会有明显边框和更高的对比度
+ * Accessible card component
+ * Has a prominent border and higher contrast in high contrast mode
  */
 @Composable
 fun AccessibleCard(
@@ -35,7 +35,7 @@ fun AccessibleCard(
 ) {
     val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
     
-    // 在高对比度模式下使用不同的颜色
+    // Use different colors in high contrast mode
     val backgroundColor = if (isHighContrastMode) Color.White else MaterialTheme.colorScheme.surface
     val contentColor = if (isHighContrastMode) Color.Black else MaterialTheme.colorScheme.onSurface
     val titleColor = if (isHighContrastMode) Color.Black else MaterialTheme.colorScheme.primary
@@ -44,13 +44,13 @@ fun AccessibleCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .highContrastBorder(RoundedCornerShape(8.dp)), // 在高对比度模式下添加边框
+            .highContrastBorder(RoundedCornerShape(8.dp)), // Add border in high contrast mode
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor,
             contentColor = contentColor
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isHighContrastMode) 8.dp else 4.dp // 在高对比度模式下增加阴影
+            defaultElevation = if (isHighContrastMode) 8.dp else 4.dp // Increase elevation in high contrast mode
         )
     ) {
         Column(
@@ -84,8 +84,8 @@ fun AccessibleCard(
 }
 
 /**
- * 支持辅助功能的按钮组件
- * 在高对比度模式下有更明显的视觉效果
+ * Accessible button component
+ * Has more prominent visual effects in high contrast mode
  */
 @Composable
 fun AccessibleButton(
@@ -95,14 +95,14 @@ fun AccessibleButton(
 ) {
     val isHighContrastMode = AccessibilityUtils.isHighContrastModeEnabled()
     
-    // 在高对比度模式下使用不同的颜色
+    // Use different colors in high contrast mode
     val containerColor = if (isHighContrastMode) Color(0xFF0000FF) else MaterialTheme.colorScheme.primary
     val contentColor = if (isHighContrastMode) Color.White else MaterialTheme.colorScheme.onPrimary
     
     Button(
         onClick = onClick,
         modifier = modifier
-            .highContrastBorder(RoundedCornerShape(4.dp)), // 在高对比度模式下添加边框
+            .highContrastBorder(RoundedCornerShape(4.dp)), // Add border in high contrast mode
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
             contentColor = contentColor
@@ -116,8 +116,8 @@ fun AccessibleButton(
 }
 
 /**
- * 支持辅助功能的标题组件
- * 在高对比度模式下有更高的可见度
+ * Accessible heading component
+ * Has higher visibility in high contrast mode
  */
 @Composable
 fun AccessibleHeading(

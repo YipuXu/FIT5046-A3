@@ -113,7 +113,7 @@ fun SettingsScreen(
                 
                 // Change password
                 SettingsItemUnified(
-                    icon = R.drawable.profile_photo, // 替换为实际的锁图标
+                    icon = R.drawable.profile_photo, // Replace with actual lock icon
                     title = "Change Password",
                     onClick = onChangePasswordClick,
                     useVectorIcon = true,
@@ -126,7 +126,7 @@ fun SettingsScreen(
                 
                 // Accessibility
                 SettingsItemUnified(
-                    icon = R.drawable.profile_photo, // 占位图标
+                    icon = R.drawable.profile_photo, // Placeholder icon
                     title = "Accessibility",
                     onClick = onAccessibilityClick,
                     useVectorIcon = true,

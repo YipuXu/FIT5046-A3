@@ -21,10 +21,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 
-/**
- * 辅助功能实用工具类
- * 提供与辅助功能相关的扩展函数和组合函数
- */
 object AccessibilityUtils {
     
     /**

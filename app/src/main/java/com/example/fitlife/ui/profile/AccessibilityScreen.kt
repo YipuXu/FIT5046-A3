@@ -148,10 +148,10 @@ fun AccessibilityScreen(
                 checked = screenReaderEnabled,
                         onCheckedChange = { newValue -> 
                             if (newValue && !isTalkBackEnabled) {
-                                // 如果用户试图启用屏幕阅读器但TalkBack未开启，显示对话框
+                                // If user tries to enable screen reader but TalkBack is not on, show dialog
                                 showScreenReaderDialog = true
                             } else {
-                                // 其他情况正常保存设置
+                                // Otherwise save settings normally
                                 coroutineScope.launch {
                                     accessibilityPreferences.saveScreenReader(newValue)
                                 }
@@ -168,10 +168,10 @@ fun AccessibilityScreen(
                 checked = keyboardControlEnabled,
                         onCheckedChange = { newValue -> 
                             if (newValue && !isKeyboardAccessibilityEnabled) {
-                                // 如果用户试图启用键盘控制但系统键盘辅助功能未开启，显示对话框
+                                // If user tries to enable keyboard control but system keyboard accessibility is not on, show dialog
                                 showKeyboardControlDialog = true
                             } else {
-                                // 其他情况正常保存设置
+                                // Otherwise save settings normally
                                 coroutineScope.launch {
                                     accessibilityPreferences.saveKeyboardControl(newValue)
                                 }
@@ -184,11 +184,11 @@ fun AccessibilityScreen(
             Spacer(modifier = Modifier.height(80.dp))
         }
         
-        // 屏幕阅读器设置对话框
+        // Screen reader settings dialog
         if (showScreenReaderDialog) {
             AlertDialog(
                 onDismissRequest = { showScreenReaderDialog = false },
-                icon = {},  // 空图标
+                icon = {},  // Empty icon
                 title = { 
                     Text(
                         text = "Enable Screen Reader",
@@ -203,12 +203,12 @@ fun AccessibilityScreen(
                 confirmButton = {
                     Button(
                         onClick = {
-                            // 打开系统无障碍设置
+                            // Open system accessibility settings
                             openAccessibilitySettings(context)
                             showScreenReaderDialog = false
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF2196F3) // 蓝色按钮
+                            containerColor = Color(0xFF2196F3) // Blue button
                         ),
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth()
@@ -220,7 +220,7 @@ fun AccessibilityScreen(
                     Button(
                         onClick = { showScreenReaderDialog = false },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE0E0E0) // 灰色按钮
+                            containerColor = Color(0xFFE0E0E0) // Gray button
                         ),
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth()
@@ -243,11 +243,11 @@ fun AccessibilityScreen(
             )
         }
         
-        // 键盘控制设置对话框
+        // Keyboard control settings dialog
         if (showKeyboardControlDialog) {
             AlertDialog(
                 onDismissRequest = { showKeyboardControlDialog = false },
-                icon = {},  // 空图标
+                icon = {},  // Empty icon
                 title = { 
                     Text(
                         text = "Enable Keyboard Control",
@@ -262,12 +262,12 @@ fun AccessibilityScreen(
                 confirmButton = {
                     Button(
                         onClick = {
-                            // 打开系统无障碍设置
+                            // Open system accessibility settings
                             openAccessibilitySettings(context)
                             showKeyboardControlDialog = false
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF2196F3) // 蓝色按钮
+                            containerColor = Color(0xFF2196F3) // Blue button
                         ),
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth()
@@ -279,7 +279,7 @@ fun AccessibilityScreen(
                     Button(
                         onClick = { showKeyboardControlDialog = false },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE0E0E0) // 灰色按钮
+                            containerColor = Color(0xFFE0E0E0) // Gray button
                         ),
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth()
@@ -305,7 +305,7 @@ fun AccessibilityScreen(
 }
 
 /**
- * 检查TalkBack服务是否开启
+ * Check if TalkBack service is enabled
  */
 private fun isTalkBackEnabled(context: Context): Boolean {
     val accessibilityManager = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
@@ -320,7 +320,7 @@ private fun isTalkBackEnabled(context: Context): Boolean {
 }
 
 /**
- * 检查键盘辅助功能服务是否启用（如Switch Access或Voice Access）
+ * Check if keyboard accessibility service is enabled (like Switch Access or Voice Access)
  */
 private fun isKeyboardAccessibilityEnabled(context: Context): Boolean {
     val accessibilityManager = context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
@@ -337,7 +337,7 @@ private fun isKeyboardAccessibilityEnabled(context: Context): Boolean {
 }
 
 /**
- * 打开系统无障碍设置页面
+ * Open system accessibility settings page
  */
 private fun openAccessibilitySettings(context: Context) {
     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
@@ -374,7 +374,7 @@ private fun TopBar(
                     .size(32.dp)
                     .clip(CircleShape)
                     .background(
-                        // 使用getFullyAccessibleColor同时支持高对比度和色盲模式
+                        // Use getFullyAccessibleColor to support both high contrast and color blind modes
                         AccessibilityUtils.getFullyAccessibleColor(
                             normalColor = Color(0xFFF3F4F6),
                             highContrastColor = Color.Black

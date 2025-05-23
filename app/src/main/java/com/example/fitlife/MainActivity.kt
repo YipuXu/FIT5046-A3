@@ -33,20 +33,20 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import android.content.Context
 
 class MainActivity : ComponentActivity() {
-    // 添加可访问的属性
+    // Add accessible property
     var planEventToDeleteId = mutableStateOf<Long?>(null)
         private set
         
-    // 创建Firebase用户仓库
+    // Create Firebase user repository
     private lateinit var firebaseUserRepository: FirebaseUserRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // 初始化Firebase用户仓库
+        // Initialize Firebase user repository
         firebaseUserRepository = FirebaseUserRepository()
         
-        // 初始化用户数据
+        // Initialize user data
         lifecycleScope.launch {
             DatabaseHelper.initializeUserData(applicationContext)
         }
@@ -61,11 +61,11 @@ class MainActivity : ComponentActivity() {
                 // Add a state to store selected fitness tags
                 val selectedFitnessTags = remember { mutableStateOf(listOf("Strength Training", "Cardio")) }
                 
-                // 添加用于存储计划信息的state
+                // Add state to store plan information
                 val planTitle = remember { mutableStateOf("") }
                 val planDate = remember { mutableStateOf("") }
                 val isPlanDone = remember { mutableStateOf(false) }
-                // 使用类级别的属性而不是局部变量
+                // Use class level property instead of local variable
                 planEventToDeleteId = remember { mutableStateOf<Long?>(null) }
                 
                 when {
@@ -90,11 +90,11 @@ class MainActivity : ComponentActivity() {
                                     onNavigateToMap = { currentScreen.value = "map" },
                                     onNavigateToProfile = { currentScreen.value = "profile" },
                                     onNavigateToRecordTraining = { eventTitle, eventDate, eventId ->
-                                        // 存储事件标题、日期和ID，以便在记录训练页面使用
+                                        // Store event title, date, and ID to use in Record Training page
                                         planTitle.value = eventTitle
                                         planDate.value = eventDate
                                         planEventToDeleteId.value = eventId
-                                        // 跳转到记录训练页面
+                                        // Navigate to Record Training page
                                         currentScreen.value = "record"
                                     }
                                 )
@@ -102,7 +102,7 @@ class MainActivity : ComponentActivity() {
                             "map" -> {
                                 // Display map page
                                 MapScreen(
-                                    onNavigateBack = { /* 移除,返回按钮功能 */ },
+                                    onNavigateBack = { /* Remove, back button function */ },
                                     onNavigateToHome = { currentScreen.value = "home" },
                                     onNavigateToCalendar = { currentScreen.value = "calendar" },
                                     onNavigateToMap = { currentScreen.value = "map" },
@@ -112,7 +112,7 @@ class MainActivity : ComponentActivity() {
                             "profile" -> {
                                 // Display profile page
                                 ProfileScreen(
-                                    onBackClick = { /* 移除返回按钮功能 */ },
+                                    onBackClick = { /* Remove back button function */ },
                                     onViewAllHistory = { currentScreen.value = "all_records" },
                                     onEditProfileClick = { tags -> 
                                         Log.d("MainActivity", "Navigate to edit page, tags: ${selectedFitnessTags.value.joinToString()}")
@@ -153,7 +153,7 @@ class MainActivity : ComponentActivity() {
                                 SettingsScreen(
                                     onBackClick = { currentScreen.value = "profile" },
                                     onLogout = { contextParam -> 
-                                        // 使用FirebaseUserRepository的signOut方法完全清除认证状态
+                                        // Use FirebaseUserRepository's signOut method to completely clear authentication status
                                         firebaseUserRepository.signOut(contextParam)
                                         isLoggedIn.value = false
                                         currentScreen.value = "login"
@@ -187,7 +187,7 @@ class MainActivity : ComponentActivity() {
                                         currentScreen.value = "settings" // Navigate back after attempting change
                                     },
                                     onLogout = { contextParam ->
-                                        // 使用FirebaseUserRepository的signOut方法完全清除认证状态
+                                        // Use FirebaseUserRepository's signOut method to completely clear authentication status
                                         firebaseUserRepository.signOut(contextParam)
                                         isLoggedIn.value = false
                                         currentScreen.value = "login"
@@ -204,14 +204,14 @@ class MainActivity : ComponentActivity() {
                                     planTitle = planTitle.value,
                                     planDate = planDate.value,
                                     onMarkPlanDone = {
-                                        // 标记计划已完成
+                                        // Mark plan as completed
                                         isPlanDone.value = true
                                         
-                                        // 如果有计划ID，则跳转回日历页面并删除该计划
+                                        // If there is a plan ID, navigate back to calendar page and delete the plan
                                         if (planEventToDeleteId.value != null) {
                                             currentScreen.value = "calendar"
                                         } else {
-                                            // 否则返回个人资料页面
+                                            // Otherwise return to profile page
                                             currentScreen.value = "profile" 
                                         }
                                     }

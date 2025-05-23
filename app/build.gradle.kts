@@ -42,7 +42,6 @@ android {
         compose = true
     }
     
-    // 添加打包配置，解决META-INF冲突问题
     packaging {
         resources {
             excludes += listOf(

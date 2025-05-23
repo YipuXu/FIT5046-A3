@@ -81,10 +81,10 @@ fun RecordTrainingScreen(
     var showDialog by remember { mutableStateOf(false) }
     var caloriesBurned by remember { mutableStateOf(0) }
 
-    // 创建Firebase用户仓库以获取当前用户ID
+    // Create Firebase user repository to get current user ID
     val firebaseUserRepository = remember { FirebaseUserRepository() }
     
-    // 获取当前用户ID
+    // Get current user ID
     val firebaseUser by firebaseUserRepository.currentUser.collectAsState()
     val firebaseUid = firebaseUser?.uid
 
@@ -429,7 +429,7 @@ fun RecordTrainingScreen(
                                 showDialog = false
                                 val dao = (context.applicationContext as MyApplication).database.workoutDao()
                                 
-                                // 获取当前用户ID，如果未登录则使用空字符串（应该不会发生这种情况）
+                                // Get current user ID, use empty string if not logged in (should not happen)
                                 val currentUid = firebaseUid ?: ""
                                 
                                 val workout = Workout(
@@ -440,7 +440,7 @@ fun RecordTrainingScreen(
                                     notes = notes.text,
                                     date = selectedDate,
                                     time = selectedTime,
-                                    firebaseUid = currentUid // 添加用户ID到训练记录
+                                    firebaseUid = currentUid // Add user ID to workout record
                                 )
 
                                 CoroutineScope(Dispatchers.IO).launch {

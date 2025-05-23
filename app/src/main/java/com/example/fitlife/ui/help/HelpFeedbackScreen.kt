@@ -86,19 +86,19 @@ fun HelpFeedbackScreen(
                                 context = context,
                                 feedback = feedbackText,
                                 onSuccess = {
-                                    // 显示成功提示
+                                    // Show success message
                                     Toast.makeText(
                                         context,
                                         "Feedback submitted successfully", 
                                         Toast.LENGTH_SHORT
                                     ).show()
                                     
-                                    // 清空输入框
+                                    // Clear input field
                                     feedbackText = ""
                                     isLoading = false
                                 },
                                 onError = { errorMessage ->
-                                    // 显示错误提示
+                                    // Show error message
                                     Toast.makeText(
                                         context,
                                         errorMessage, 
@@ -109,7 +109,7 @@ fun HelpFeedbackScreen(
                             )
                         }
                     } else {
-                        // 如果反馈为空，提示用户
+                        // If feedback is empty, prompt user
                         Toast.makeText(
                             context,
                             "Please enter your feedback",
@@ -143,7 +143,7 @@ fun HelpFeedbackScreen(
 }
 
 /**
- * 将反馈保存到Firestore数据库
+ * Saves feedback to Firestore database
  */
 suspend fun saveFeedbackToFirestore(
     context: Context,
@@ -154,14 +154,14 @@ suspend fun saveFeedbackToFirestore(
     try {
         val db = FirebaseFirestore.getInstance()
         
-        // 创建反馈数据
+        // Create feedback data
         val feedbackData = hashMapOf(
             "content" to feedback,
             "timestamp" to Date(),
             "status" to "new"
         )
         
-        // 保存到Firestore
+        // Save to Firestore
         db.collection("feedback")
             .add(feedbackData)
             .await()
